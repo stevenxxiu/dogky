@@ -11,6 +11,8 @@ use crate::serializable_rgba::SerializableRGBA;
 
 #[derive(Deserialize, Clone, Copy)]
 pub struct Config {
+  pub margin: u32,
+  pub width: u32,
   pub bg_color: SerializableRGBA,
 }
 
@@ -24,7 +26,7 @@ impl Config {
   }
 
   pub fn calculate_size(self: &Self, window: &ApplicationWindow) -> (u32, u32) {
-    let window_width = window.allocated_width() as u32;
+    let window_width = self.width + 2 * self.margin;
     let surface = window.surface();
     let display = window.display();
     let monitor = display.monitor_at_surface(&surface);

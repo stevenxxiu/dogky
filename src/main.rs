@@ -26,8 +26,12 @@ fn load_css(config: &Config) {
 }
 
 fn build_ui(app: &Application, config: &Config) {
-  let container = Box::new(Orientation::Vertical, 0);
-  let window = ApplicationWindow::builder().application(app).child(&container).decorated(false).build();
+  let container = Box::new(Orientation::Vertical, config.margin as i32);
+  let window = ApplicationWindow::builder()
+    .application(app)
+    .child(&container)
+    .decorated(false)
+    .build();
   window.present();
   let (width, height) = config.calculate_size(&window);
   window.set_size_request(width as i32, height as i32);
