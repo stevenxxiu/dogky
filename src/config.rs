@@ -7,7 +7,7 @@ use gtk4::prelude::{DisplayExt, MonitorExt, NativeExt, WidgetExt};
 use gtk4::ApplicationWindow;
 use serde_derive::Deserialize;
 
-#[derive(Deserialize, Clone, Copy)]
+#[derive(Deserialize)]
 pub struct ConfigProps {
   pub margin: u32,
   pub width: u32,

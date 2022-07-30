@@ -1,6 +1,8 @@
 use std::process::Command;
+use std::rc::Rc;
 
 use gtk4::gdk::Display;
+use gtk4::glib::clone;
 use gtk4::prelude::{ApplicationExt, ApplicationExtManual, GtkWindowExt, WidgetExt};
 use gtk4::{Application, ApplicationWindow, Box, CssProvider, Orientation, StyleContext};
 
@@ -52,8 +54,9 @@ fn build_ui(app: &Application, config_props: &ConfigProps) {
 
 fn main() {
   let config = Config::load().unwrap();
+  let config_ref = Rc::new(config);
   let app = Application::builder().application_id(APP_ID).build();
-  app.connect_startup(move |_| load_css(&config.css_bytes));
-  app.connect_activate(move |app| build_ui(app, &config.config_props));
+  app.connect_startup(clone!(@strong config_ref => move |_| load_css(&config_ref.css_bytes)));
+  app.connect_activate(clone!(@strong config_ref => move |app| build_ui(app, &config_ref.config_props)));
   app.run();
 }
