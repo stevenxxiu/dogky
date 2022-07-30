@@ -1,10 +1,7 @@
+use std::process::Command;
+
 use gtk4::gdk::Display;
-use gtk4::gio::{Cancellable, SimpleAction};
-use gtk4::glib;
-use gtk4::glib::clone;
-use gtk4::prelude::{
-  ActionGroupExt, ActionMapExt, ApplicationExt, ApplicationExtManual, GtkApplicationExt, GtkWindowExt, WidgetExt,
-};
+use gtk4::prelude::{ApplicationExt, ApplicationExtManual, GtkWindowExt, WidgetExt};
 use gtk4::{Application, ApplicationWindow, Box, CssProvider, Orientation, StyleContext};
 
 mod config;
@@ -31,10 +28,6 @@ fn load_css(config: &Config) {
 }
 
 fn build_ui(app: &Application, config: &Config) {
-  if app.active_window().is_some() {
-    // This function can run again, when the move window script runs our binary again
-    return;
-  }
   let container = Box::new(Orientation::Vertical, config.margin as i32);
   let window = ApplicationWindow::builder()
     .application(app)
@@ -43,28 +36,31 @@ fn build_ui(app: &Application, config: &Config) {
     .build();
   window.present();
 
-  // Set initial opacity to 0, to avoid flickering when the script that positions the window runs
+  // Set initial opacity to 0, to avoid flickering when `move_window.sh` runs
   window.set_opacity(0f64);
-  let action_position_finished = SimpleAction::new("make-visible", None);
-  action_position_finished.connect_activate(clone!(@weak window => move |_, _| {
-    window.set_opacity(1f64);
-  }));
-  app.add_action(&action_position_finished);
+  let (monitor_width, monitor_height, window_width, window_height) = config.calculate_size(&window);
+  window.set_size_request(window_width as i32, window_height as i32);
 
-  let (width, height) = config.calculate_size(&window);
-  window.set_size_request(width as i32, height as i32);
+  let move_window_script_path = std::env::current_exe()
+    .unwrap()
+    .parent()
+    .unwrap()
+    .join("move_window.sh");
+  let output = Command::new(move_window_script_path)
+    .args([monitor_width, monitor_height, window_width, window_height].map(|n| n.to_string()))
+    .output()
+    .unwrap();
+  if !output.status.success() {
+    app.quit();
+    return;
+  }
+  window.set_opacity(1f64);
 }
 
 fn main() {
   let config = Config::load().unwrap();
   let app = Application::builder().application_id(APP_ID).build();
-  app.register(Cancellable::NONE).unwrap();
-  if app.is_remote() {
-    app.activate_action("make-visible", None);
-    app.connect_activate(move |app| app.quit());
-  } else {
-    app.connect_startup(move |_| load_css(&config));
-    app.connect_activate(move |app| build_ui(app, &config));
-  }
+  app.connect_startup(move |_| load_css(&config));
+  app.connect_activate(move |app| build_ui(app, &config));
   app.run();
 }

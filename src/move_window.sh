@@ -1,13 +1,12 @@
 #!/bin/sh
 
-args=" --pid "$(pgrep '\bdogky$' | tr '\n' ' \-\-pid ')
+monitor_width=$1
+monitor_height=$2
+window_width=$3
+window_height=$4
 
 # Wait until the window appears
-window_id=$(eval "xdotool search --all ${args} --sync --name --onlyvisible ^dogky$")
+window_id=$(xdotool search --all --pid=$PPID --sync --name --onlyvisible "^dogky$")
 
-width=$(xwininfo -id $window_id | rg --only-matching --replace='$1' '  Width: (\d+)')
-screen_width=$(xrandr --current | rg --only-matching --replace='$1' 'current (\d+)')
-x=$(( screen_width - width ))
-
+x=$(( monitor_width - window_width ))
 wmctrl -i -r $window_id -e "0,${x},0,-1,-1"
-target/debug/dogky
