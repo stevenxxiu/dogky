@@ -11,19 +11,13 @@ use crate::config::{Config, ConfigProps};
 const APP_ID: &str = "org.dogky";
 
 fn load_css(css_bytes: &Vec<u8>) {
-  let provider_static = CssProvider::new();
-  provider_static.load_from_data(include_bytes!("style.css"));
-
-  let provider_custom = CssProvider::new();
-  provider_custom.load_from_data(&css_bytes);
-
-  for provider in [&provider_static, &provider_custom] {
-    StyleContext::add_provider_for_display(
-      &Display::default().expect("Could not connect to a display."),
-      provider,
-      gtk4::STYLE_PROVIDER_PRIORITY_APPLICATION,
-    );
-  }
+  let provider_styles = CssProvider::new();
+  provider_styles.load_from_data(&css_bytes);
+  StyleContext::add_provider_for_display(
+    &Display::default().expect("Could not connect to a display."),
+    &provider_styles,
+    gtk4::STYLE_PROVIDER_PRIORITY_APPLICATION,
+  );
 }
 
 fn build_ui(app: &Application, config_props: &ConfigProps) {
