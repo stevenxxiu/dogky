@@ -1,9 +1,11 @@
+use std::cell::RefCell;
+
 use gtk4::gdk::Display;
 use gtk4::gio::{Cancellable, SimpleAction};
 use gtk4::glib;
-use gtk4::glib::clone;
+use gtk4::glib::{clone, SignalHandlerId};
 use gtk4::prelude::{
-  ActionGroupExt, ActionMapExt, ApplicationExt, ApplicationExtManual, GtkApplicationExt, GtkWindowExt, WidgetExt,
+  ActionGroupExt, ActionMapExt, ApplicationExt, ApplicationExtManual, GtkWindowExt, ObjectExt, WidgetExt,
 };
 use gtk4::{Application, ApplicationWindow, Box, CssProvider, Orientation, StyleContext};
 
@@ -31,10 +33,6 @@ fn load_css(config: &Config) {
 }
 
 fn build_ui(app: &Application, config: &Config) {
-  if app.active_window().is_some() {
-    // This function can run again, when the move window script runs our binary again
-    return;
-  }
   let container = Box::new(Orientation::Vertical, config.margin as i32);
   let window = ApplicationWindow::builder()
     .application(app)
@@ -55,16 +53,44 @@ fn build_ui(app: &Application, config: &Config) {
   window.set_size_request(width as i32, height as i32);
 }
 
-fn main() {
-  let config = Config::load().unwrap();
-  let app = Application::builder().application_id(APP_ID).build();
-  app.register(Cancellable::NONE).unwrap();
-  if app.is_remote() {
-    app.activate_action("make-visible", None);
-    app.connect_activate(move |app| app.quit());
-  } else {
-    app.connect_startup(move |_| load_css(&config));
-    app.connect_activate(move |app| build_ui(app, &config));
+struct DogkyApp {
+  app: Application,
+  activate_handler_id: RefCell<Option<SignalHandlerId>>,
+}
+
+impl DogkyApp {
+  fn new() -> Self {
+    let config = Config::load().unwrap();
+    let app = Application::builder().application_id(APP_ID).build();
+    app.register(Cancellable::NONE).unwrap();
+
+    let activate_handler_id = if app.is_remote() {
+      app.activate_action("make-visible", None);
+      app.connect_activate(move |app| app.quit())
+    } else {
+      app.connect_startup(move |_| load_css(&config));
+      app.connect_activate(move |app| build_ui(app, &config))
+    };
+    Self {
+      app,
+      activate_handler_id: RefCell::new(Some(activate_handler_id)),
+    }
   }
+
+  fn disconnect(&self) {
+    if let Some(id) = self.activate_handler_id.take() {
+      self.app.disconnect(id)
+    }
+  }
+
+  fn run(&self) {
+    self.app.run();
+  }
+}
+
+fn main() {
+  let app = DogkyApp::new();
   app.run();
+  // Avoid activate running again, when the move window script runs our binary again
+  app.disconnect();
 }
