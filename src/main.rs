@@ -6,8 +6,12 @@ use gtk::glib::clone;
 use gtk::prelude::{ApplicationExt, ApplicationExtManual, GtkWindowExt, WidgetExt};
 use gtk::{Application, ApplicationWindow, Box, CssProvider, Orientation, StyleContext};
 
+mod api;
+mod components;
 mod config;
+mod path;
 
+use crate::components::WeatherWidget;
 use crate::config::{Config, ConfigProps};
 
 const APP_ID: &str = "org.dogky";
@@ -20,6 +24,13 @@ fn load_css(css_bytes: &Vec<u8>) {
     &provider_styles,
     gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
   );
+}
+
+fn create_container(config_props: &ConfigProps) -> Box {
+  let container = Box::new(Orientation::Vertical, config_props.margin as i32);
+  WeatherWidget::create(&config_props.weather, &container);
+
+  container
 }
 
 fn move_window(app: &Application, window: &ApplicationWindow, config_props: &ConfigProps) {
@@ -44,15 +55,19 @@ fn move_window(app: &Application, window: &ApplicationWindow, config_props: &Con
   window.set_opacity(1f64);
 }
 
-fn build_ui(app: &Application, config_props: &ConfigProps) {
-  let container = Box::new(Orientation::Vertical, config_props.margin as i32);
+fn create_window(app: &Application, container: &Box, config_props: &ConfigProps) {
   let window = ApplicationWindow::builder()
     .application(app)
-    .child(&container)
+    .child(container)
     .decorated(false)
     .build();
   window.present();
   move_window(app, &window, config_props);
+}
+
+fn build_ui(app: &Application, config_props: &ConfigProps) {
+  let container = create_container(config_props);
+  create_window(app, &container, config_props);
 }
 
 fn main() {

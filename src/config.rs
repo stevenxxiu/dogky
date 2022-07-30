@@ -7,10 +7,21 @@ use gtk::prelude::{DisplayExt, MonitorExt, NativeExt, WidgetExt};
 use gtk::ApplicationWindow;
 use serde_derive::Deserialize;
 
+use crate::path::get_xdg_dirs;
+
+#[derive(Clone, Deserialize)]
+pub struct WeatherProps {
+  pub update_interval: u32,
+  pub retry_timeout: u32,
+  pub openweather_api_key: String,
+  pub openweather_city_id: u64,
+}
+
 #[derive(Deserialize)]
 pub struct ConfigProps {
   pub margin: u32,
   pub width: u32,
+  pub weather: WeatherProps,
 }
 
 pub struct Config {
@@ -20,13 +31,11 @@ pub struct Config {
 
 impl Config {
   pub fn load() -> Result<Config, Box<dyn Error>> {
-    let xdg_dirs = xdg::BaseDirectories::with_prefix("dogky").unwrap();
-
-    let config_path = xdg_dirs.place_config_file("dogky.yaml")?;
+    let config_path = get_xdg_dirs().place_config_file("dogky.yaml")?;
     let config_file = File::open(config_path)?;
     let config_props: ConfigProps = serde_yaml::from_reader(config_file)?;
 
-    let style_path = xdg_dirs.place_config_file("style.css")?;
+    let style_path = get_xdg_dirs().place_config_file("style.css")?;
     let css_bytes = std::fs::read(style_path).unwrap();
 
     Ok(Config {
