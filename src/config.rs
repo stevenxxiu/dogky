@@ -3,8 +3,8 @@ extern crate xdg;
 use std::error::Error;
 use std::fs::File;
 
-use gtk4::prelude::{DisplayExt, MonitorExt, NativeExt, WidgetExt};
-use gtk4::ApplicationWindow;
+use gtk::prelude::{DisplayExt, MonitorExt, NativeExt, WidgetExt};
+use gtk::ApplicationWindow;
 use serde_derive::Deserialize;
 
 #[derive(Deserialize)]

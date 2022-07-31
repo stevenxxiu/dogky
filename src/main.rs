@@ -1,10 +1,10 @@
 use std::process::Command;
 use std::rc::Rc;
 
-use gtk4::gdk::Display;
-use gtk4::glib::clone;
-use gtk4::prelude::{ApplicationExt, ApplicationExtManual, GtkWindowExt, WidgetExt};
-use gtk4::{Application, ApplicationWindow, Box, CssProvider, Orientation, StyleContext};
+use gtk::gdk::Display;
+use gtk::glib::clone;
+use gtk::prelude::{ApplicationExt, ApplicationExtManual, GtkWindowExt, WidgetExt};
+use gtk::{Application, ApplicationWindow, Box, CssProvider, Orientation, StyleContext};
 
 mod config;
 
@@ -18,7 +18,7 @@ fn load_css(css_bytes: &Vec<u8>) {
   StyleContext::add_provider_for_display(
     &Display::default().expect("Could not connect to a display."),
     &provider_styles,
-    gtk4::STYLE_PROVIDER_PRIORITY_APPLICATION,
+    gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
   );
 }
 
