@@ -9,66 +9,66 @@ use serde_derive::{Deserialize, Serialize};
 
 #[allow(dead_code)]
 #[derive(Clone, Serialize, Deserialize)]
-struct WeatherDataCoord {
-  lon: f64,
-  lat: f64,
+pub struct WeatherDataCoord {
+  pub lon: f64,
+  pub lat: f64,
 }
 
 #[allow(dead_code)]
 #[derive(Clone, Serialize, Deserialize)]
-struct WeatherDataWeather {
-  id: u64,
-  main: String,
-  description: String,
-  icon: String,
+pub struct WeatherDataWeather {
+  pub id: u64,
+  pub main: String,
+  pub description: String,
+  pub icon: String,
 }
 
 #[allow(dead_code)]
 #[derive(Clone, Serialize, Deserialize)]
-struct WeatherDataMain {
-  temp: f64,
-  feels_like: f64,
-  temp_min: f64,
-  temp_max: f64,
-  pressure: f64,
-  humidity: f64,
+pub struct WeatherDataMain {
+  pub temp: f64,
+  pub feels_like: f64,
+  pub temp_min: f64,
+  pub temp_max: f64,
+  pub pressure: f64,
+  pub humidity: f64,
 }
 
 #[allow(dead_code)]
 #[derive(Clone, Serialize, Deserialize)]
-struct WeatherDataWind {
-  speed: f64,
-  deg: f64,
+pub struct WeatherDataWind {
+  pub speed: f64,
+  pub deg: f64,
 }
 
 #[allow(dead_code)]
 #[derive(Clone, Serialize, Deserialize)]
-struct WeatherDataClouds {
-  all: f64,
+pub struct WeatherDataClouds {
+  pub all: f64,
 }
 
 #[allow(dead_code)]
 #[derive(Clone, Serialize, Deserialize)]
-struct WeatherDataSys {
-  country: String,
-  sunrise: u64,
-  sunset: u64,
+pub struct WeatherDataSys {
+  pub country: String,
+  pub sunrise: u64,
+  pub sunset: u64,
 }
 
 #[allow(dead_code)]
 #[derive(Clone, Serialize, Deserialize)]
 pub struct WeatherData {
-  coord: WeatherDataCoord,
-  weather: Vec<WeatherDataWeather>,
-  main: WeatherDataMain,
-  visibility: f64,
-  wind: WeatherDataWind,
-  clouds: WeatherDataClouds,
-  dt: u64,
-  sys: WeatherDataSys,
-  timezone: i32,
-  id: u64,
-  name: String,
+  pub coord: WeatherDataCoord,
+  pub weather: Vec<WeatherDataWeather>,
+  pub main: WeatherDataMain,
+  pub visibility: f64,
+  pub wind: WeatherDataWind,
+  pub clouds: WeatherDataClouds,
+  pub dt: u64,
+  pub sys: WeatherDataSys,
+  pub timezone: i32,
+  pub id: u64,
+  pub name: String,
 }
 
 static REQUEST_TIMEOUT: Duration = Duration::new(5, 0);

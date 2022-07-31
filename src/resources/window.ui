@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<interface>
+  <requires lib="gtk" version="4.6"/>
+  <template class="DogkyWindow" parent="GtkWindow">
+    <property name="decorated">False</property>
+    <child>
+      <object class="GtkBox" id="container">
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="WeatherWidget" id="weather_widget" />
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

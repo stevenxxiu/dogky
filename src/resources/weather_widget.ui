@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.10.2 -->
+<interface>
+  <!-- interface-name dogky -->
+  <requires lib="gtk" version="4.6"/>
+  <template class="WeatherWidget" parent="GtkBox">
+    <property name="name">weather-container</property>
+    <property name="orientation">vertical</property>
+    <child>
+      <object class="GtkBox" id="error_container">
+        <property name="halign">center</property>
+        <property name="name">weather-error-container</property>
+        <child>
+          <object class="GtkLabel">
+            <property name="label">Weather: </property>
+            <property name="name">weather-error-label</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="error">
+            <property name="name">weather-error</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <property name="halign">center</property>
+        <child>
+          <object class="GtkLabel" id="icon">
+            <property name="name">weather-icon</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="conditions">
+            <property name="name">weather-conditions</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="temperature">
+            <property name="name">weather-temperature</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="temperature_unit">
+            <property name="label">℃</property>
+            <property name="name">weather-temperature-unit</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <property name="halign">center</property>
+        <child>
+          <object class="GtkLabel">
+            <property name="label">Humidity</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="humidity">
+            <property name="name">weather-humidity</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="label">Wind</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="wind">
+            <property name="name">weather-wind</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <property name="halign">center</property>
+        <child>
+          <object class="GtkLabel">
+            <property name="label">☼</property>
+            <property name="name">weather-sunrise-icon</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="sunset">
+            <property name="name">weather-sunset</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="label">☾</property>
+            <property name="name">weather-sunset-icon</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="sunrise">
+            <property name="name">weather-sunrise</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

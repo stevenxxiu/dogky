@@ -17,3 +17,5 @@ To set up the project for development, run:
     $ cd dogky/
     $ pnpm install conventional-changelog-conventionalcommits
     $ pre-commit install --hook-type pre-commit --hook-type commit-msg
+
+The GUI is designed using *Cambalache*.

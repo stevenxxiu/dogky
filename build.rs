@@ -1,5 +1,7 @@
 use std::path::{Path, PathBuf};
 
+use gtk::gio;
+
 fn get_output_path() -> PathBuf {
   // <root or manifest path>/target/<profile>/
   let manifest_dir_str = std::env::var("CARGO_MANIFEST_DIR").unwrap();
@@ -9,8 +11,15 @@ fn get_output_path() -> PathBuf {
 }
 
 fn main() {
+  let cur_dir = std::env::current_dir().unwrap();
+  gio::compile_resources(
+    cur_dir.join("src/resources"),
+    cur_dir.join("src/resources/resources.gresource.xml").to_str().unwrap(),
+    "dogky.gresource",
+  );
+
   let target_dir = get_output_path();
-  let src = Path::join(&std::env::current_dir().unwrap(), "src/move_window.sh");
+  let src = Path::join(&cur_dir, "src/move_window.sh");
   let dest = Path::join(Path::new(&target_dir), Path::new("move_window.sh"));
   std::fs::copy(src, dest).unwrap();
 }

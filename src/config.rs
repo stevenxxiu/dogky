@@ -4,12 +4,12 @@ use std::error::Error;
 use std::fs::File;
 
 use gtk::prelude::{DisplayExt, MonitorExt, NativeExt, WidgetExt};
-use gtk::ApplicationWindow;
-use serde_derive::Deserialize;
+use serde_derive::{Deserialize, Serialize};
 
+use crate::components::Window;
 use crate::path::get_xdg_dirs;
 
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct WeatherProps {
   pub update_interval: u32,
   pub retry_timeout: u32,
@@ -17,7 +17,7 @@ pub struct WeatherProps {
   pub openweather_city_id: u64,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ConfigProps {
   pub margin: u32,
   pub width: u32,
@@ -46,7 +46,7 @@ impl Config {
 }
 
 impl ConfigProps {
-  pub fn calculate_size(self: &Self, window: &ApplicationWindow) -> (u32, u32, u32, u32) {
+  pub fn calculate_size(self: &Self, window: &Window) -> (u32, u32, u32, u32) {
     let surface = window.surface();
     let display = window.display();
     let monitor = display.monitor_at_surface(&surface);
