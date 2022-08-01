@@ -22,15 +22,7 @@ fn load_css(css_bytes: &Vec<u8>) {
   );
 }
 
-fn build_ui(app: &Application, config_props: &ConfigProps) {
-  let container = Box::new(Orientation::Vertical, config_props.margin as i32);
-  let window = ApplicationWindow::builder()
-    .application(app)
-    .child(&container)
-    .decorated(false)
-    .build();
-  window.present();
-
+fn move_window(app: &Application, window: &ApplicationWindow, config_props: &ConfigProps) {
   // Set initial opacity to 0, to avoid flickering when `move_window.sh` runs
   window.set_opacity(0f64);
   let (monitor_width, monitor_height, window_width, window_height) = config_props.calculate_size(&window);
@@ -50,6 +42,17 @@ fn build_ui(app: &Application, config_props: &ConfigProps) {
     return;
   }
   window.set_opacity(1f64);
+}
+
+fn build_ui(app: &Application, config_props: &ConfigProps) {
+  let container = Box::new(Orientation::Vertical, config_props.margin as i32);
+  let window = ApplicationWindow::builder()
+    .application(app)
+    .child(&container)
+    .decorated(false)
+    .build();
+  window.present();
+  move_window(app, &window, config_props);
 }
 
 fn main() {
