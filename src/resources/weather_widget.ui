@@ -37,14 +37,19 @@
           </object>
         </child>
         <child>
-          <object class="GtkLabel" id="temperature">
-            <property name="name">weather-temperature</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkLabel" id="temperature_unit">
-            <property name="label">℃</property>
-            <property name="name">weather-temperature-unit</property>
+          <object class="GtkBox">
+            <property name="name">temperature_with_unit</property>
+            <child>
+              <object class="GtkLabel" id="temperature">
+                <property name="name">weather-temperature</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="temperature_unit">
+                <property name="label">℃</property>
+                <property name="name">weather-temperature-unit</property>
+              </object>
+            </child>
           </object>
         </child>
       </object>

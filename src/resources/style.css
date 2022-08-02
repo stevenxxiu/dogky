@@ -13,7 +13,8 @@ window {
   min-height: 30px;
 }
 
-#weather-container * {
+/* Don't include all descendants, to avoid adding margins to the temperature unit. */
+#weather-container > * > * {
   margin: 0 4px;
   min-height: 20px;
 }
