@@ -19,7 +19,6 @@ pub struct WeatherProps {
 
 #[derive(Serialize, Deserialize)]
 pub struct ConfigProps {
-  pub margin: u32,
   pub width: u32,
   pub weather: WeatherProps,
 }
@@ -52,7 +51,7 @@ impl ConfigProps {
     let monitor = display.monitor_at_surface(&surface);
     let monitor_width = monitor.geometry().width() as u32;
     let monitor_height = monitor.geometry().height() as u32;
-    let window_width = self.width + 2 * self.margin;
+    let window_width = self.width;
     let window_height = monitor_height;
     (monitor_width, monitor_height, window_width, window_height)
   }
