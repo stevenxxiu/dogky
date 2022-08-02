@@ -1,6 +1,5 @@
 use chrono::NaiveDateTime;
 use gtk::glib;
-use gtk::glib::clone;
 use gtk::prelude::{GestureExt, ObjectExt, WidgetExt};
 use heck::ToTitleCase;
 use std::fs::File;
@@ -29,7 +28,7 @@ static ICON_MAP: phf::Map<&'static str, &'static str> = phf_map! {
 
 fn add_click_listener(props: &WeatherProps, weather_widget: &WeatherWidget) {
   let gesture = gtk::GestureClick::new();
-  gesture.connect_released(clone!(@strong props => move |gesture, _, _, _| {
+  gesture.connect_released(glib::clone!(@strong props => move |gesture, _, _, _| {
     gesture.set_state(gtk::EventSequenceState::Claimed);
     // Open weather forecast link
     open::that(format!("https://openweathermap.org/city/{0}#weather-widget", props.openweather_city_id)).unwrap();
@@ -136,7 +135,7 @@ impl WeatherWidgetUpdater {
     self.update_components(weather_widget);
     glib::source::timeout_add_seconds_local_once(
       timeout,
-      clone!(@strong self as self_, @strong props, @weak weather_widget => move || {
+      glib::clone!(@strong self as self_, @strong props, @weak weather_widget => move || {
         self_.clone().update(&props, &weather_widget);
       }),
     );

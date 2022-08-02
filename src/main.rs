@@ -2,7 +2,7 @@ use std::process::Command;
 use std::rc::Rc;
 
 use gtk::gdk::Display;
-use gtk::glib::clone;
+use gtk::glib;
 use gtk::prelude::{ApplicationExt, ApplicationExtManual, GtkWindowExt, WidgetExt};
 use gtk::{gio, Application, CssProvider, StyleContext};
 
@@ -64,7 +64,7 @@ fn main() {
   let config_ref = Rc::new(config);
   gio::resources_register_include!("dogky.gresource").unwrap();
   let app = Application::builder().application_id(APP_ID).build();
-  app.connect_startup(clone!(@strong config_ref => move |_| load_css(&config_ref.css_bytes)));
-  app.connect_activate(clone!(@strong config_ref => move |app| build_ui(app, &config_ref.config_props)));
+  app.connect_startup(glib::clone!(@strong config_ref => move |_| load_css(&config_ref.css_bytes)));
+  app.connect_activate(glib::clone!(@strong config_ref => move |app| build_ui(app, &config_ref.config_props)));
   app.run();
 }
