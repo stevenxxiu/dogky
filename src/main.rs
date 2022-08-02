@@ -16,14 +16,19 @@ mod path;
 
 const APP_ID: &str = "org.dogky";
 
-fn load_css(css_bytes: &Vec<u8>) {
-  let provider_styles = CssProvider::new();
-  provider_styles.load_from_data(&css_bytes);
-  StyleContext::add_provider_for_display(
-    &Display::default().expect("Could not connect to a display."),
-    &provider_styles,
-    gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
-  );
+fn load_css(css_bytes: &Option<Vec<u8>>) {
+  let display = Display::default().expect("Could not connect to a display.");
+  let priority = gtk::STYLE_PROVIDER_PRIORITY_APPLICATION;
+
+  let provider_static = CssProvider::new();
+  provider_static.load_from_data(include_bytes!("resources/style.css"));
+  StyleContext::add_provider_for_display(&display, &provider_static, priority);
+
+  if let Some(css_bytes) = css_bytes {
+    let provider_custom = CssProvider::new();
+    provider_custom.load_from_data(css_bytes);
+    StyleContext::add_provider_for_display(&display, &provider_custom, priority);
+  }
 }
 
 fn move_window(app: &Application, window: &Window, config_props: &ConfigProps) {

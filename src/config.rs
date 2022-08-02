@@ -26,7 +26,7 @@ pub struct ConfigProps {
 
 pub struct Config {
   pub config_props: ConfigProps,
-  pub css_bytes: Vec<u8>,
+  pub css_bytes: Option<Vec<u8>>,
 }
 
 impl Config {
@@ -36,7 +36,7 @@ impl Config {
     let config_props: ConfigProps = serde_yaml::from_reader(config_file)?;
 
     let style_path = get_xdg_dirs().place_config_file("style.css")?;
-    let css_bytes = std::fs::read(style_path).unwrap();
+    let css_bytes = std::fs::read(style_path).ok();
 
     Ok(Config {
       config_props,
