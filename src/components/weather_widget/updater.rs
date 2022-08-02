@@ -114,7 +114,7 @@ impl WeatherWidgetUpdater {
     let icon_key: String = data.weather[0].icon.chars().take(2).collect();
     weather_widget.set_property("icon", *ICON_MAP.get(icon_key.as_str()).unwrap());
     weather_widget.set_property("conditions", data.weather[0].description.to_title_case());
-    weather_widget.set_property("temperature", data.main.temp.round().to_string());
+    weather_widget.set_property("temperature", format!("{}°C", data.main.temp.round()));
     weather_widget.set_property("humidity", format!("{}%", data.main.humidity));
     let wind = format!(
       "{} kph {}",
