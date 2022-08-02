@@ -1,7 +1,7 @@
 use chrono::NaiveDateTime;
 use gtk::glib;
 use gtk::glib::clone;
-use gtk::prelude::ObjectExt;
+use gtk::prelude::{GestureExt, ObjectExt, WidgetExt};
 use heck::ToTitleCase;
 use std::fs::File;
 use std::path::PathBuf;
@@ -26,6 +26,17 @@ static ICON_MAP: phf::Map<&'static str, &'static str> = phf_map! {
   "13" => "🌨",
   "50" => "🌫",
 };
+
+fn add_click_listener(props: &WeatherProps, weather_widget: &WeatherWidget) {
+  let gesture = gtk::GestureClick::new();
+  gesture.connect_released(clone!(@strong props => move |gesture, _, _, _| {
+    gesture.set_state(gtk::EventSequenceState::Claimed);
+    // Open weather forecast link
+    open::that(format!("https://openweathermap.org/city/{0}#weather-widget", props.openweather_city_id)).unwrap();
+  }));
+  weather_widget.add_controller(&gesture);
+  weather_widget.set_cursor_from_name(Option::from("hand"));
+}
 
 #[derive(Clone)]
 pub struct WeatherWidgetUpdater {
@@ -53,6 +64,7 @@ fn format_sun_timestamp(timestamp: u64) -> String {
 
 impl WeatherWidgetUpdater {
   pub fn init(props: &WeatherProps, weather_widget: &WeatherWidget) {
+    add_click_listener(props, weather_widget);
     let cache_path = get_xdg_dirs().place_cache_file("weather.json").unwrap();
     let mut updater = WeatherWidgetUpdater {
       cache_path,
