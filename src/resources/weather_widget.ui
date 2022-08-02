@@ -46,7 +46,7 @@
             </child>
             <child>
               <object class="GtkLabel" id="temperature_unit">
-                <property name="label">℃</property>
+                <property name="label">°C</property>
                 <property name="name">weather-temperature-unit</property>
               </object>
             </child>
