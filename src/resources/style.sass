@@ -1,0 +1,35 @@
+window
+  background-color: rgba(32, 32, 32, 0.27)
+  color: white
+  font-family: 'Liberation Mono'
+  font-size: 16px
+
+#weather-container
+  margin-top: 10px
+
+  > *:first-child
+    min-height: 30px
+
+  // Don't include all descendants, to avoid adding margins to the temperature unit.
+  > * > *
+    margin: 0 4px
+    min-height: 20px
+
+  #weather-icon
+    font: 33px Symbola
+    line-height: 16px
+
+  #weather-temperature, #weather-temperature-unit
+    color: #ddd
+
+  #weather-temperature-unit
+    margin-top: -4px
+
+  #weather-humidity, #weather-wind
+    color: #ddd
+
+  #weather-sunrise-icon, #weather-sunset-icon
+    font-family: Symbola
+
+  #weather-sunrise, #weather-sunset
+    color: #ddd
