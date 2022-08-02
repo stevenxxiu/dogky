@@ -9,6 +9,9 @@
         <child>
           <object class="WeatherWidget" id="weather_widget" />
         </child>
+        <child>
+          <object class="GtkSeparator" />
+        </child>
       </object>
     </child>
   </template>
