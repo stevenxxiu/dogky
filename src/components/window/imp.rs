@@ -9,7 +9,7 @@ use gtk::CompositeTemplate;
 use gtk::TemplateChild;
 use once_cell::sync::Lazy;
 
-use crate::components::{WeatherWidget, WeatherWidgetUpdater};
+use crate::components::{update_machine_info_widget, MachineInfoWidget, WeatherWidget, WeatherWidgetUpdater};
 use crate::ConfigProps;
 
 #[derive(Default, CompositeTemplate)]
@@ -17,6 +17,8 @@ use crate::ConfigProps;
 pub struct Window {
   #[template_child]
   pub weather_widget: TemplateChild<WeatherWidget>,
+  #[template_child]
+  pub machine_info_widget: TemplateChild<MachineInfoWidget>,
 }
 
 #[glib::object_subclass]
@@ -46,6 +48,7 @@ impl ObjectImpl for Window {
       "config-props-str" => {
         let config_props: ConfigProps = serde_json::from_str(value.get().unwrap()).unwrap();
         WeatherWidgetUpdater::init(&config_props.weather, &self.weather_widget);
+        update_machine_info_widget(&self.machine_info_widget);
       }
       _ => unimplemented!(),
     }

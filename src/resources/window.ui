@@ -12,6 +12,12 @@
         <child>
           <object class="GtkSeparator" />
         </child>
+        <child>
+          <object class="MachineInfoWidget" id="machine_info_widget" />
+        </child>
+        <child>
+          <object class="GtkSeparator" />
+        </child>
       </object>
     </child>
   </template>

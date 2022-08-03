@@ -3,5 +3,6 @@
   <gresource prefix="/org/dogky/">
     <file compressed="true" preprocess="xml-stripblanks">window.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">weather_widget.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">machine_info_widget.ui</file>
   </gresource>
 </gresources>
