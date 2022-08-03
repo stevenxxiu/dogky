@@ -73,28 +73,27 @@ impl WeatherWidgetUpdater {
     updater.update(props, weather_widget);
   }
 
-  fn load_cache(&mut self) -> Result<(), std::io::Error> {
-    let data_file = File::open(&self.cache_path)?;
+  fn load_cache(&mut self) {
+    let data_file = File::open(&self.cache_path).unwrap();
     let data = serde_json::from_reader(data_file).unwrap();
     self.data = Some(data);
-    Ok(())
   }
 
-  fn update_data(&mut self, props: &WeatherProps) -> Result<(), std::io::Error> {
+  fn update_data(&mut self, props: &WeatherProps) {
     // No need to fetch data from server if cache time is close enough
-    if let Ok(cache_time) = std::fs::metadata(&self.cache_path)?.modified() {
+    if let Ok(metadata) = std::fs::metadata(&self.cache_path) {
+      let cache_time = metadata.modified().unwrap();
       let time_since_cache = SystemTime::now().duration_since(cache_time).unwrap();
       if time_since_cache < Duration::from_secs(props.update_interval as u64) {
-        self.load_cache()?;
-        return Ok(());
+        self.load_cache();
       }
     }
 
     // Update data from server
     match get_weather(props.openweather_city_id, &props.openweather_api_key) {
       Ok(weather_data) => {
-        let data_file = File::create(&self.cache_path)?;
-        serde_json::to_writer(data_file, &weather_data)?;
+        let data_file = File::create(&self.cache_path).unwrap();
+        serde_json::to_writer(data_file, &weather_data).unwrap();
         self.data = Some(weather_data);
         self.error_str = None;
       }
@@ -102,7 +101,6 @@ impl WeatherWidgetUpdater {
         self.error_str = Some(error.to_string());
       }
     }
-    Ok(())
   }
 
   fn update_components(self: &Self, weather_widget: &WeatherWidget) {
@@ -127,7 +125,8 @@ impl WeatherWidgetUpdater {
   }
 
   fn update(&mut self, props: &WeatherProps, weather_widget: &WeatherWidget) {
-    let timeout = if self.update_data(props).is_ok() {
+    self.update_data(props);
+    let timeout = if self.error_str.is_none() {
       props.update_interval
     } else {
       props.retry_timeout
