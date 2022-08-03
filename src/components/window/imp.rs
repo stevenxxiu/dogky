@@ -47,7 +47,7 @@ impl ObjectImpl for Window {
     match pspec.name() {
       "config-props-str" => {
         let config_props: ConfigProps = serde_json::from_str(value.get().unwrap()).unwrap();
-        WeatherWidgetUpdater::init(&config_props.weather, &self.weather_widget);
+        WeatherWidgetUpdater::init(config_props.weather, &self.weather_widget);
         update_machine_info_widget(&self.machine_info_widget);
       }
       _ => unimplemented!(),

@@ -9,7 +9,7 @@ use serde_derive::{Deserialize, Serialize};
 use crate::components::Window;
 use crate::path::get_xdg_dirs;
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct WeatherProps {
   pub update_interval: u32,
   pub retry_timeout: u32,

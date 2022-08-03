@@ -4,6 +4,7 @@ use gtk::prelude::{GestureExt, ObjectExt, WidgetExt};
 use heck::ToTitleCase;
 use std::fs::File;
 use std::path::PathBuf;
+use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 
 use phf::phf_map;
@@ -26,7 +27,7 @@ static ICON_MAP: phf::Map<&'static str, &'static str> = phf_map! {
   "50" => "🌫",
 };
 
-fn add_click_listener(props: &WeatherProps, weather_widget: &WeatherWidget) {
+fn add_click_listener(props: Arc<WeatherProps>, weather_widget: &WeatherWidget) {
   let gesture = gtk::GestureClick::new();
   gesture.connect_released(glib::clone!(@strong props => move |gesture, _, _, _| {
     gesture.set_state(gtk::EventSequenceState::Claimed);
@@ -37,11 +38,10 @@ fn add_click_listener(props: &WeatherProps, weather_widget: &WeatherWidget) {
   weather_widget.set_cursor_from_name(Option::from("hand"));
 }
 
-#[derive(Clone)]
 pub struct WeatherWidgetUpdater {
-  cache_path: PathBuf,
-  data: Option<WeatherData>,
-  error_str: Option<String>,
+  cache_path: Arc<PathBuf>,
+  data: Arc<Option<WeatherData>>,
+  error_str: Arc<Option<String>>,
 }
 
 fn degrees_to_direction(degrees: f64) -> &'static str {
@@ -62,53 +62,56 @@ fn format_sun_timestamp(timestamp: u64) -> String {
 }
 
 impl WeatherWidgetUpdater {
-  pub fn init(props: &WeatherProps, weather_widget: &WeatherWidget) {
-    add_click_listener(props, weather_widget);
-    let cache_path = get_xdg_dirs().place_cache_file("weather.json").unwrap();
-    let mut updater = WeatherWidgetUpdater {
+  pub fn init(props: WeatherProps, weather_widget: &WeatherWidget) {
+    let props = Arc::new(props);
+    add_click_listener(props.clone(), weather_widget);
+    let cache_path = Arc::new(get_xdg_dirs().place_cache_file("weather.json").unwrap());
+    let updater = WeatherWidgetUpdater {
       cache_path,
-      data: None,
-      error_str: None,
+      data: Arc::new(None),
+      error_str: Arc::new(None),
     };
-    updater.update(props, weather_widget);
+    updater.update(props.clone(), weather_widget);
   }
 
   fn load_cache(&mut self) {
-    let data_file = File::open(&self.cache_path).unwrap();
+    let data_file = File::open(self.cache_path.as_ref()).unwrap();
     let data = serde_json::from_reader(data_file).unwrap();
-    self.data = Some(data);
+    self.data = Arc::new(Some(data));
   }
 
-  fn update_data(&mut self, props: &WeatherProps) {
+  fn update_data(mut self, props: Arc<WeatherProps>) -> Self {
     // No need to fetch data from server if cache time is close enough
-    if let Ok(metadata) = std::fs::metadata(&self.cache_path) {
+    if let Ok(metadata) = std::fs::metadata(self.cache_path.as_ref()) {
       let cache_time = metadata.modified().unwrap();
       let time_since_cache = SystemTime::now().duration_since(cache_time).unwrap();
       if time_since_cache < Duration::from_secs(props.update_interval as u64) {
         self.load_cache();
+        return self;
       }
     }
 
     // Update data from server
     match get_weather(props.openweather_city_id, &props.openweather_api_key) {
       Ok(weather_data) => {
-        let data_file = File::create(&self.cache_path).unwrap();
+        let data_file = File::create(self.cache_path.as_ref()).unwrap();
         serde_json::to_writer(data_file, &weather_data).unwrap();
-        self.data = Some(weather_data);
-        self.error_str = None;
+        self.data = Arc::new(Some(weather_data));
+        self.error_str = Arc::new(None);
       }
       Err(error) => {
-        self.error_str = Some(error.to_string());
+        self.error_str = Arc::new(Some(error.to_string()));
       }
     }
+    self
   }
 
-  fn update_components(self: &Self, weather_widget: &WeatherWidget) {
-    weather_widget.set_property("error", &self.error_str);
+  fn update_components(self, weather_widget: &WeatherWidget) -> Self {
+    weather_widget.set_property("error", self.error_str.as_ref());
     if self.error_str.is_some() {
-      return;
+      return self;
     }
-    let data = self.data.as_ref().unwrap();
+    let data = Option::as_ref(&self.data).unwrap();
     let icon_key: String = data.weather[0].icon.chars().take(2).collect();
     weather_widget.set_property("icon", *ICON_MAP.get(icon_key.as_str()).unwrap());
     weather_widget.set_property("conditions", data.weather[0].description.to_title_case());
@@ -122,20 +125,21 @@ impl WeatherWidgetUpdater {
     weather_widget.set_property("wind", wind);
     weather_widget.set_property("sunrise", format_sun_timestamp(data.sys.sunrise));
     weather_widget.set_property("sunset", format_sun_timestamp(data.sys.sunset));
+    self
   }
 
-  fn update(&mut self, props: &WeatherProps, weather_widget: &WeatherWidget) {
-    self.update_data(props);
-    let timeout = if self.error_str.is_none() {
+  fn update(mut self, props: Arc<WeatherProps>, weather_widget: &WeatherWidget) {
+    self = self.update_data(props.clone());
+    let timeout = if Option::as_ref(&self.error_str).is_none() {
       props.update_interval
     } else {
       props.retry_timeout
     };
-    self.update_components(weather_widget);
+    self = self.update_components(weather_widget);
     glib::source::timeout_add_seconds_local_once(
       timeout,
-      glib::clone!(@strong self as self_, @strong props, @weak weather_widget => move || {
-        self_.clone().update(&props, &weather_widget);
+      glib::clone!(@weak weather_widget => move || {
+        self.update(props, &weather_widget);
       }),
     );
   }

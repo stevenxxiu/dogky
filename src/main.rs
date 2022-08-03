@@ -1,5 +1,5 @@
 use std::process::Command;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use gtk::gdk::Display;
 use gtk::glib;
@@ -60,11 +60,10 @@ fn build_ui(app: &Application, config_props: &ConfigProps) {
 }
 
 fn main() {
-  let config = Config::load().unwrap();
-  let config_ref = Rc::new(config);
+  let config = Arc::new(Config::load().unwrap());
   gio::resources_register_include!("dogky.gresource").unwrap();
   let app = Application::builder().application_id(APP_ID).build();
-  app.connect_startup(glib::clone!(@strong config_ref => move |_| load_css(&config_ref.css_bytes)));
-  app.connect_activate(glib::clone!(@strong config_ref => move |app| build_ui(app, &config_ref.config_props)));
+  app.connect_startup(glib::clone!(@strong config => move |_| load_css(&config.css_bytes)));
+  app.connect_activate(glib::clone!(@strong config => move |app| build_ui(app, &config.config_props)));
   app.run();
 }
