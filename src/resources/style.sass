@@ -8,15 +8,22 @@ window
 separator
   margin: 8px 0
 
+@mixin child-margins
+  > *:not(:first-child)
+    margin-left: 4px
+  > *:not(:last-child)
+    margin-right: 4px
+
 #weather-container
   margin-top: 10px
 
   > *:first-child
     min-height: 30px
 
-  > * > *
-    margin: 0 4px
-    min-height: 20px
+  > *
+    @include child-margins
+    > *
+      min-height: 20px
 
   #weather-icon
     font: 33px Symbola
@@ -35,8 +42,7 @@ separator
     color: #ddd
 
 #machine-info-container
-  > *
-    margin: 0 4px
+  @include child-margins
 
   #machine-info-user
     color: #9cff9f
