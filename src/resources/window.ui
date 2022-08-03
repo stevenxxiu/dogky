@@ -18,6 +18,9 @@
         <child>
           <object class="GtkSeparator" />
         </child>
+        <child>
+          <object class="CpuMemoryWidget" id="cpu_memory_widget" />
+        </child>
       </object>
     </child>
   </template>

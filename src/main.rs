@@ -13,6 +13,7 @@ mod api;
 mod components;
 mod config;
 mod path;
+mod utils;
 
 const APP_ID: &str = "org.dogky";
 

@@ -1,0 +1,121 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.10.2 -->
+<interface>
+  <!-- interface-name dogky -->
+  <requires lib="gtk" version="4.6"/>
+  <template class="CpuMemoryWidget" parent="GtkBox">
+    <property name="hexpand">True</property>
+    <property name="name">cpu-memory-container</property>
+    <property name="orientation">vertical</property>
+    <child>
+      <object class="GtkBox" id="cpu_text_container">
+        <property name="hexpand">True</property>
+        <property name="homogeneous">True</property>
+        <property name="name">machine-info-container</property>
+        <child>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkBox">
+                <property name="hexpand">True</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label">Uptime</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="system_uptime">
+                    <property name="hexpand">True</property>
+                    <property name="name">system-uptime</property>
+                    <property name="xalign">1.0</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="hexpand">True</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label">Processes</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="system_num_processes">
+                    <property name="hexpand">True</property>
+                    <property name="name">system-num-processes</property>
+                    <property name="xalign">1.0</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkBox">
+                <property name="hexpand">True</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label">Frequency</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="cpu_frequency">
+                    <property name="hexpand">True</property>
+                    <property name="name">cpu-frequency</property>
+                    <property name="xalign">1.0</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="hexpand">True</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label">Usage</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="cpu_usage">
+                    <property name="hexpand">True</property>
+                    <property name="name">cpu-usage</property>
+                    <property name="xalign">1.0</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox" id="cpu_model_container">
+        <property name="hexpand">True</property>
+        <property name="name">cpu-model-container</property>
+        <child>
+          <object class="GtkLabel">
+            <property name="label">CPU</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="cpu_model">
+            <property name="name">cpu-model</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="cpu_temperature">
+            <property name="hexpand">True</property>
+            <property name="name">cpu-temperature</property>
+            <property name="xalign">1.0</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>
