@@ -12,6 +12,8 @@ use crate::config::{Config, ConfigProps};
 mod api;
 mod components;
 mod config;
+mod custom_components;
+mod gtk_utils;
 mod path;
 mod utils;
 

@@ -18,8 +18,17 @@ pub struct WeatherProps {
 }
 
 #[derive(Serialize, Deserialize)]
+pub struct CpuBarsProps {
+  pub num_per_row: usize,
+  pub margin: u32,
+  pub width: u32,
+  pub height: u32,
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct CpuMemoryProps {
   pub update_interval: u32,
+  pub cpu_bars: CpuBarsProps,
 }
 
 #[derive(Serialize, Deserialize)]

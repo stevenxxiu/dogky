@@ -22,6 +22,9 @@ pub struct CpuMemoryWidget {
   pub system_uptime: TemplateChild<Label>,
   #[template_child]
   pub system_num_processes: TemplateChild<Label>,
+
+  #[template_child]
+  pub cpu_bars_container: TemplateChild<gtk::Box>,
 }
 
 #[glib::object_subclass]

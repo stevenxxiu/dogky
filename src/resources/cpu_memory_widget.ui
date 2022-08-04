@@ -136,5 +136,12 @@
         </child>
       </object>
     </child>
+    <child>
+      <object class="GtkBox" id="cpu_bars_container">
+        <property name="hexpand">True</property>
+        <property name="name">cpu-bars-container</property>
+        <property name="orientation">vertical</property>
+      </object>
+    </child>
   </template>
 </interface>
