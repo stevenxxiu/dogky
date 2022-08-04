@@ -1,3 +1,4 @@
+use gtk::gdk::RGBA;
 use gtk::glib::{MainContext, Sender, PRIORITY_DEFAULT};
 use gtk::prelude::{BoxExt, Cast, DrawingAreaExt, ObjectExt, WidgetExt};
 use gtk::{glib, DrawingArea, Orientation};
@@ -47,6 +48,8 @@ impl CpuMemoryWidgetUpdater {
   fn create_cpu_bars(num_cpus: usize, props: &CpuBarsProps, cpu_memory_widget: &CpuMemoryWidget) -> Vec<Sender<f32>> {
     let container = CpuMemoryWidgetUpdater::find_cpu_bars_container(cpu_memory_widget);
     let mut row = gtk::Box::new(Orientation::Horizontal, props.margin as i32);
+    let border_color = RGBA::parse(&props.border_color).unwrap();
+    let fill_color = RGBA::parse(&props.fill_color).unwrap();
     let mut senders = vec![];
     for i in 0..num_cpus {
       let bar = DrawingArea::new();
@@ -55,7 +58,7 @@ impl CpuMemoryWidgetUpdater {
       row.append(&bar);
 
       let (sender, receiver) = MainContext::channel(PRIORITY_DEFAULT);
-      crate::custom_components::build_bar(bar, receiver);
+      crate::custom_components::build_bar(bar, receiver, &border_color, &fill_color);
       senders.push(sender);
 
       if ((i + 1) % props.num_per_row == 0) || i == num_cpus - 1 {

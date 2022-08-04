@@ -23,6 +23,8 @@ pub struct CpuBarsProps {
   pub margin: u32,
   pub width: u32,
   pub height: u32,
+  pub border_color: String,
+  pub fill_color: String,
 }
 
 #[derive(Serialize, Deserialize)]
