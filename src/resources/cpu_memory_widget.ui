@@ -8,7 +8,83 @@
     <property name="name">cpu-memory-container</property>
     <property name="orientation">vertical</property>
     <child>
+      <object class="GtkBox" id="cpu_model_container">
+        <property name="hexpand">True</property>
+        <property name="name">cpu-model-container</property>
+        <child>
+          <object class="GtkLabel">
+            <property name="label">CPU</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="cpu_model">
+            <property name="name">cpu-model</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="cpu_temperature">
+            <property name="hexpand">True</property>
+            <property name="name">cpu-temperature</property>
+            <property name="xalign">1.0</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
       <object class="GtkBox" id="cpu_text_container">
+        <property name="hexpand">True</property>
+        <property name="homogeneous">True</property>
+        <property name="name">machine-info-container</property>
+        <child>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkBox">
+                <property name="hexpand">True</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label">Frequency</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="cpu_frequency">
+                    <property name="hexpand">True</property>
+                    <property name="name">cpu-frequency</property>
+                    <property name="xalign">1.0</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkBox">
+                <property name="hexpand">True</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label">Usage</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="cpu_usage">
+                    <property name="hexpand">True</property>
+                    <property name="name">cpu-usage</property>
+                    <property name="xalign">1.0</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox" id="system_text_container">
         <property name="hexpand">True</property>
         <property name="homogeneous">True</property>
         <property name="name">machine-info-container</property>
@@ -33,6 +109,12 @@
                 </child>
               </object>
             </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <property name="orientation">vertical</property>
             <child>
               <object class="GtkBox">
                 <property name="hexpand">True</property>
@@ -50,69 +132,6 @@
                 </child>
               </object>
             </child>
-          </object>
-        </child>
-        <child>
-          <object class="GtkBox">
-            <property name="hexpand">True</property>
-            <property name="orientation">vertical</property>
-            <child>
-              <object class="GtkBox">
-                <property name="hexpand">True</property>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="label">Frequency</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="cpu_frequency">
-                    <property name="hexpand">True</property>
-                    <property name="name">cpu-frequency</property>
-                    <property name="xalign">1.0</property>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkBox">
-                <property name="hexpand">True</property>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="label">Usage</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="cpu_usage">
-                    <property name="hexpand">True</property>
-                    <property name="name">cpu-usage</property>
-                    <property name="xalign">1.0</property>
-                  </object>
-                </child>
-              </object>
-            </child>
-          </object>
-        </child>
-      </object>
-    </child>
-    <child>
-      <object class="GtkBox" id="cpu_model_container">
-        <property name="hexpand">True</property>
-        <property name="name">cpu-model-container</property>
-        <child>
-          <object class="GtkLabel">
-            <property name="label">CPU</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkLabel" id="cpu_model">
-            <property name="name">cpu-model</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkLabel" id="cpu_temperature">
-            <property name="hexpand">True</property>
-            <property name="name">cpu-temperature</property>
-            <property name="xalign">1.0</property>
           </object>
         </child>
       </object>

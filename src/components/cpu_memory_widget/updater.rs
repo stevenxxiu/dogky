@@ -75,10 +75,10 @@ impl CpuMemoryWidgetUpdater {
   }
 
   fn update(mut self, props: Arc<CpuMemoryProps>, cpu_memory_widget: &CpuMemoryWidget) {
-    let self_mut = Arc::get_mut(&mut self.sysinfo_system).unwrap();
-    CpuMemoryWidgetUpdater::update_cpu(self_mut, cpu_memory_widget);
-    CpuMemoryWidgetUpdater::update_system(self_mut, cpu_memory_widget);
-    CpuMemoryWidgetUpdater::update_processes(self_mut, cpu_memory_widget);
+    let system_mut = Arc::get_mut(&mut self.sysinfo_system).unwrap();
+    CpuMemoryWidgetUpdater::update_cpu(system_mut, cpu_memory_widget);
+    CpuMemoryWidgetUpdater::update_system(system_mut, cpu_memory_widget);
+    CpuMemoryWidgetUpdater::update_processes(system_mut, cpu_memory_widget);
     glib::source::timeout_add_seconds_local_once(
       props.update_interval,
       glib::clone!(@strong cpu_memory_widget => move || {

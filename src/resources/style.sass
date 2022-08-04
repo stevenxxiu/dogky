@@ -60,11 +60,14 @@ separator
     color: #d9d900
 
 #cpu-memory-container
-  #cpu-frequency, #cpu-usage, #system-uptime, #system-num-processes
-    color: #ddd
-
   #cpu-model-container
     @include child-margins
 
     #cpu-model, #cpu-temperature
       color: #ddd
+
+  #cpu-frequency, #cpu-usage
+    color: #ddd
+
+  #system-uptime, #system-num-processes
+    color: #ddd
