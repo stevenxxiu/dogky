@@ -15,18 +15,8 @@ pub fn build_bar(drawing_area: DrawingArea, receiver: Receiver<f32>, border_colo
     gtk_utils::get_drawing_area_inner_dims(&drawing_area, BORDER_WIDTH);
   let filled_amount = Arc::new(Cell::new(0f32));
 
-  let [bord_r, bord_g, bord_b, bord_a] = [
-    border_color.red() as f64,
-    border_color.green() as f64,
-    border_color.blue() as f64,
-    border_color.alpha() as f64,
-  ];
-  let [fill_r, fill_g, fill_b, fill_a] = [
-    fill_color.red() as f64,
-    fill_color.green() as f64,
-    fill_color.blue() as f64,
-    fill_color.alpha() as f64,
-  ];
+  let [bord_r, bord_g, bord_b, bord_a] = gtk_utils::get_color_components(border_color);
+  let [fill_r, fill_g, fill_b, fill_a] = gtk_utils::get_color_components(fill_color);
 
   let filled_amount_ = filled_amount.clone();
   drawing_area.set_draw_func(

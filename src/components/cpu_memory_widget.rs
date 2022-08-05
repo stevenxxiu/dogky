@@ -8,13 +8,16 @@ use sysinfo::{
   ComponentExt, CpuExt, CpuRefreshKind, ProcessExt, ProcessRefreshKind, ProcessStatus, RefreshKind, System, SystemExt,
 };
 
-use crate::config::{CpuBarsProps, CpuMemoryProps};
+use crate::config::{CpuBarsProps, CpuMemoryGraphContainerProps, CpuMemoryProps};
+use crate::custom_components::build_graph;
 use crate::gtk_utils::set_label;
 use crate::utils;
 
 pub struct CpuMemoryWidget {
   sysinfo_system: Arc<System>,
   cpu_bar_senders: Vec<Sender<f32>>,
+  cpu_graph_sender: Sender<f32>,
+  memory_graph_sender: Sender<f32>,
 }
 
 const CPU_MODEL_REMOVE: &[&str] = &["(R)", "(TM)"];
@@ -29,14 +32,20 @@ impl CpuMemoryWidget {
       .with_cpu(CpuRefreshKind::new().with_frequency().with_cpu_usage())
       .with_memory()
       .with_components_list();
-    let sysinfo_system = Arc::new(System::new_with_specifics(refresh_kind));
+    let sysinfo_system = System::new_with_specifics(refresh_kind);
+
     let num_cpus = sysinfo_system.cpus().len();
     let cpu_bar_senders = CpuMemoryWidget::build_cpu_bars(num_cpus, &props.cpu_bars, &builder);
+    let [cpu_graph_sender, memory_graph_sender] =
+      CpuMemoryWidget::build_graphs(&sysinfo_system, &props.graphs, &builder);
+    CpuMemoryWidget::update_static_props(&sysinfo_system, &builder);
+
     let updater = CpuMemoryWidget {
-      sysinfo_system,
+      sysinfo_system: Arc::new(sysinfo_system),
       cpu_bar_senders,
+      cpu_graph_sender,
+      memory_graph_sender,
     };
-    updater.update_static_props(&builder);
     updater.update(props, &builder);
     container
   }
@@ -65,15 +74,45 @@ impl CpuMemoryWidget {
     senders
   }
 
-  fn update_static_props(&self, builder: &Builder) {
-    let mut cpu_model = self.sysinfo_system.global_cpu_info().brand().to_string();
+  fn build_graphs(
+    sysinfo_system: &System,
+    props: &CpuMemoryGraphContainerProps,
+    builder: &Builder,
+  ) -> [Sender<f32>; 2] {
+    let container = builder.object::<gtk::Box>("cpu_memory_graph_container").unwrap();
+    container.set_spacing(props.margin as i32);
+    [
+      (&props.cpu, 100f32),
+      (&props.memory, sysinfo_system.total_memory() as f32),
+    ]
+    .map(|(graph_props, max_value)| {
+      let graph = DrawingArea::new();
+      graph.set_content_width(props.width as i32);
+      graph.set_content_height(props.height as i32);
+      container.append(&graph);
+
+      let border_color = RGBA::parse(&graph_props.border_color).unwrap();
+      let fill_color = RGBA::parse(&graph_props.fill_color).unwrap();
+      let (sender, receiver) = MainContext::channel(PRIORITY_DEFAULT);
+      build_graph(graph, receiver, max_value, &border_color, &fill_color);
+      sender
+    })
+  }
+
+  fn update_static_props(sysinfo_system: &System, builder: &Builder) {
+    let mut cpu_model = sysinfo_system.global_cpu_info().brand().to_string();
     for &s in CPU_MODEL_REMOVE {
       cpu_model = cpu_model.replace(s, "");
     }
     set_label(builder, "cpu_model", &cpu_model);
   }
 
-  fn update_cpu(system: &mut System, builder: &Builder, cpu_bar_senders: &Vec<Sender<f32>>) {
+  fn update_cpu(
+    system: &mut System,
+    builder: &Builder,
+    cpu_bar_senders: &Vec<Sender<f32>>,
+    cpu_graph_sender: &Sender<f32>,
+  ) {
     system.refresh_cpu_specifics(CpuRefreshKind::new().with_frequency().with_cpu_usage());
     system.refresh_components_list(); // Includes the CPU temperature
 
@@ -92,6 +131,12 @@ impl CpuMemoryWidget {
     set_label(builder, "cpu_usage", &format!("{:.1}%", cpu_usage));
 
     zip(system.cpus(), cpu_bar_senders).for_each(|(cpu, sender)| sender.send(cpu.cpu_usage() / 100f32).unwrap());
+    cpu_graph_sender.send(system.global_cpu_info().cpu_usage()).unwrap();
+  }
+
+  fn update_memory(system: &mut System, memory_graph_sender: &Sender<f32>) {
+    system.refresh_memory();
+    memory_graph_sender.send(system.used_memory() as f32).unwrap();
   }
 
   fn update_system(system: &System, builder: &Builder) {
@@ -113,7 +158,8 @@ impl CpuMemoryWidget {
 
   fn update(mut self, props: Arc<CpuMemoryProps>, builder: &Builder) {
     let system_mut = Arc::get_mut(&mut self.sysinfo_system).unwrap();
-    CpuMemoryWidget::update_cpu(system_mut, builder, &self.cpu_bar_senders);
+    CpuMemoryWidget::update_cpu(system_mut, builder, &self.cpu_bar_senders, &self.cpu_graph_sender);
+    CpuMemoryWidget::update_memory(system_mut, &self.memory_graph_sender);
     CpuMemoryWidget::update_system(system_mut, builder);
     CpuMemoryWidget::update_processes(system_mut, builder);
     glib::source::timeout_add_seconds_local_once(

@@ -1,10 +1,20 @@
 use gtk::cairo::Context;
+use gtk::gdk::RGBA;
 use gtk::prelude::DrawingAreaExt;
 use gtk::DrawingArea;
 use gtk::{Builder, Label};
 
 pub fn set_label(builder: &Builder, label_id: &str, value: &str) {
   builder.object::<Label>(label_id).unwrap().set_label(value);
+}
+
+pub fn get_color_components(color: &RGBA) -> [f64; 4] {
+  [
+    color.red() as f64,
+    color.green() as f64,
+    color.blue() as f64,
+    color.alpha() as f64,
+  ]
 }
 
 pub fn get_drawing_area_inner_dims(drawing_area: &DrawingArea, border_width: u32) -> (i32, i32, i32, i32, i32, i32) {

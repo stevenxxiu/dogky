@@ -28,9 +28,25 @@ pub struct CpuBarsProps {
 }
 
 #[derive(Clone, Deserialize)]
+pub struct CpuMemoryGraphProps {
+  pub border_color: String,
+  pub fill_color: String,
+}
+
+#[derive(Clone, Deserialize)]
+pub struct CpuMemoryGraphContainerProps {
+  pub margin: u32,
+  pub width: u32,
+  pub height: u32,
+  pub cpu: CpuMemoryGraphProps,
+  pub memory: CpuMemoryGraphProps,
+}
+
+#[derive(Clone, Deserialize)]
 pub struct CpuMemoryProps {
   pub update_interval: u32,
   pub cpu_bars: CpuBarsProps,
+  pub graphs: CpuMemoryGraphContainerProps,
 }
 
 #[derive(Clone, Deserialize)]

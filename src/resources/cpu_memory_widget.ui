@@ -143,5 +143,11 @@
         <property name="orientation">vertical</property>
       </object>
     </child>
+    <child>
+      <object class="GtkBox" id="cpu_memory_graph_container">
+        <property name="hexpand">True</property>
+        <property name="name">cpu-memory-graph-container</property>
+      </object>
+    </child>
   </object>
 </interface>
