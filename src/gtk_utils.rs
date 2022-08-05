@@ -1,6 +1,11 @@
 use gtk::cairo::Context;
 use gtk::prelude::DrawingAreaExt;
 use gtk::DrawingArea;
+use gtk::{Builder, Label};
+
+pub fn set_label(builder: &Builder, label_id: &str, value: &str) {
+  builder.object::<Label>(label_id).unwrap().set_label(value);
+}
 
 pub fn get_drawing_area_inner_dims(drawing_area: &DrawingArea, border_width: u32) -> (i32, i32, i32, i32, i32, i32) {
   let min_x = border_width as i32;

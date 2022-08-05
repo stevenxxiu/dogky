@@ -2,11 +2,11 @@ use std::process::Command;
 use std::sync::Arc;
 
 use gtk::gdk::Display;
-use gtk::glib;
-use gtk::prelude::{ApplicationExt, ApplicationExtManual, GtkWindowExt, WidgetExt};
+use gtk::prelude::{ApplicationExt, ApplicationExtManual, GtkApplicationExt, GtkWindowExt, WidgetExt};
 use gtk::{gio, Application, CssProvider, StyleContext};
+use gtk::{glib, Window};
 
-use crate::components::Window;
+use crate::components::build_window;
 use crate::config::{Config, ConfigProps};
 
 mod api;
@@ -57,7 +57,8 @@ fn move_window(app: &Application, window: &Window, config_props: &ConfigProps) {
 }
 
 fn build_ui(app: &Application, config_props: &ConfigProps) {
-  let window = Window::new(app, config_props);
+  let window = build_window(config_props);
+  app.add_window(&window);
   window.present();
   move_window(app, &window, config_props);
 }

@@ -3,7 +3,7 @@
 <interface>
   <!-- interface-name dogky -->
   <requires lib="gtk" version="4.6"/>
-  <template class="WeatherWidget" parent="GtkBox">
+  <object class="GtkBox" id="weather_widget">
     <property name="name">weather-container</property>
     <property name="orientation">vertical</property>
     <child>
@@ -95,5 +95,5 @@
         </child>
       </object>
     </child>
-  </template>
+  </object>
 </interface>

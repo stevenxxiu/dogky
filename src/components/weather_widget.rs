@@ -1,6 +1,6 @@
 use chrono::NaiveDateTime;
-use gtk::glib;
-use gtk::prelude::{GestureExt, ObjectExt, WidgetExt};
+use gtk::prelude::{GestureExt, WidgetExt};
+use gtk::{glib, Builder};
 use heck::ToTitleCase;
 use std::fs::File;
 use std::path::PathBuf;
@@ -10,8 +10,8 @@ use std::time::{Duration, SystemTime};
 use phf::phf_map;
 
 use crate::api::{get_weather, WeatherData};
-use crate::components::WeatherWidget;
 use crate::config::WeatherProps;
+use crate::gtk_utils::set_label;
 use crate::path::get_xdg_dirs;
 
 // Unicode weather symbols to use
@@ -27,18 +27,18 @@ static ICON_MAP: phf::Map<&'static str, &'static str> = phf_map! {
   "50" => "🌫",
 };
 
-fn add_click_listener(props: Arc<WeatherProps>, weather_widget: &WeatherWidget) {
+fn add_click_listener(props: Arc<WeatherProps>, container: &gtk::Box) {
   let gesture = gtk::GestureClick::new();
   gesture.connect_released(glib::clone!(@strong props => move |gesture, _, _, _| {
     gesture.set_state(gtk::EventSequenceState::Claimed);
     // Open weather forecast link
     open::that(format!("https://openweathermap.org/city/{0}#weather-widget", props.openweather_city_id)).unwrap();
   }));
-  weather_widget.add_controller(&gesture);
-  weather_widget.set_cursor_from_name(Option::from("hand"));
+  container.add_controller(&gesture);
+  container.set_cursor_from_name(Option::from("hand"));
 }
 
-pub struct WeatherWidgetUpdater {
+pub struct WeatherWidget {
   cache_path: Arc<PathBuf>,
   data: Arc<Option<WeatherData>>,
   error_str: Arc<Option<String>>,
@@ -61,17 +61,21 @@ fn format_sun_timestamp(timestamp: u64) -> String {
   naive.format("%l:%M %p").to_string()
 }
 
-impl WeatherWidgetUpdater {
-  pub fn init(props: WeatherProps, weather_widget: &WeatherWidget) {
+impl WeatherWidget {
+  pub fn build(props: WeatherProps) -> gtk::Box {
+    let builder = Builder::from_resource("/org/dogky/weather_widget.ui");
+    let container: gtk::Box = builder.object("weather_widget").unwrap();
+
     let props = Arc::new(props);
-    add_click_listener(props.clone(), weather_widget);
     let cache_path = Arc::new(get_xdg_dirs().place_cache_file("weather.json").unwrap());
-    let updater = WeatherWidgetUpdater {
+    let updater = WeatherWidget {
       cache_path,
       data: Arc::new(None),
       error_str: Arc::new(None),
     };
-    updater.update(props.clone(), weather_widget);
+    updater.update(props.clone(), &builder);
+    add_click_listener(props.clone(), &container);
+    container
   }
 
   fn load_cache(&mut self) {
@@ -106,40 +110,45 @@ impl WeatherWidgetUpdater {
     self
   }
 
-  fn update_components(self, weather_widget: &WeatherWidget) -> Self {
-    weather_widget.set_property("error", self.error_str.as_ref());
-    if self.error_str.is_some() {
-      return self;
+  fn update_components(self, builder: &Builder) -> Self {
+    let error_container: gtk::Box = builder.object("error_container").unwrap();
+    match Option::as_ref(&self.error_str) {
+      Some(error_text) => {
+        error_container.set_visible(true);
+        set_label(builder, "error", &error_text);
+        return self;
+      }
+      None => error_container.set_visible(false),
     }
     let data = Option::as_ref(&self.data).unwrap();
     let icon_key: String = data.weather[0].icon.chars().take(2).collect();
-    weather_widget.set_property("icon", *ICON_MAP.get(icon_key.as_str()).unwrap());
-    weather_widget.set_property("conditions", data.weather[0].description.to_title_case());
-    weather_widget.set_property("temperature", format!("{}°C", data.main.temp.round()));
-    weather_widget.set_property("humidity", format!("{}%", data.main.humidity));
+    set_label(builder, "icon", *ICON_MAP.get(icon_key.as_str()).unwrap());
+    set_label(builder, "conditions", &data.weather[0].description.to_title_case());
+    set_label(builder, "temperature", &format!("{}°C", data.main.temp.round()));
+    set_label(builder, "humidity", &format!("{}%", data.main.humidity));
     let wind = format!(
       "{} kph {}",
       data.wind.speed.round(),
       degrees_to_direction(data.wind.deg)
     );
-    weather_widget.set_property("wind", wind);
-    weather_widget.set_property("sunrise", format_sun_timestamp(data.sys.sunrise));
-    weather_widget.set_property("sunset", format_sun_timestamp(data.sys.sunset));
+    set_label(builder, "wind", &wind);
+    set_label(builder, "sunrise", &format_sun_timestamp(data.sys.sunrise));
+    set_label(builder, "sunset", &format_sun_timestamp(data.sys.sunset));
     self
   }
 
-  fn update(mut self, props: Arc<WeatherProps>, weather_widget: &WeatherWidget) {
+  fn update(mut self, props: Arc<WeatherProps>, builder: &Builder) {
     self = self.update_data(props.clone());
     let timeout = if Option::as_ref(&self.error_str).is_none() {
       props.update_interval
     } else {
       props.retry_timeout
     };
-    self = self.update_components(weather_widget);
+    self = self.update_components(builder);
     glib::source::timeout_add_seconds_local_once(
       timeout,
-      glib::clone!(@weak weather_widget => move || {
-        self.update(props, &weather_widget);
+      glib::clone!(@weak builder => move || {
+        self.update(props, &builder);
       }),
     );
   }

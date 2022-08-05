@@ -4,12 +4,12 @@ use std::error::Error;
 use std::fs::File;
 
 use gtk::prelude::{DisplayExt, MonitorExt, NativeExt, WidgetExt};
-use serde_derive::{Deserialize, Serialize};
+use gtk::Window;
+use serde_derive::Deserialize;
 
-use crate::components::Window;
 use crate::path::get_xdg_dirs;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Deserialize)]
 pub struct WeatherProps {
   pub update_interval: u32,
   pub retry_timeout: u32,
@@ -17,7 +17,7 @@ pub struct WeatherProps {
   pub openweather_city_id: u64,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Deserialize)]
 pub struct CpuBarsProps {
   pub num_per_row: usize,
   pub margin: u32,
@@ -27,13 +27,13 @@ pub struct CpuBarsProps {
   pub fill_color: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Deserialize)]
 pub struct CpuMemoryProps {
   pub update_interval: u32,
   pub cpu_bars: CpuBarsProps,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Deserialize)]
 pub struct ConfigProps {
   pub width: u32,
   pub weather: WeatherProps,
