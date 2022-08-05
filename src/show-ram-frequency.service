@@ -1,0 +1,11 @@
+[Unit]
+Description=Show RAM Frequency
+
+[Service]
+Type=oneshot
+ExecStart=lshw -short -class memory
+StandardOutput=file:/run/lshw-memory.txt
+RemainAfterExit=no
+
+[Install]
+WantedBy=multi-user.target

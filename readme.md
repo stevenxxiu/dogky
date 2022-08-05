@@ -11,6 +11,11 @@ This project exists to:
 
 This project isn't meant to be as configurable as *Conky*. Only colors are configurable, in case of changes of desktop background.
 
+# Usage
+Copy `src/show-ram-frequency.service` to `/etc/systemd/system/show-ram-frequency.service`. Enable it:
+
+    $ systemctl enable show-ram-frequency.service
+
 # Development Setup
 To set up the project for development, run:
 

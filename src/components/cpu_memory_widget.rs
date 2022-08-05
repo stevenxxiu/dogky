@@ -2,6 +2,8 @@ use gtk::gdk::RGBA;
 use gtk::glib::{MainContext, Sender, PRIORITY_DEFAULT};
 use gtk::prelude::{BoxExt, DrawingAreaExt};
 use gtk::{glib, Builder, DrawingArea, Orientation};
+use humansize::FileSize;
+use regex::Regex;
 use std::iter::zip;
 use std::sync::Arc;
 use sysinfo::{
@@ -12,6 +14,7 @@ use crate::config::{CpuBarsProps, CpuMemoryGraphContainerProps, CpuMemoryProps};
 use crate::custom_components::build_graph;
 use crate::gtk_utils::set_label;
 use crate::utils;
+use crate::utils::FILE_SIZE_OPTS;
 
 pub struct CpuMemoryWidget {
   sysinfo_system: Arc<System>,
@@ -105,6 +108,11 @@ impl CpuMemoryWidget {
       cpu_model = cpu_model.replace(s, "");
     }
     set_label(builder, "cpu_model", &cpu_model);
+
+    let lshw_output = std::fs::read_to_string("/run/lshw-memory.txt").unwrap();
+    let lshw_regex = Regex::new(r"\d+ MHz").unwrap();
+    let memory_frequency = lshw_regex.find(&lshw_output).into_iter().next().unwrap().as_str();
+    set_label(builder, "memory_frequency", memory_frequency);
   }
 
   fn update_cpu(
@@ -134,8 +142,19 @@ impl CpuMemoryWidget {
     cpu_graph_sender.send(system.global_cpu_info().cpu_usage()).unwrap();
   }
 
-  fn update_memory(system: &mut System, memory_graph_sender: &Sender<f32>) {
+  fn update_memory(system: &mut System, builder: &Builder, memory_graph_sender: &Sender<f32>) {
     system.refresh_memory();
+
+    let used_memory = system.used_memory() * 1024;
+    let total_memory = system.total_memory() * 1024;
+    let memory_usage_str = format!(
+      "{: >8}/{: >8} = {: >3.0}%",
+      used_memory.file_size(FILE_SIZE_OPTS).unwrap(),
+      total_memory.file_size(FILE_SIZE_OPTS).unwrap(),
+      (used_memory as f32) / (total_memory as f32) * 100.0
+    );
+    set_label(builder, "memory_usage", &memory_usage_str);
+
     memory_graph_sender.send(system.used_memory() as f32).unwrap();
   }
 
@@ -159,7 +178,7 @@ impl CpuMemoryWidget {
   fn update(mut self, props: Arc<CpuMemoryProps>, builder: &Builder) {
     let system_mut = Arc::get_mut(&mut self.sysinfo_system).unwrap();
     CpuMemoryWidget::update_cpu(system_mut, builder, &self.cpu_bar_senders, &self.cpu_graph_sender);
-    CpuMemoryWidget::update_memory(system_mut, &self.memory_graph_sender);
+    CpuMemoryWidget::update_memory(system_mut, builder, &self.memory_graph_sender);
     CpuMemoryWidget::update_system(system_mut, builder);
     CpuMemoryWidget::update_processes(system_mut, builder);
     glib::source::timeout_add_seconds_local_once(

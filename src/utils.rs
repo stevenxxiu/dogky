@@ -1,3 +1,17 @@
+use humansize::file_size_opts::{FileSizeOpts, FixedAt, Kilo};
+
+pub const FILE_SIZE_OPTS: FileSizeOpts = FileSizeOpts {
+  divider: Kilo::Binary,
+  units: Kilo::Binary,
+  decimal_places: 1,
+  decimal_zeroes: 1,
+  fixed_at: FixedAt::No,
+  long_units: false,
+  space: true,
+  suffix: "",
+  allow_negative: false,
+};
+
 pub fn div_rem(a: u64, b: u64) -> (u64, u64) {
   (a / b, a % b)
 }
