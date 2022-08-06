@@ -8,6 +8,10 @@ window
 separator
   margin: 8px 0
 
+@mixin default-line-height
+  // For Unicode characters that exceed the usual line height
+  line-height: 19px
+
 @mixin child-margins
   > *:not(:first-child)
     margin-left: 4px
@@ -27,7 +31,6 @@ separator
 
   #weather-icon
     font: 33px Symbola
-    line-height: 16px
 
   #weather-temperature
     color: #ddd
@@ -36,9 +39,11 @@ separator
     color: #ddd
 
   #weather-sunrise-icon, #weather-sunset-icon
+    @include default-line-height
     font-family: Symbola
 
   #weather-sunrise, #weather-sunset
+    @include default-line-height
     color: #ddd
 
 #machine-info-container
@@ -89,8 +94,8 @@ separator
       color: #bbb
 
     #process-header-cpu-sort, #process-header-memory-sort
+      @include default-line-height
       font-family: Symbola
-      line-height: 19px
 
     #process-header-cpu-sort
       color: #777
