@@ -26,7 +26,7 @@ pub struct CpuMemoryWidget {
 const CPU_MODEL_REMOVE: &[&str] = &["(R)", "(TM)"];
 
 impl CpuMemoryWidget {
-  pub fn build(props: CpuMemoryProps) -> gtk::Box {
+  pub fn build(props: CpuMemoryProps, container_width: u32) -> gtk::Box {
     let builder = Builder::from_resource("/org/dogky/cpu_memory_widget.ui");
     let container: gtk::Box = builder.object("cpu_memory_widget").unwrap();
 
@@ -38,9 +38,9 @@ impl CpuMemoryWidget {
     let sysinfo_system = System::new_with_specifics(refresh_kind);
 
     let num_cpus = sysinfo_system.cpus().len();
-    let cpu_bar_senders = CpuMemoryWidget::build_cpu_bars(num_cpus, &props.cpu_bars, &builder);
+    let cpu_bar_senders = CpuMemoryWidget::build_cpu_bars(num_cpus, &props.cpu_bars, container_width, &builder);
     let [cpu_graph_sender, memory_graph_sender] =
-      CpuMemoryWidget::build_graphs(&sysinfo_system, &props.graphs, &builder);
+      CpuMemoryWidget::build_graphs(&sysinfo_system, &props.graphs, container_width, &builder);
     CpuMemoryWidget::update_static_props(&sysinfo_system, &builder);
 
     let updater = CpuMemoryWidget {
@@ -53,9 +53,15 @@ impl CpuMemoryWidget {
     container
   }
 
-  fn build_cpu_bars(num_cpus: usize, props: &CpuBarsProps, builder: &Builder) -> Vec<Sender<f32>> {
+  fn build_cpu_bars(
+    num_cpus: usize,
+    props: &CpuBarsProps,
+    container_width: u32,
+    builder: &Builder,
+  ) -> Vec<Sender<f32>> {
     let container = builder.object::<gtk::Box>("cpu_bars_container").unwrap();
-    let mut row = gtk::Box::new(Orientation::Horizontal, props.margin as i32);
+    let margin = (container_width - props.num_per_row as u32 * props.width) / (props.num_per_row as u32 - 1);
+    let mut row = gtk::Box::new(Orientation::Horizontal, margin as i32);
     let border_color = RGBA::parse(&props.border_color).unwrap();
     let fill_color = RGBA::parse(&props.fill_color).unwrap();
     let mut senders = vec![];
@@ -71,7 +77,7 @@ impl CpuMemoryWidget {
 
       if ((i + 1) % props.num_per_row == 0) || i == num_cpus - 1 {
         container.append(&row);
-        row = gtk::Box::new(Orientation::Horizontal, props.margin as i32);
+        row = gtk::Box::new(Orientation::Horizontal, margin as i32);
       }
     }
     senders
@@ -80,15 +86,17 @@ impl CpuMemoryWidget {
   fn build_graphs(
     sysinfo_system: &System,
     props: &CpuMemoryGraphContainerProps,
+    container_width: u32,
     builder: &Builder,
   ) -> [Sender<f32>; 2] {
     let container = builder.object::<gtk::Box>("cpu_memory_graph_container").unwrap();
-    container.set_spacing(props.margin as i32);
-    [
+    let graph_specs = [
       (&props.cpu, 100f32),
       (&props.memory, sysinfo_system.total_memory() as f32),
-    ]
-    .map(|(graph_props, max_value)| {
+    ];
+    let margin = (container_width - graph_specs.len() as u32 * props.width) / (graph_specs.len() as u32 - 1);
+    container.set_spacing(margin as i32);
+    graph_specs.map(|(graph_props, max_value)| {
       let graph = DrawingArea::new();
       graph.set_content_width(props.width as i32);
       graph.set_content_height(props.height as i32);

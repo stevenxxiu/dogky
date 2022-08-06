@@ -20,7 +20,6 @@ pub struct WeatherProps {
 #[derive(Clone, Deserialize)]
 pub struct CpuBarsProps {
   pub num_per_row: usize,
-  pub margin: u32,
   pub width: u32,
   pub height: u32,
   pub border_color: String,
@@ -35,7 +34,6 @@ pub struct CpuMemoryGraphProps {
 
 #[derive(Clone, Deserialize)]
 pub struct CpuMemoryGraphContainerProps {
-  pub margin: u32,
   pub width: u32,
   pub height: u32,
   pub cpu: CpuMemoryGraphProps,
