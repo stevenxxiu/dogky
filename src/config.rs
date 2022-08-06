@@ -41,10 +41,19 @@ pub struct CpuMemoryGraphContainerProps {
 }
 
 #[derive(Clone, Deserialize)]
+pub struct CpuMemoryProcessListProps {
+  pub num_processes: usize,
+  pub pid_width: usize,
+  pub cpu_width: usize,
+  pub memory_width: usize,
+}
+
+#[derive(Clone, Deserialize)]
 pub struct CpuMemoryProps {
   pub update_interval: u32,
   pub cpu_bars: CpuBarsProps,
   pub graphs: CpuMemoryGraphContainerProps,
+  pub process_list: CpuMemoryProcessListProps,
 }
 
 #[derive(Clone, Deserialize)]

@@ -1,16 +1,19 @@
 use gtk::gdk::RGBA;
 use gtk::glib::{MainContext, Sender, PRIORITY_DEFAULT};
-use gtk::prelude::{BoxExt, DrawingAreaExt};
-use gtk::{glib, Builder, DrawingArea, Orientation};
+use gtk::pango::EllipsizeMode;
+use gtk::prelude::{BoxExt, DrawingAreaExt, WidgetExt};
+use gtk::{glib, Builder, DrawingArea, Label, Orientation};
 use humansize::FileSize;
 use regex::Regex;
+use std::collections::HashMap;
 use std::iter::zip;
 use std::sync::Arc;
 use sysinfo::{
-  ComponentExt, CpuExt, CpuRefreshKind, ProcessExt, ProcessRefreshKind, ProcessStatus, RefreshKind, System, SystemExt,
+  ComponentExt, CpuExt, CpuRefreshKind, Process, ProcessExt, ProcessRefreshKind, ProcessStatus, RefreshKind, System,
+  SystemExt,
 };
 
-use crate::config::{CpuBarsProps, CpuMemoryGraphContainerProps, CpuMemoryProps};
+use crate::config::{CpuBarsProps, CpuMemoryGraphContainerProps, CpuMemoryProcessListProps, CpuMemoryProps};
 use crate::custom_components::build_graph;
 use crate::gtk_utils::set_label;
 use crate::utils;
@@ -21,6 +24,7 @@ pub struct CpuMemoryWidget {
   cpu_bar_senders: Vec<Sender<f32>>,
   cpu_graph_sender: Sender<f32>,
   memory_graph_sender: Sender<f32>,
+  grouped_process_labels: HashMap<&'static str, HashMap<&'static str, Vec<Label>>>,
 }
 
 const CPU_MODEL_REMOVE: &[&str] = &["(R)", "(TM)"];
@@ -42,12 +46,14 @@ impl CpuMemoryWidget {
     let [cpu_graph_sender, memory_graph_sender] =
       CpuMemoryWidget::build_graphs(&sysinfo_system, &props.graphs, container_width, &builder);
     CpuMemoryWidget::update_static_props(&sysinfo_system, &builder);
+    let grouped_process_labels = CpuMemoryWidget::build_process_list(&props.process_list, &builder);
 
     let updater = CpuMemoryWidget {
       sysinfo_system: Arc::new(sysinfo_system),
       cpu_bar_senders,
       cpu_graph_sender,
       memory_graph_sender,
+      grouped_process_labels,
     };
     updater.update(props, &builder);
     container
@@ -110,6 +116,48 @@ impl CpuMemoryWidget {
     })
   }
 
+  fn build_process_list(
+    props: &CpuMemoryProcessListProps,
+    builder: &Builder,
+  ) -> HashMap<&'static str, HashMap<&'static str, Vec<Label>>> {
+    let [pid_container, cpu_container, memory_container] = [
+      "process_pid_container",
+      "process_cpu_container",
+      "process_memory_container",
+    ]
+    .map(|name| builder.object::<gtk::Box>(name).unwrap());
+    pid_container.set_width_request(props.pid_width as i32);
+    cpu_container.set_width_request(props.cpu_width as i32);
+    memory_container.set_width_request(props.memory_width as i32);
+
+    let mut grouped_process_labels = HashMap::new();
+    for sort_by in ["cpu", "memory"] {
+      let mut process_labels = HashMap::new();
+      for column in ["command", "pid", "cpu", "memory"] {
+        let container = builder
+          .object::<gtk::Box>(&format!("sort_by_{}_{}_container", sort_by, column))
+          .unwrap();
+        let column_labels = (0..props.num_processes)
+          .map(|_| {
+            let label = Label::new(None);
+            if column == "command" {
+              label.set_xalign(0.0);
+              label.set_max_width_chars(1); // Required for ellipsize to work
+              label.set_ellipsize(EllipsizeMode::End);
+            } else {
+              label.set_xalign(1.0);
+            }
+            container.append(&label);
+            label
+          })
+          .collect::<Vec<Label>>();
+        process_labels.insert(column, column_labels);
+      }
+      grouped_process_labels.insert(sort_by, process_labels);
+    }
+    grouped_process_labels
+  }
+
   fn update_static_props(sysinfo_system: &System, builder: &Builder) {
     let mut cpu_model = sysinfo_system.global_cpu_info().brand().to_string();
     for &s in CPU_MODEL_REMOVE {
@@ -170,17 +218,43 @@ impl CpuMemoryWidget {
     set_label(builder, "system_uptime", &utils::format_duration(system.uptime()));
   }
 
-  fn update_processes(system: &mut System, builder: &Builder) {
+  fn update_processes(
+    system: &mut System,
+    num_processes: usize,
+    grouped_process_labels: &HashMap<&str, HashMap<&str, Vec<Label>>>,
+    builder: &Builder,
+  ) {
     system.refresh_processes_specifics(ProcessRefreshKind::new().with_cpu());
+    let mut processes: Vec<&Process> = system.processes().into_iter().map(|(_pid, process)| process).collect();
 
-    let processes = system.processes();
     let num_running = processes
-      .values()
-      .into_iter()
-      .filter(|process| process.status() == ProcessStatus::Run)
+      .iter()
+      .filter(|&process| process.status() == ProcessStatus::Run)
       .count();
-    let system_num_processes = format!("{} / {: >4}", num_running, processes.len());
+    let system_num_processes = format!("{} / {: >4}", num_running, system.processes().len());
     set_label(builder, "system_num_processes", &system_num_processes);
+
+    let update_grouped_processes = |processes: &Vec<&Process>, labels: &HashMap<&str, Vec<Label>>| {
+      let num_cpus = system.cpus().len();
+      for (i, &process) in processes[..num_processes].iter().enumerate() {
+        // For simplicity, the command is just joined with spaces, and not escaped
+        let args = process
+          .cmd()
+          .iter()
+          .skip(1)
+          .fold(String::new(), |res, cur| res + cur.as_str() + " ");
+        labels.get("command").unwrap()[i].set_label(&format!("{} {}", process.name(), args));
+        labels.get("pid").unwrap()[i].set_label(&process.pid().to_string());
+        labels.get("cpu").unwrap()[i].set_label(&format!("{:.2}", process.cpu_usage() / num_cpus as f32));
+        labels.get("memory").unwrap()[i].set_label(&(process.memory() * 1024).file_size(FILE_SIZE_OPTS).unwrap());
+      }
+    };
+
+    processes.sort_by(|&process_1, &process_2| process_2.cpu_usage().partial_cmp(&process_1.cpu_usage()).unwrap());
+    update_grouped_processes(&processes, grouped_process_labels.get("cpu").unwrap());
+
+    processes.sort_by(|&process_1, &process_2| process_2.memory().partial_cmp(&process_1.memory()).unwrap());
+    update_grouped_processes(&processes, grouped_process_labels.get("memory").unwrap());
   }
 
   fn update(mut self, props: Arc<CpuMemoryProps>, builder: &Builder) {
@@ -188,7 +262,12 @@ impl CpuMemoryWidget {
     CpuMemoryWidget::update_cpu(system_mut, builder, &self.cpu_bar_senders, &self.cpu_graph_sender);
     CpuMemoryWidget::update_memory(system_mut, builder, &self.memory_graph_sender);
     CpuMemoryWidget::update_system(system_mut, builder);
-    CpuMemoryWidget::update_processes(system_mut, builder);
+    CpuMemoryWidget::update_processes(
+      system_mut,
+      props.process_list.num_processes,
+      &self.grouped_process_labels,
+      builder,
+    );
     glib::source::timeout_add_seconds_local_once(
       props.update_interval,
       glib::clone!(@strong builder => move || {
