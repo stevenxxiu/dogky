@@ -195,6 +195,7 @@ dependencies = [
  "gtk4",
  "heck",
  "humansize",
+ "lazy_static",
  "once_cell",
  "open",
  "phf",

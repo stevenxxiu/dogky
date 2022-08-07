@@ -5,6 +5,7 @@ use gtk::pango::EllipsizeMode;
 use gtk::prelude::{BoxExt, DrawingAreaExt, WidgetExt};
 use gtk::{glib, Builder, DrawingArea, Label, Orientation};
 use humansize::FileSize;
+use lazy_static::lazy_static;
 use regex::Regex;
 use std::iter::zip;
 use std::sync::Arc;
@@ -179,6 +180,9 @@ impl CpuMemoryWidget {
   }
 
   fn update_static_props(sysinfo_system: &System, builder: &Builder) {
+    lazy_static! {
+      static ref RE_FREQUENCY: Regex = Regex::new(r"\d+ MHz").unwrap();
+    }
     let mut cpu_model = sysinfo_system.global_cpu_info().brand().to_string();
     for &s in CPU_MODEL_REMOVE {
       cpu_model = cpu_model.replace(s, "");
@@ -186,8 +190,7 @@ impl CpuMemoryWidget {
     set_label(builder, "cpu_model", &cpu_model);
 
     let lshw_output = std::fs::read_to_string("/run/lshw-memory.txt").unwrap();
-    let lshw_regex = Regex::new(r"\d+ MHz").unwrap();
-    let memory_frequency = lshw_regex.find(&lshw_output).into_iter().next().unwrap().as_str();
+    let memory_frequency = RE_FREQUENCY.find(&lshw_output).into_iter().next().unwrap().as_str();
     set_label(builder, "memory_frequency", memory_frequency);
   }
 
