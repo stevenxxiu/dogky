@@ -18,7 +18,7 @@ use crate::config::{CpuBarsProps, CpuMemoryGraphContainerProps, CpuMemoryProcess
 use crate::custom_components::build_graph;
 use crate::gtk_utils::set_label;
 use crate::utils;
-use crate::utils::FILE_SIZE_OPTS;
+use crate::utils::MEMORY_SIZE_OPTS;
 
 #[derive(Enum, PartialEq, strum_macros::Display, Debug)]
 enum ProcessSortBy {
@@ -228,8 +228,8 @@ impl CpuMemoryWidget {
     let total_memory = system.total_memory() * 1024;
     let memory_usage_str = format!(
       "{: >8}/{: >8} = {: >3.0}%",
-      used_memory.file_size(FILE_SIZE_OPTS).unwrap(),
-      total_memory.file_size(FILE_SIZE_OPTS).unwrap(),
+      used_memory.file_size(MEMORY_SIZE_OPTS).unwrap(),
+      total_memory.file_size(MEMORY_SIZE_OPTS).unwrap(),
       (used_memory as f32) / (total_memory as f32) * 100.0
     );
     set_label(builder, "memory_usage", &memory_usage_str);
@@ -269,7 +269,7 @@ impl CpuMemoryWidget {
         labels[ProcessColumn::Command][i].set_label(&format!("{} {}", process.name(), args));
         labels[ProcessColumn::PID][i].set_label(&process.pid().to_string());
         labels[ProcessColumn::CPU][i].set_label(&format!("{:.2}", process.cpu_usage() / num_cpus as f32));
-        labels[ProcessColumn::Memory][i].set_label(&(process.memory() * 1024).file_size(FILE_SIZE_OPTS).unwrap());
+        labels[ProcessColumn::Memory][i].set_label(&(process.memory() * 1024).file_size(MEMORY_SIZE_OPTS).unwrap());
       }
     };
 

@@ -57,10 +57,27 @@ pub struct CpuMemoryProps {
 }
 
 #[derive(Clone, Deserialize)]
+pub struct DiskBarProps {
+  pub height: u32,
+  pub border_color: String,
+  pub fill_color: String,
+}
+
+#[derive(Clone, Deserialize)]
+pub struct DiskProps {
+  pub update_interval: u32,
+  pub name: String,
+  pub device_path: String,
+  pub mount_point: String,
+  pub bar: DiskBarProps,
+}
+
+#[derive(Clone, Deserialize)]
 pub struct ConfigProps {
   pub width: u32,
   pub weather: WeatherProps,
   pub cpu_memory: CpuMemoryProps,
+  pub disk: DiskProps,
 }
 
 pub struct Config {

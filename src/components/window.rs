@@ -1,6 +1,7 @@
 use gtk::prelude::{BoxExt, StyleContextExt, WidgetExt};
 use gtk::{Builder, Orientation, Separator, Window};
 
+use crate::components::disk_widget::DiskWidget;
 use crate::components::{CpuMemoryWidget, MachineInfoWidget, WeatherWidget};
 use crate::ConfigProps;
 
@@ -21,6 +22,10 @@ pub fn build_window(config_props: &ConfigProps) -> Window {
   container.append(&Separator::new(Orientation::Horizontal));
   let cpu_memory_widget = CpuMemoryWidget::build(config_props.cpu_memory.clone(), container_width);
   container.append(&cpu_memory_widget);
+
+  container.append(&Separator::new(Orientation::Horizontal));
+  let disk_widget = DiskWidget::build(config_props.disk.clone(), container_width);
+  container.append(&disk_widget);
 
   window
 }

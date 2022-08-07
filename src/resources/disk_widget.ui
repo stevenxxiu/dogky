@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.10.3 -->
+<interface>
+  <!-- interface-name dogky -->
+  <requires lib="gtk" version="4.6"/>
+  <object class="GtkBox" id="disk_widget">
+    <property name="hexpand">True</property>
+    <property name="name">disk-container</property>
+    <property name="orientation">vertical</property>
+    <child>
+      <object class="GtkBox" id="disk_model_container">
+        <property name="hexpand">True</property>
+        <property name="name">disk-model-container</property>
+        <child>
+          <object class="GtkLabel">
+            <property name="label">Disk</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="disk_model">
+            <property name="name">disk-model</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="disk_temperature">
+            <property name="hexpand">True</property>
+            <property name="name">disk-temperature</property>
+            <property name="xalign">1.0</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <property name="hexpand">True</property>
+        <child>
+          <object class="GtkLabel" id="file_system_name">
+            <property name="name">file-system-name</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="file_system_usage">
+            <property name="halign">baseline</property>
+            <property name="hexpand">True</property>
+            <property name="name">file-system-usage</property>
+            <property name="overflow">hidden</property>
+            <property name="xalign">1.0</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <property name="hexpand">True</property>
+        <child>
+          <object class="GtkLabel" id="file_system_total">
+            <property name="hexpand">True</property>
+            <property name="name">file-system-total</property>
+            <property name="xalign">0.0</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox" id="file_system_bar_container">
+            <property name="hexpand">True</property>
+            <property name="valign">center</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
