@@ -40,6 +40,7 @@ enum ProcessColumn {
 }
 
 pub struct CpuMemoryWidget {
+  builder: Arc<Builder>,
   sysinfo_system: Arc<System>,
   cpu_bar_senders: Vec<Sender<f32>>,
   cpu_graph_sender: Sender<f32>,
@@ -69,13 +70,14 @@ impl CpuMemoryWidget {
     let grouped_process_labels = CpuMemoryWidget::build_process_list(&props.process_list, &builder);
 
     let updater = CpuMemoryWidget {
+      builder: Arc::new(builder),
       sysinfo_system: Arc::new(sysinfo_system),
       cpu_bar_senders,
       cpu_graph_sender,
       memory_graph_sender,
       grouped_process_labels,
     };
-    updater.update(props, &builder);
+    updater.update(props);
     container
   }
 
@@ -275,22 +277,17 @@ impl CpuMemoryWidget {
     update_grouped_processes(&processes, &grouped_process_labels[ProcessSortBy::Memory]);
   }
 
-  fn update(mut self, props: Arc<CpuMemoryProps>, builder: &Builder) {
+  fn update(mut self, props: Arc<CpuMemoryProps>) {
     let system_mut = Arc::get_mut(&mut self.sysinfo_system).unwrap();
-    CpuMemoryWidget::update_cpu(system_mut, builder, &self.cpu_bar_senders, &self.cpu_graph_sender);
-    CpuMemoryWidget::update_memory(system_mut, builder, &self.memory_graph_sender);
-    CpuMemoryWidget::update_system(system_mut, builder);
+    CpuMemoryWidget::update_cpu(system_mut, &self.builder, &self.cpu_bar_senders, &self.cpu_graph_sender);
+    CpuMemoryWidget::update_memory(system_mut, &self.builder, &self.memory_graph_sender);
+    CpuMemoryWidget::update_system(system_mut, &self.builder);
     CpuMemoryWidget::update_processes(
       system_mut,
       props.process_list.num_processes,
       &self.grouped_process_labels,
-      builder,
+      &self.builder,
     );
-    glib::source::timeout_add_seconds_local_once(
-      props.update_interval,
-      glib::clone!(@strong builder => move || {
-        self.update(props, &builder);
-      }),
-    );
+    glib::source::timeout_add_seconds_local_once(props.update_interval, move || self.update(props));
   }
 }
