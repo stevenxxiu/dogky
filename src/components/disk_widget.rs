@@ -44,7 +44,7 @@ fn get_disk_model(device_path: &str) -> Result<String, String> {
   Err(format!("Specified device path {} does not exist", device_path))
 }
 
-fn get_disk_temperature(device_path: &str) -> String {
+fn get_disk_temperature(device_path: &str) -> f32 {
   lazy_static! {
     static ref RE_TEMPERATURE: Regex = Regex::new(r"^(\d+)\d{3}$").unwrap();
   }
@@ -52,13 +52,7 @@ fn get_disk_temperature(device_path: &str) -> String {
   let path = format!("/sys/class/block/{}/device/hwmon/hwmon1/temp1_input", device_name);
   let file = File::open(path).unwrap();
   let line = BufReader::new(file).lines().next().unwrap().unwrap();
-  RE_TEMPERATURE
-    .captures(&line)
-    .unwrap()
-    .get(1)
-    .unwrap()
-    .as_str()
-    .to_string()
+  line.parse::<i32>().unwrap() as f32 / 1000.0
 }
 
 impl DiskWidget {
@@ -119,7 +113,7 @@ impl DiskWidget {
 
   fn update_disk(disk: &Disk, device_path: &str, builder: &Builder, file_system_bar_sender: &Sender<f32>) {
     let disk_temperature = get_disk_temperature(device_path);
-    set_label(builder, "disk_temperature", &format!("{}°C", disk_temperature));
+    set_label(builder, "disk_temperature", &format!("{:.0}°C", disk_temperature));
 
     let total_space = disk.total_space();
     set_label(
