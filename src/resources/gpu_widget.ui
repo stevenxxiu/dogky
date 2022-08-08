@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.10.3 -->
+<interface>
+  <!-- interface-name dogky -->
+  <requires lib="gtk" version="4.6"/>
+  <object class="GtkBox" id="gpu_widget">
+    <property name="hexpand">True</property>
+    <property name="name">gpu-container</property>
+    <property name="orientation">vertical</property>
+    <child>
+      <object class="GtkBox" id="gpu_model_container">
+        <property name="hexpand">True</property>
+        <property name="name">gpu-model-container</property>
+        <child>
+          <object class="GtkLabel">
+            <property name="label">GPU</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="gpu_model">
+            <property name="name">gpu-model</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="gpu_temperature">
+            <property name="hexpand">True</property>
+            <property name="name">gpu-temperature</property>
+            <property name="xalign">1.0</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox" id="gpu_usage_frequency_container">
+        <property name="hexpand">True</property>
+        <property name="homogeneous">True</property>
+        <property name="name">gpu-usage-frequency-container</property>
+        <child>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label">Usage</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="gpu_usage">
+                <property name="halign">baseline</property>
+                <property name="hexpand">True</property>
+                <property name="name">gpu-usage</property>
+                <property name="overflow">hidden</property>
+                <property name="xalign">1.0</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="hexpand">True</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label">Frequency</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="gpu_frequency">
+                <property name="halign">baseline</property>
+                <property name="hexpand">True</property>
+                <property name="name">gpu-frequency</property>
+                <property name="overflow">hidden</property>
+                <property name="xalign">1.0</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox" id="gpu_memory_container">
+        <property name="hexpand">True</property>
+        <property name="name">gpu-memory-container</property>
+        <child>
+          <object class="GtkLabel">
+            <property name="label">Memory</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="gpu_memory_frequency">
+            <property name="hexpand">True</property>
+            <property name="name">gpu-memory-frequency</property>
+            <property name="xalign">1.0</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="gpu_memory_usage">
+            <property name="hexpand">True</property>
+            <property name="name">gpu-memory-usage</property>
+            <property name="xalign">1.0</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

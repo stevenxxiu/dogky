@@ -73,11 +73,17 @@ pub struct DiskProps {
 }
 
 #[derive(Clone, Deserialize)]
+pub struct GpuProps {
+  pub update_interval: u32,
+}
+
+#[derive(Clone, Deserialize)]
 pub struct ConfigProps {
   pub width: u32,
   pub weather: WeatherProps,
   pub cpu_memory: CpuMemoryProps,
   pub disk: DiskProps,
+  pub gpu: GpuProps,
 }
 
 pub struct Config {

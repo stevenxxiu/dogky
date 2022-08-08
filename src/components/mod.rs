@@ -1,5 +1,6 @@
 mod cpu_memory_widget;
 mod disk_widget;
+mod gpu_widget;
 mod machine_info_widget;
 mod weather_widget;
 mod window;
