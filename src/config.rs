@@ -8,6 +8,7 @@ use gtk::Window;
 use serde_derive::Deserialize;
 
 use crate::path::get_xdg_dirs;
+use crate::serializable_regex::SerializableRegex;
 
 #[derive(Clone, Deserialize)]
 pub struct WeatherProps {
@@ -78,12 +79,36 @@ pub struct GpuProps {
 }
 
 #[derive(Clone, Deserialize)]
+pub struct NetworkGraphProps {
+  pub border_color: String,
+  pub fill_color: String,
+  pub maximum_bytes_per_sec: u64,
+}
+
+#[derive(Clone, Deserialize)]
+pub struct NetworkGraphContainerProps {
+  pub width: u32,
+  pub height: u32,
+  pub upload: NetworkGraphProps,
+  pub download: NetworkGraphProps,
+}
+
+#[derive(Clone, Deserialize)]
+pub struct NetworkProps {
+  pub update_interval: u32,
+  pub public_ip_update_interval: u32,
+  pub interface_regex: SerializableRegex,
+  pub graphs: NetworkGraphContainerProps,
+}
+
+#[derive(Clone, Deserialize)]
 pub struct ConfigProps {
   pub width: u32,
   pub weather: WeatherProps,
   pub cpu_memory: CpuMemoryProps,
   pub disk: DiskProps,
   pub gpu: GpuProps,
+  pub network: NetworkProps,
 }
 
 pub struct Config {

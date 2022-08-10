@@ -7,5 +7,6 @@
     <file compressed="true" preprocess="xml-stripblanks">cpu_memory_widget.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">disk_widget.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">gpu_widget.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">network_widget.ui</file>
   </gresource>
 </gresources>

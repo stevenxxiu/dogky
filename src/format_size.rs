@@ -27,3 +27,16 @@ pub fn format_size(size: u64, decimal_places: usize) -> String {
     decimal_places = decimal_places
   )
 }
+
+pub fn format_speed(speed: f32, decimal_places: usize) -> String {
+  let power = speed.log2() / POW_INC as f32;
+  let power_index = (power as usize).max(0).min(SIZE_UNITS.len() - 1);
+  let (unit, base) = SIZE_UNITS[power_index];
+  let significand = speed / 2f32.powi(base);
+  format!(
+    "{:.decimal_places$} {}/s",
+    significand,
+    unit,
+    decimal_places = decimal_places
+  )
+}
