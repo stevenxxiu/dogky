@@ -13,6 +13,7 @@ mod api;
 mod components;
 mod config;
 mod custom_components;
+mod format_size;
 mod gtk_utils;
 mod path;
 mod utils;

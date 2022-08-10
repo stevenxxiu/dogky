@@ -1,17 +1,18 @@
 use gtk::{glib, Builder};
-use humansize::FileSize;
 use nvml_wrapper::enum_wrappers::device::{Clock, ClockId, TemperatureSensor, TemperatureThreshold};
 use nvml_wrapper::{Device, Nvml};
 use std::sync::Arc;
 
 use crate::config::GpuProps;
+use crate::format_size::format_size;
 use crate::gtk_utils::set_label;
-use crate::utils::MEMORY_SIZE_OPTS;
 
 pub struct GpuWidget {
   builder: Arc<Builder>,
   nvml: Arc<Nvml>,
 }
+
+const MEMORY_DECIMAL_PLACES: usize = 1usize;
 
 impl GpuWidget {
   pub fn build(props: GpuProps) -> gtk::Box {
@@ -58,8 +59,8 @@ impl GpuWidget {
     let memory_info = gpu.memory_info().unwrap();
     let memory_usage = format!(
       "{}/{} = {:>3.0}%",
-      &memory_info.used.file_size(MEMORY_SIZE_OPTS).unwrap(),
-      &memory_info.total.file_size(MEMORY_SIZE_OPTS).unwrap(),
+      &format_size(memory_info.used, MEMORY_DECIMAL_PLACES),
+      &format_size(memory_info.total, MEMORY_DECIMAL_PLACES),
       memory_info.used as f32 / memory_info.total as f32 * 100.0
     );
     set_label(builder, "gpu_memory_usage", &memory_usage);

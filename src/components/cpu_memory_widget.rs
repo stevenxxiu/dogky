@@ -4,7 +4,6 @@ use gtk::glib::{MainContext, Sender, PRIORITY_DEFAULT};
 use gtk::pango::EllipsizeMode;
 use gtk::prelude::{BoxExt, DrawingAreaExt, WidgetExt};
 use gtk::{glib, Builder, DrawingArea, Label, Orientation};
-use humansize::FileSize;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::iter::zip;
@@ -16,9 +15,11 @@ use sysinfo::{
 
 use crate::config::{CpuBarsProps, CpuMemoryGraphContainerProps, CpuMemoryProcessListProps, CpuMemoryProps};
 use crate::custom_components::build_graph;
+use crate::format_size::format_size;
 use crate::gtk_utils::set_label;
 use crate::utils;
-use crate::utils::MEMORY_SIZE_OPTS;
+
+const MEMORY_DECIMAL_PLACES: usize = 1usize;
 
 #[derive(Enum, PartialEq, strum_macros::Display, Debug)]
 enum ProcessSortBy {
@@ -228,8 +229,8 @@ impl CpuMemoryWidget {
     let total_memory = system.total_memory() * 1024;
     let memory_usage_str = format!(
       "{: >8}/{: >8} = {: >3.0}%",
-      used_memory.file_size(MEMORY_SIZE_OPTS).unwrap(),
-      total_memory.file_size(MEMORY_SIZE_OPTS).unwrap(),
+      format_size(used_memory, MEMORY_DECIMAL_PLACES),
+      format_size(total_memory, MEMORY_DECIMAL_PLACES),
       (used_memory as f32) / (total_memory as f32) * 100.0
     );
     set_label(builder, "memory_usage", &memory_usage_str);
@@ -269,7 +270,8 @@ impl CpuMemoryWidget {
         labels[ProcessColumn::Command][i].set_label(&format!("{} {}", process.name(), args));
         labels[ProcessColumn::PID][i].set_label(&process.pid().to_string());
         labels[ProcessColumn::CPU][i].set_label(&format!("{:.2}", process.cpu_usage() / num_cpus as f32));
-        labels[ProcessColumn::Memory][i].set_label(&(process.memory() * 1024).file_size(MEMORY_SIZE_OPTS).unwrap());
+        let memory_bytes = process.memory() * 1024;
+        labels[ProcessColumn::Memory][i].set_label(&format_size(memory_bytes, MEMORY_DECIMAL_PLACES));
       }
     };
 

@@ -2,7 +2,6 @@ use gtk::gdk::RGBA;
 use gtk::glib::{MainContext, Sender, PRIORITY_DEFAULT};
 use gtk::prelude::{BoxExt, DrawingAreaExt, WidgetExt};
 use gtk::{glib, Align, Builder, DrawingArea};
-use humansize::FileSize;
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::fs::File;
@@ -13,8 +12,8 @@ use std::sync::Arc;
 use sysinfo::{Disk, DiskExt, RefreshKind, System, SystemExt};
 
 use crate::config::{DiskBarProps, DiskProps};
+use crate::format_size::format_size;
 use crate::gtk_utils::set_label;
-use crate::utils::FILE_SIZE_OPTS;
 
 // We can't use `Disk` directly. The reason probably is as there's the field `.available_space`.
 pub struct DiskWidget {
@@ -24,6 +23,7 @@ pub struct DiskWidget {
 }
 
 const BAR_MARGIN_LEFT: u32 = 90;
+const DISK_DECIMAL_PLACES: usize = 2usize;
 
 fn get_disk_model(device_path: &str) -> Result<String, String> {
   lazy_static! {
@@ -119,15 +119,15 @@ impl DiskWidget {
     set_label(
       builder,
       "file_system_total",
-      &total_space.file_size(FILE_SIZE_OPTS).unwrap(),
+      &format_size(total_space, DISK_DECIMAL_PLACES),
     );
 
     let available_space = disk.available_space();
     let used_space = total_space - available_space;
     let file_system_usage = format!(
       "{: >8} + {: >8}",
-      used_space.file_size(FILE_SIZE_OPTS).unwrap(),
-      available_space.file_size(FILE_SIZE_OPTS).unwrap(),
+      &format_size(total_space, DISK_DECIMAL_PLACES),
+      &format_size(available_space, DISK_DECIMAL_PLACES),
     );
     set_label(builder, "file_system_usage", &file_system_usage);
 
