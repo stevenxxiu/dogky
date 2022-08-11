@@ -16,7 +16,7 @@ use sysinfo::{
 use crate::config::{CpuBarsProps, CpuMemoryGraphContainerProps, CpuMemoryProcessListProps, CpuMemoryProps};
 use crate::custom_components::build_graph;
 use crate::format_size::format_size;
-use crate::gtk_utils::set_label;
+use crate::gtk_utils::{set_copyable_label, set_label};
 use crate::utils;
 
 const MEMORY_DECIMAL_PLACES: usize = 1usize;
@@ -188,7 +188,7 @@ impl CpuMemoryWidget {
     for &s in CPU_MODEL_REMOVE {
       cpu_model = cpu_model.replace(s, "");
     }
-    set_label(builder, "cpu_model", &cpu_model);
+    set_copyable_label(builder, "cpu_model", cpu_model);
 
     let lshw_output = std::fs::read_to_string("/run/lshw-memory.txt").unwrap();
     let memory_frequency = RE_FREQUENCY.find(&lshw_output).into_iter().next().unwrap().as_str();

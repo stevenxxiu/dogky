@@ -11,7 +11,7 @@ use sysinfo::{NetworkData, NetworkExt, RefreshKind, System, SystemExt};
 use crate::config::{NetworkGraphContainerProps, NetworkProps};
 use crate::custom_components::build_graph;
 use crate::format_size::{format_size, format_speed};
-use crate::gtk_utils::set_label;
+use crate::gtk_utils::{set_copyable_label, set_label};
 use crate::serializable_regex::SerializableRegex;
 use crate::utils::join_str_iter;
 
@@ -119,7 +119,7 @@ impl NetworkWidget {
           .filter_map(|ip| ip.is_ipv4().then(|| ip.to_string())),
         " ",
       );
-      set_label(builder, "local_ips", &local_ips_str);
+      set_copyable_label(builder, "local_ips", local_ips_str);
     }
   }
 
@@ -201,7 +201,7 @@ impl NetworkWidgetPublicIp {
       .runtime
       .block_on(public_ip::addr_with(GOOGLE_V6, public_ip::Version::V6))
     {
-      set_label(&self.builder, "wan_ip", &cur_public_ip.to_string());
+      set_copyable_label(&self.builder, "wan_ip", cur_public_ip.to_string());
     }
     glib::source::timeout_add_seconds_local_once(update_interval, move || self.update(update_interval));
   }

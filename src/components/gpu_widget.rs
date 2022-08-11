@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 use crate::config::GpuProps;
 use crate::format_size::format_size;
-use crate::gtk_utils::set_label;
+use crate::gtk_utils::{set_copyable_label, set_label};
 
 pub struct GpuWidget {
   builder: Arc<Builder>,
@@ -38,7 +38,7 @@ impl GpuWidget {
 
   fn update_static_props(gpu: &Device, builder: &Builder) {
     let gpu_model = gpu.name().unwrap();
-    set_label(builder, "gpu_model", &gpu_model);
+    set_copyable_label(builder, "gpu_model", gpu_model);
   }
 
   fn update_gpu(gpu: &Device, builder: &Builder) {

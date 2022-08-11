@@ -13,7 +13,7 @@ use sysinfo::{Disk, DiskExt, RefreshKind, System, SystemExt};
 
 use crate::config::{DiskBarProps, DiskProps};
 use crate::format_size::format_size;
-use crate::gtk_utils::set_label;
+use crate::gtk_utils::{set_copyable_label, set_label};
 
 // We can't use `Disk` directly. The reason probably is as there's the field `.available_space`.
 pub struct DiskWidget {
@@ -104,7 +104,7 @@ impl DiskWidget {
 
   fn update_static_props(disk: &Disk, props: &DiskProps, builder: &Builder) {
     let disk_model = get_disk_model(&props.device_path).unwrap();
-    set_label(builder, "disk_model", &disk_model);
+    set_copyable_label(builder, "disk_model", disk_model);
 
     let file_system_name = std::str::from_utf8(disk.file_system()).unwrap().to_string();
     let file_system_name = format!("{} ({})", &props.name, &file_system_name);
