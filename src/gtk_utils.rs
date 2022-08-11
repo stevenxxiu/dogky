@@ -1,11 +1,24 @@
 use gtk::cairo::Context;
 use gtk::gdk::RGBA;
-use gtk::prelude::DrawingAreaExt;
-use gtk::DrawingArea;
+use gtk::prelude::{DisplayExt, DrawingAreaExt, GestureExt, WidgetExt};
+use gtk::{glib, DrawingArea};
 use gtk::{Builder, Label};
 
 pub fn set_label(builder: &Builder, label_id: &str, value: &str) {
   builder.object::<Label>(label_id).unwrap().set_label(value);
+}
+
+pub fn set_copyable_label(builder: &Builder, label_id: &str, value: String) {
+  let label = builder.object::<Label>(label_id).unwrap();
+  label.set_label(&value);
+
+  let gesture = gtk::GestureClick::new();
+  gesture.connect_released(glib::clone!(@strong label => move |gesture, _, _, _| {
+    gesture.set_state(gtk::EventSequenceState::Claimed);
+    label.display().clipboard().set_text(&value);
+  }));
+  label.add_controller(&gesture);
+  label.set_cursor_from_name(Option::from("copy"));
 }
 
 pub fn get_color_components(color: &RGBA) -> [f64; 4] {
