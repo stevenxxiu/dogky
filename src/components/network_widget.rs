@@ -98,16 +98,12 @@ impl NetworkWidget {
     let local_ips = NetworkWidget::get_local_ips(interface_regex);
     let is_connected = network_with_data.is_some() && !local_ips.is_empty();
 
-    for &box_id in &[
-      "network_usage_container",
-      "network_usage_graph_container",
-      "wan_ip_container",
-      "local_ips_container",
-    ] {
-      builder.object::<gtk::Box>(box_id).unwrap().set_visible(is_connected);
-    }
     builder
-      .object::<Label>("ips_error_label")
+      .object::<gtk::Box>("network_connected_container")
+      .unwrap()
+      .set_visible(is_connected);
+    builder
+      .object::<Label>("network_error_label")
       .unwrap()
       .set_visible(!is_connected);
 
@@ -175,7 +171,14 @@ pub struct NetworkWidgetPublicIp {
 }
 
 impl NetworkWidgetPublicIp {
-  fn build(update_interval: u32, builder: Arc<Builder>) {
+  fn build(update_interval: Option<u32>, builder: Arc<Builder>) {
+    if update_interval.is_none() {
+      builder
+        .object::<gtk::Box>("wan_ip_container")
+        .unwrap()
+        .set_visible(false);
+      return;
+    }
     let runtime = Arc::new(
       tokio::runtime::Builder::new_current_thread()
         .enable_all()
@@ -186,7 +189,7 @@ impl NetworkWidgetPublicIp {
       runtime: runtime.clone(),
       builder,
     };
-    public_ip_updater.update(update_interval);
+    public_ip_updater.update(update_interval.unwrap());
   }
 
   fn update(self, update_interval: u32) {

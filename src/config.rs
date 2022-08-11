@@ -96,7 +96,7 @@ pub struct NetworkGraphContainerProps {
 #[derive(Clone, Deserialize)]
 pub struct NetworkProps {
   pub update_interval: u32,
-  pub public_ip_update_interval: u32,
+  pub public_ip_update_interval: Option<u32>,
   pub interface_regex: SerializableRegex,
   pub graphs: NetworkGraphContainerProps,
 }
