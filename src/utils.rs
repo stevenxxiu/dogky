@@ -17,3 +17,15 @@ pub fn format_duration(total_seconds: u64) -> String {
   }
   format!("{}d {:0>2}h {:0>2}m {:0>2}s", days, hours, minutes, seconds)
 }
+
+pub fn join_str_iter<'a, I>(str_iter: I, seperator: &str) -> String
+where
+  I: Iterator<Item = String>,
+{
+  str_iter.fold(String::new(), |res, cur| {
+    if res.is_empty() {
+      return cur.to_string();
+    }
+    res + seperator + &cur.to_string()
+  })
+}

@@ -13,6 +13,7 @@ use crate::custom_components::build_graph;
 use crate::format_size::{format_size, format_speed};
 use crate::gtk_utils::set_label;
 use crate::serializable_regex::SerializableRegex;
+use crate::utils::join_str_iter;
 
 const NETWORK_DECIMAL_PLACES: usize = 2usize;
 
@@ -112,10 +113,12 @@ impl NetworkWidget {
       set_label(builder, "network_interface", network_name);
 
       // Only include IPv4, as IPv6 addresses are too long
-      let local_ips_str = local_ips
-        .into_iter()
-        .filter(|ip| ip.is_ipv4())
-        .fold(String::new(), |res, cur| res + " " + &cur.to_string());
+      let local_ips_str = join_str_iter(
+        local_ips
+          .into_iter()
+          .filter_map(|ip| ip.is_ipv4().then(|| ip.to_string())),
+        " ",
+      );
       set_label(builder, "local_ips", &local_ips_str);
     }
   }
