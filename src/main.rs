@@ -16,6 +16,7 @@ mod custom_components;
 mod format_size;
 mod gtk_utils;
 mod path;
+mod serializable_command;
 mod serializable_regex;
 mod utils;
 

@@ -8,6 +8,7 @@ use gtk::Window;
 use serde_derive::Deserialize;
 
 use crate::path::get_xdg_dirs;
+use crate::serializable_command::SerializableCommand;
 use crate::serializable_regex::SerializableRegex;
 
 #[derive(Clone, Deserialize)]
@@ -47,6 +48,7 @@ pub struct CpuMemoryProcessListProps {
   pub pid_width: usize,
   pub cpu_width: usize,
   pub memory_width: usize,
+  pub top_command: SerializableCommand,
 }
 
 #[derive(Clone, Deserialize)]

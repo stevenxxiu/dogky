@@ -2,11 +2,12 @@ use enum_map::{enum_map, Enum, EnumMap};
 use gtk::gdk::RGBA;
 use gtk::glib::{MainContext, Sender, PRIORITY_DEFAULT};
 use gtk::pango::EllipsizeMode;
-use gtk::prelude::{BoxExt, DrawingAreaExt, WidgetExt};
+use gtk::prelude::{BoxExt, DrawingAreaExt, GestureExt, WidgetExt};
 use gtk::{glib, Builder, DrawingArea, Label, Orientation};
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::iter::zip;
+use std::process::Command;
 use std::sync::Arc;
 use sysinfo::{
   ComponentExt, CpuExt, CpuRefreshKind, Process, ProcessExt, ProcessRefreshKind, ProcessStatus, RefreshKind, System,
@@ -17,6 +18,7 @@ use crate::config::{CpuBarsProps, CpuMemoryGraphContainerProps, CpuMemoryProcess
 use crate::custom_components::build_graph;
 use crate::format_size::format_size;
 use crate::gtk_utils::{set_copyable_label, set_label};
+use crate::serializable_command::SerializableCommand;
 use crate::utils;
 
 const MEMORY_DECIMAL_PLACES: usize = 1usize;
@@ -68,6 +70,7 @@ impl CpuMemoryWidget {
     let cpu_bar_senders = CpuMemoryWidget::build_cpu_bars(num_cpus, &props.cpu_bars, container_width, &builder);
     let [cpu_graph_sender, memory_graph_sender] =
       CpuMemoryWidget::build_graphs(&sysinfo_system, &props.graphs, container_width, &builder);
+    CpuMemoryWidget::add_process_list_click_listener(&props.process_list.top_command, &builder);
     CpuMemoryWidget::update_static_props(&sysinfo_system, &builder);
     let grouped_process_labels = CpuMemoryWidget::build_process_list(&props.process_list, &builder);
 
@@ -178,6 +181,22 @@ impl CpuMemoryWidget {
         }
       }
     }
+  }
+
+  fn add_process_list_click_listener(top_command: &SerializableCommand, builder: &Builder) {
+    if top_command.is_empty() {
+      return;
+    }
+    let container = builder.object::<gtk::Box>("cpu_memory_process_container").unwrap();
+    let gesture = gtk::GestureClick::new();
+    let top_command = top_command.clone();
+    gesture.connect_released(move |gesture, _, _, _| {
+      gesture.set_state(gtk::EventSequenceState::Claimed);
+      let (binary, args) = top_command.split_at(1);
+      Command::new(&binary[0]).args(args).spawn().unwrap();
+    });
+    container.add_controller(&gesture);
+    container.set_cursor_from_name(Option::from("pointer"));
   }
 
   fn update_static_props(sysinfo_system: &System, builder: &Builder) {
