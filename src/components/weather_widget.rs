@@ -35,7 +35,7 @@ fn add_click_listener(props: Arc<WeatherProps>, container: &gtk::Box) {
     open::that(format!("https://openweathermap.org/city/{0}#weather-widget", props.openweather_city_id)).unwrap();
   }));
   container.add_controller(&gesture);
-  container.set_cursor_from_name(Option::from("hand"));
+  container.set_cursor_from_name(Option::from("pointer"));
 }
 
 pub struct WeatherWidget {
