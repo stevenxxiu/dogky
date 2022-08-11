@@ -27,17 +27,6 @@ static ICON_MAP: phf::Map<&'static str, &'static str> = phf_map! {
   "50" => "🌫",
 };
 
-fn add_click_listener(props: Arc<WeatherProps>, container: &gtk::Box) {
-  let gesture = gtk::GestureClick::new();
-  gesture.connect_released(glib::clone!(@strong props => move |gesture, _, _, _| {
-    gesture.set_state(gtk::EventSequenceState::Claimed);
-    // Open weather forecast link
-    open::that(format!("https://openweathermap.org/city/{0}#weather-widget", props.openweather_city_id)).unwrap();
-  }));
-  container.add_controller(&gesture);
-  container.set_cursor_from_name(Option::from("pointer"));
-}
-
 pub struct WeatherWidget {
   cache_path: Arc<PathBuf>,
   data: Arc<Option<WeatherData>>,
@@ -74,8 +63,19 @@ impl WeatherWidget {
       error_str: Arc::new(None),
     };
     updater.update(props.clone(), &builder);
-    add_click_listener(props.clone(), &container);
+    WeatherWidget::add_click_listener(props.clone(), &container);
     container
+  }
+
+  fn add_click_listener(props: Arc<WeatherProps>, container: &gtk::Box) {
+    let gesture = gtk::GestureClick::new();
+    gesture.connect_released(glib::clone!(@strong props => move |gesture, _, _, _| {
+      gesture.set_state(gtk::EventSequenceState::Claimed);
+      // Open weather forecast link
+      open::that(format!("https://openweathermap.org/city/{0}#weather-widget", props.openweather_city_id)).unwrap();
+    }));
+    container.add_controller(&gesture);
+    container.set_cursor_from_name(Option::from("pointer"));
   }
 
   fn load_cache(&mut self) {
