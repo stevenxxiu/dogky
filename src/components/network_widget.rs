@@ -12,7 +12,7 @@ use crate::config::{NetworkGraphContainerProps, NetworkProps};
 use crate::custom_components::build_graph;
 use crate::format_size::{format_size, format_speed};
 use crate::gtk_utils::{set_copyable_label, set_label};
-use crate::serializable_regex::SerializableRegex;
+use crate::serde_structs::SerializableRegex;
 use crate::utils::join_str_iter;
 
 const NETWORK_DECIMAL_PLACES: usize = 2usize;

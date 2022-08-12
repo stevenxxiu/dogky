@@ -18,7 +18,7 @@ use crate::config::{CpuBarsProps, CpuMemoryGraphContainerProps, CpuMemoryProcess
 use crate::custom_components::build_graph;
 use crate::format_size::format_size;
 use crate::gtk_utils::{set_copyable_label, set_label};
-use crate::serializable_command::SerializableCommand;
+use crate::serde_structs::SerializableCommand;
 use crate::utils;
 
 const MEMORY_DECIMAL_PLACES: usize = 1usize;

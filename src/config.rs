@@ -8,8 +8,7 @@ use gtk::Window;
 use serde_derive::Deserialize;
 
 use crate::path::get_xdg_dirs;
-use crate::serializable_command::SerializableCommand;
-use crate::serializable_regex::SerializableRegex;
+use crate::serde_structs::{SerializableCommand, SerializableRegex};
 
 #[derive(Clone, Deserialize)]
 pub struct WeatherProps {

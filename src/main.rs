@@ -16,8 +16,7 @@ mod custom_components;
 mod format_size;
 mod gtk_utils;
 mod path;
-mod serializable_command;
-mod serializable_regex;
+mod serde_structs;
 mod utils;
 
 const APP_ID: &str = "org.dogky";
