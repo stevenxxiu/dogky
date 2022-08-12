@@ -84,6 +84,20 @@ impl WeatherWidget {
     self.data = Arc::new(Some(data));
   }
 
+  fn update_error(error_str: &Option<String>, builder: &Builder) {
+    builder
+      .object::<gtk::Box>("weather_error_container")
+      .unwrap()
+      .set_visible(error_str.is_some());
+    builder
+      .object::<gtk::Box>("weather_connected_container")
+      .unwrap()
+      .set_visible(error_str.is_none());
+    if let Some(error_str) = error_str {
+      set_label(builder, "error", &error_str);
+    }
+  }
+
   fn update_data(mut self, props: Arc<WeatherProps>) -> Self {
     // No need to fetch data from server if cache time is close enough
     if let Ok(metadata) = std::fs::metadata(self.cache_path.as_ref()) {
@@ -111,14 +125,9 @@ impl WeatherWidget {
   }
 
   fn update_components(self, builder: &Builder) -> Self {
-    let error_container: gtk::Box = builder.object("error_container").unwrap();
-    match Option::as_ref(&self.error_str) {
-      Some(error_text) => {
-        error_container.set_visible(true);
-        set_label(builder, "error", &error_text);
-        return self;
-      }
-      None => error_container.set_visible(false),
+    WeatherWidget::update_error(self.error_str.as_ref(), builder);
+    if self.error_str.is_some() {
+      return self;
     }
     let data = Option::as_ref(&self.data).unwrap();
     let icon_key: String = data.weather[0].icon.chars().take(2).collect();
