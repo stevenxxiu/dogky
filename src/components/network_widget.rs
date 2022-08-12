@@ -3,7 +3,6 @@ use gtk::glib::{MainContext, Sender, PRIORITY_DEFAULT};
 use gtk::prelude::{BoxExt, DrawingAreaExt, WidgetExt};
 use gtk::{glib, Builder, DrawingArea, Label};
 use public_ip::dns::GOOGLE_V6;
-use regex::Regex;
 use std::net::IpAddr;
 use std::sync::Arc;
 use sysinfo::{NetworkData, NetworkExt, RefreshKind, System, SystemExt};
@@ -83,21 +82,33 @@ impl NetworkWidget {
   }
 
   /// Collects into a vector, so we can test if there's no IP, and to print them
-  fn get_local_ips(interface_regex: &Regex) -> Vec<IpAddr> {
+  fn get_local_ips(network_name: &str) -> Vec<IpAddr> {
     local_ip_address::list_afinet_netifas()
       .unwrap()
       .into_iter()
-      .filter_map(|(name, ip)| interface_regex.is_match(&name).then_some(ip))
+      .filter_map(|(name, ip)| (name == network_name).then_some(ip))
       .collect()
   }
 
-  fn update_local_ips(
-    network_with_data: &Option<(&String, &NetworkData)>,
-    interface_regex: &SerializableRegex,
-    builder: &Builder,
-  ) {
-    let local_ips = NetworkWidget::get_local_ips(interface_regex);
-    let is_connected = network_with_data.is_some() && !local_ips.is_empty();
+  fn update_local_ips(network_with_data: &Option<(&String, &NetworkData)>, builder: &Builder) {
+    let mut is_connected = false;
+    if let Some((network_name, _network_data)) = network_with_data {
+      let local_ips = NetworkWidget::get_local_ips(network_name);
+      is_connected = !local_ips.is_empty();
+
+      if is_connected {
+        set_label(builder, "network_interface", network_name);
+
+        // Only include IPv4, as IPv6 addresses are too long
+        let local_ips_str = join_str_iter(
+          local_ips
+            .into_iter()
+            .filter_map(|ip| ip.is_ipv4().then(|| ip.to_string())),
+          " ",
+        );
+        set_copyable_label(builder, "local_ips", local_ips_str);
+      }
+    }
 
     builder
       .object::<gtk::Box>("network_connected_container")
@@ -107,20 +118,6 @@ impl NetworkWidget {
       .object::<Label>("network_error_label")
       .unwrap()
       .set_visible(!is_connected);
-
-    if is_connected {
-      let (network_name, _network_data) = network_with_data.unwrap();
-      set_label(builder, "network_interface", network_name);
-
-      // Only include IPv4, as IPv6 addresses are too long
-      let local_ips_str = join_str_iter(
-        local_ips
-          .into_iter()
-          .filter_map(|ip| ip.is_ipv4().then(|| ip.to_string())),
-        " ",
-      );
-      set_copyable_label(builder, "local_ips", local_ips_str);
-    }
   }
 
   fn update_network(
@@ -154,7 +151,7 @@ impl NetworkWidget {
     system.refresh_networks();
 
     let network_with_data = NetworkWidget::get_network(system, &props.interface_regex);
-    NetworkWidget::update_local_ips(&network_with_data, &props.interface_regex, &self.builder);
+    NetworkWidget::update_local_ips(&network_with_data, &self.builder);
     if let Some((_network_name, network_data)) = network_with_data {
       NetworkWidget::update_network(
         props.update_interval,
