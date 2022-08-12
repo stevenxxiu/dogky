@@ -21,28 +21,29 @@ separator
 #weather-container
   margin-top: 10px
 
-  > *
-    @include child-margins
+  #weather-connected-container
     > *
-      min-height: 20px
+      @include child-margins
+      > *
+        min-height: 20px
 
-  #weather-icon
-    min-height: 30px
-    font: 33px Symbola
+    #weather-icon
+      min-height: 30px
+      font: 33px Symbola
 
-  #weather-temperature
-    color: #ddd
+    #weather-temperature
+      color: #ddd
 
-  #weather-humidity, #weather-wind
-    color: #ddd
+    #weather-humidity, #weather-wind
+      color: #ddd
 
-  #weather-sunrise-icon, #weather-sunset-icon
-    @include default-line-height
-    font-family: Symbola
+    #weather-sunrise-icon, #weather-sunset-icon
+      @include default-line-height
+      font-family: Symbola
 
-  #weather-sunrise, #weather-sunset
-    @include default-line-height
-    color: #ddd
+    #weather-sunrise, #weather-sunset
+      @include default-line-height
+      color: #ddd
 
 #machine-info-container
   @include child-margins
