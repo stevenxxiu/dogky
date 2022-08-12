@@ -1,3 +1,6 @@
+use lazy_static::lazy_static;
+use regex::{Captures, Regex};
+
 pub fn div_rem(a: u64, b: u64) -> (u64, u64) {
   (a / b, a % b)
 }
@@ -28,4 +31,16 @@ where
     }
     res + seperator + &cur.to_string()
   })
+}
+
+pub fn substitute_env_vars(command: &str) -> String {
+  lazy_static! {
+    static ref RE_VAR: Regex = Regex::new(r"\$([a-zA-Z_]+[a-zA-Z\d_]*)|\$\{([a-zA-Z_]+[a-zA-Z\d_]*)}").unwrap();
+  }
+  RE_VAR
+    .replace_all(command, |caps: &Captures| {
+      let var_name = caps.get(1).or(caps.get(2)).unwrap().as_str();
+      std::env::var(var_name).unwrap_or(caps[0].to_string())
+    })
+    .into_owned()
 }

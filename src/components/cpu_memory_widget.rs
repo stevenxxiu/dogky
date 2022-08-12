@@ -189,7 +189,10 @@ impl CpuMemoryWidget {
     }
     let container = builder.object::<gtk::Box>("cpu_memory_process_container").unwrap();
     let gesture = gtk::GestureClick::new();
-    let top_command = top_command.clone();
+    let top_command: Vec<String> = top_command
+      .iter()
+      .map(|part| utils::substitute_env_vars(part))
+      .collect();
     gesture.connect_released(move |gesture, _, _, _| {
       gesture.set_state(gtk::EventSequenceState::Claimed);
       let (binary, args) = top_command.split_at(1);
