@@ -196,7 +196,7 @@ impl CpuMemoryWidget {
     gesture.connect_released(move |gesture, _, _, _| {
       gesture.set_state(gtk::EventSequenceState::Claimed);
       let (binary, args) = top_command.split_at(1);
-      Command::new(&binary[0]).args(args).spawn().unwrap();
+      Command::new(&binary[0]).args(args).status().unwrap();
     });
     container.add_controller(&gesture);
     container.set_cursor_from_name(Option::from("pointer"));
