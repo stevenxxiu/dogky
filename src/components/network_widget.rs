@@ -70,6 +70,17 @@ impl NetworkWidget {
     })
   }
 
+  fn update_is_connected(is_connected: bool, builder: &Builder) {
+    builder
+      .object::<gtk::Box>("network_connected_container")
+      .unwrap()
+      .set_visible(is_connected);
+    builder
+      .object::<Label>("network_error_label")
+      .unwrap()
+      .set_visible(!is_connected);
+  }
+
   fn get_network<'a>(
     sysinfo_system: &'a System,
     interface_regex: &'a SerializableRegex,
@@ -90,34 +101,26 @@ impl NetworkWidget {
       .collect()
   }
 
-  fn update_local_ips(network_with_data: &Option<(&String, &NetworkData)>, builder: &Builder) {
-    let mut is_connected = false;
-    if let Some((network_name, _network_data)) = network_with_data {
-      let local_ips = NetworkWidget::get_local_ips(network_name);
-      is_connected = !local_ips.is_empty();
-
-      if is_connected {
-        set_label(builder, "network_interface", network_name);
-
-        // Only include IPv4, as IPv6 addresses are too long
-        let local_ips_str = join_str_iter(
-          local_ips
-            .into_iter()
-            .filter_map(|ip| ip.is_ipv4().then(|| ip.to_string())),
-          " ",
-        );
-        set_copyable_label(builder, "local_ips", local_ips_str);
-      }
+  fn update_local_ips(network_with_data: &Option<(&String, &NetworkData)>, builder: &Builder) -> bool {
+    if network_with_data.is_none() {
+      return false;
     }
+    let (network_name, _network_data) = network_with_data.unwrap();
+    let local_ips = NetworkWidget::get_local_ips(network_name);
+    if local_ips.is_empty() {
+      return false;
+    }
+    set_label(builder, "network_interface", network_name);
 
-    builder
-      .object::<gtk::Box>("network_connected_container")
-      .unwrap()
-      .set_visible(is_connected);
-    builder
-      .object::<Label>("network_error_label")
-      .unwrap()
-      .set_visible(!is_connected);
+    // Only include IPv4, as IPv6 addresses are too long
+    let local_ips_str = join_str_iter(
+      local_ips
+        .into_iter()
+        .filter_map(|ip| ip.is_ipv4().then(|| ip.to_string())),
+      " ",
+    );
+    set_copyable_label(builder, "local_ips", local_ips_str);
+    true
   }
 
   fn update_network(
@@ -151,7 +154,8 @@ impl NetworkWidget {
     system.refresh_networks();
 
     let network_with_data = NetworkWidget::get_network(system, &props.interface_regex);
-    NetworkWidget::update_local_ips(&network_with_data, &self.builder);
+    let is_connected = NetworkWidget::update_local_ips(&network_with_data, &self.builder);
+    NetworkWidget::update_is_connected(is_connected, &self.builder);
     if let Some((_network_name, network_data)) = network_with_data {
       NetworkWidget::update_network(
         props.update_interval,
