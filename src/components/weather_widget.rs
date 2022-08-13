@@ -28,6 +28,7 @@ static ICON_MAP: phf::Map<&'static str, &'static str> = phf_map! {
 };
 
 pub struct WeatherWidget {
+  builder: Arc<Builder>,
   cache_path: Arc<PathBuf>,
   data: Arc<Option<WeatherData>>,
   error_str: Arc<Option<String>>,
@@ -58,11 +59,12 @@ impl WeatherWidget {
     let props = Arc::new(props);
     let cache_path = Arc::new(get_xdg_dirs().place_cache_file("weather.json").unwrap());
     let updater = WeatherWidget {
+      builder: Arc::new(builder),
       cache_path,
       data: Arc::new(None),
       error_str: Arc::new(None),
     };
-    updater.update(props.clone(), &builder);
+    updater.update(props.clone());
     WeatherWidget::add_click_listener(props.clone(), &container);
     container
   }
@@ -98,7 +100,7 @@ impl WeatherWidget {
     }
   }
 
-  fn update_data(mut self, props: Arc<WeatherProps>) -> Self {
+  fn update_data(mut self, props: &WeatherProps) -> Self {
     // No need to fetch data from server if cache time is close enough
     if let Ok(metadata) = std::fs::metadata(self.cache_path.as_ref()) {
       let cache_time = metadata.modified().unwrap();
@@ -124,7 +126,8 @@ impl WeatherWidget {
     self
   }
 
-  fn update_components(self, builder: &Builder) -> Self {
+  fn update_components(self) -> Self {
+    let builder = self.builder.as_ref();
     WeatherWidget::update_error(self.error_str.as_ref(), builder);
     if self.error_str.is_some() {
       return self;
@@ -146,19 +149,14 @@ impl WeatherWidget {
     self
   }
 
-  fn update(mut self, props: Arc<WeatherProps>, builder: &Builder) {
-    self = self.update_data(props.clone());
+  fn update(mut self, props: Arc<WeatherProps>) {
+    self = self.update_data(Arc::as_ref(&props));
     let timeout = if self.error_str.is_none() {
       props.update_interval
     } else {
       props.retry_timeout
     };
-    self = self.update_components(builder);
-    glib::source::timeout_add_seconds_local_once(
-      timeout,
-      glib::clone!(@weak builder => move || {
-        self.update(props, &builder);
-      }),
-    );
+    self = self.update_components();
+    glib::source::timeout_add_seconds_local_once(timeout, || self.update(props));
   }
 }
