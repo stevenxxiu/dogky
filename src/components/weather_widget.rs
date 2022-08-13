@@ -150,7 +150,7 @@ impl WeatherWidget {
   }
 
   fn update(mut self, props: Arc<WeatherProps>) {
-    self = self.update_data(Arc::as_ref(&props));
+    self = self.update_data(&props.as_ref());
     let timeout = if self.error_str.is_none() {
       props.update_interval
     } else {
