@@ -10,8 +10,8 @@ use std::iter::zip;
 use std::process::Command;
 use std::sync::Arc;
 use sysinfo::{
-  ComponentExt, CpuExt, CpuRefreshKind, Process, ProcessExt, ProcessRefreshKind, ProcessStatus, RefreshKind, System,
-  SystemExt,
+  ComponentExt, Cpu, CpuExt, CpuRefreshKind, Process, ProcessExt, ProcessRefreshKind, ProcessStatus, RefreshKind,
+  System, SystemExt,
 };
 
 use crate::config::{CpuBarsProps, CpuMemoryGraphContainerProps, CpuMemoryProcessListProps, CpuMemoryProps};
@@ -43,9 +43,9 @@ enum ProcessColumn {
   Memory,
 }
 
+#[derive(Clone)]
 pub struct CpuMemoryWidget {
   builder: Arc<Builder>,
-  sysinfo_system: Arc<System>,
   cpu_bar_senders: Vec<Sender<f32>>,
   cpu_graph_sender: Sender<f32>,
   memory_graph_sender: Sender<f32>,
@@ -64,25 +64,24 @@ impl CpuMemoryWidget {
       .with_cpu(CpuRefreshKind::new().with_frequency().with_cpu_usage())
       .with_memory()
       .with_components_list();
-    let sysinfo_system = System::new_with_specifics(refresh_kind);
+    let system = System::new_with_specifics(refresh_kind);
 
-    let num_cpus = sysinfo_system.cpus().len();
+    let num_cpus = system.cpus().len();
     let cpu_bar_senders = CpuMemoryWidget::build_cpu_bars(num_cpus, &props.cpu_bars, container_width, &builder);
     let [cpu_graph_sender, memory_graph_sender] =
-      CpuMemoryWidget::build_graphs(&sysinfo_system, &props.graphs, container_width, &builder);
+      CpuMemoryWidget::build_graphs(&system, &props.graphs, container_width, &builder);
     CpuMemoryWidget::add_process_list_click_listener(&props.process_list.top_command, &builder);
-    CpuMemoryWidget::update_static_props(&sysinfo_system, &builder);
     let grouped_process_labels = CpuMemoryWidget::build_process_list(&props.process_list, &builder);
 
     let updater = CpuMemoryWidget {
       builder: Arc::new(builder),
-      sysinfo_system: Arc::new(sysinfo_system),
       cpu_bar_senders,
       cpu_graph_sender,
       memory_graph_sender,
       grouped_process_labels,
     };
-    updater.update(props);
+    updater.update_static_props(&system);
+    updater.update(Arc::new(system), props);
     container
   }
 
@@ -117,16 +116,13 @@ impl CpuMemoryWidget {
   }
 
   fn build_graphs(
-    sysinfo_system: &System,
+    system: &System,
     props: &CpuMemoryGraphContainerProps,
     container_width: u32,
     builder: &Builder,
   ) -> [Sender<f32>; 2] {
     let container = builder.object::<gtk::Box>("cpu_memory_graph_container").unwrap();
-    let graph_specs = [
-      (&props.cpu, 100f32),
-      (&props.memory, sysinfo_system.total_memory() as f32),
-    ];
+    let graph_specs = [(&props.cpu, 100f32), (&props.memory, system.total_memory() as f32)];
     let margin = (container_width - graph_specs.len() as u32 * props.width) / (graph_specs.len() as u32 - 1);
     container.set_spacing(margin as i32);
     graph_specs.map(|(graph_props, max_value)| {
@@ -202,32 +198,27 @@ impl CpuMemoryWidget {
     container.set_cursor_from_name(Option::from("pointer"));
   }
 
-  fn update_static_props(sysinfo_system: &System, builder: &Builder) {
+  fn update_static_props(&self, system: &System) {
     lazy_static! {
       static ref RE_FREQUENCY: Regex = Regex::new(r"\d+ MHz").unwrap();
     }
-    let mut cpu_model = sysinfo_system.global_cpu_info().brand().to_string();
+    let mut cpu_model = system.global_cpu_info().brand().to_string();
     for &s in CPU_MODEL_REMOVE {
       cpu_model = cpu_model.replace(s, "");
     }
-    set_copyable_label(builder, "cpu_model", cpu_model);
+    set_copyable_label(&self.builder, "cpu_model", cpu_model);
 
     let lshw_output = std::fs::read_to_string("/run/lshw-memory.txt").unwrap();
     let memory_frequency = RE_FREQUENCY.find(&lshw_output).into_iter().next().unwrap().as_str();
-    set_label(builder, "memory_frequency", memory_frequency);
+    set_label(&self.builder, "memory_frequency", memory_frequency);
   }
 
-  fn update_cpu(
-    system: &mut System,
-    builder: &Builder,
-    cpu_bar_senders: &Vec<Sender<f32>>,
-    cpu_graph_sender: &Sender<f32>,
-  ) {
+  fn update_cpu(&self, system: &mut System) {
     system.refresh_cpu_specifics(CpuRefreshKind::new().with_frequency().with_cpu_usage());
     system.refresh_components_list(); // Includes the CPU temperature
 
     let cpu_frequency = system.global_cpu_info().frequency() as f32 / 1000.0;
-    set_label(builder, "cpu_frequency", &format!("{:.2} GHz", cpu_frequency));
+    set_label(&self.builder, "cpu_frequency", &format!("{:.2} GHz", cpu_frequency));
 
     let cpu_temperature = system
       .components()
@@ -235,16 +226,20 @@ impl CpuMemoryWidget {
       .find(|component| component.label().eq("Package id 0"))
       .unwrap()
       .temperature();
-    set_label(builder, "cpu_temperature", &format!("{}°C", cpu_temperature));
+    set_label(&self.builder, "cpu_temperature", &format!("{}°C", cpu_temperature));
 
     let cpu_usage = system.global_cpu_info().cpu_usage();
-    set_label(builder, "cpu_usage", &format!("{:.1}%", cpu_usage));
+    set_label(&self.builder, "cpu_usage", &format!("{:.1}%", cpu_usage));
 
-    zip(system.cpus(), cpu_bar_senders).for_each(|(cpu, sender)| sender.send(cpu.cpu_usage() / 100f32).unwrap());
-    cpu_graph_sender.send(system.global_cpu_info().cpu_usage()).unwrap();
+    zip::<&[Cpu], &[Sender<f32>]>(system.cpus(), self.cpu_bar_senders.as_ref())
+      .for_each(|(cpu, sender)| sender.send(cpu.cpu_usage() / 100f32).unwrap());
+    self
+      .cpu_graph_sender
+      .send(system.global_cpu_info().cpu_usage())
+      .unwrap();
   }
 
-  fn update_memory(system: &mut System, builder: &Builder, memory_graph_sender: &Sender<f32>) {
+  fn update_memory(&self, system: &mut System) {
     system.refresh_memory();
 
     let used_memory = system.used_memory() * 1024;
@@ -255,21 +250,16 @@ impl CpuMemoryWidget {
       format_size(total_memory, MEMORY_DECIMAL_PLACES),
       (used_memory as f32) / (total_memory as f32) * 100.0
     );
-    set_label(builder, "memory_usage", &memory_usage_str);
+    set_label(&self.builder, "memory_usage", &memory_usage_str);
 
-    memory_graph_sender.send(system.used_memory() as f32).unwrap();
+    self.memory_graph_sender.send(system.used_memory() as f32).unwrap();
   }
 
-  fn update_system(system: &System, builder: &Builder) {
-    set_label(builder, "system_uptime", &utils::format_duration(system.uptime()));
+  fn update_system(&self, system: &System) {
+    set_label(&self.builder, "system_uptime", &utils::format_duration(system.uptime()));
   }
 
-  fn update_processes(
-    system: &mut System,
-    num_processes: usize,
-    grouped_process_labels: &EnumMap<ProcessSortBy, EnumMap<ProcessColumn, Vec<Label>>>,
-    builder: &Builder,
-  ) {
+  fn update_processes(&self, system: &mut System, props: &CpuMemoryProps) {
     system.refresh_processes_specifics(ProcessRefreshKind::new().with_cpu());
     let mut processes: Vec<&Process> = system.processes().into_iter().map(|(_pid, process)| process).collect();
 
@@ -278,11 +268,11 @@ impl CpuMemoryWidget {
       .filter(|&process| process.status() == ProcessStatus::Run)
       .count();
     let system_num_processes = format!("{} / {: >4}", num_running, system.processes().len());
-    set_label(builder, "system_num_processes", &system_num_processes);
+    set_label(&self.builder, "system_num_processes", &system_num_processes);
 
     let update_grouped_processes = |processes: &Vec<&Process>, labels: &EnumMap<ProcessColumn, Vec<Label>>| {
       let num_cpus = system.cpus().len();
-      for (i, &process) in processes[..num_processes].iter().enumerate() {
+      for (i, &process) in processes[..props.process_list.num_processes].iter().enumerate() {
         // For simplicity, the command is just joined with spaces, and not escaped
         let args = process
           .cmd()
@@ -298,23 +288,22 @@ impl CpuMemoryWidget {
     };
 
     processes.sort_by(|&process_1, &process_2| process_2.cpu_usage().partial_cmp(&process_1.cpu_usage()).unwrap());
-    update_grouped_processes(&processes, &grouped_process_labels[ProcessSortBy::CPU]);
+    update_grouped_processes(&processes, &self.grouped_process_labels[ProcessSortBy::CPU]);
 
     processes.sort_by(|&process_1, &process_2| process_2.memory().partial_cmp(&process_1.memory()).unwrap());
-    update_grouped_processes(&processes, &grouped_process_labels[ProcessSortBy::Memory]);
+    update_grouped_processes(&processes, &self.grouped_process_labels[ProcessSortBy::Memory]);
   }
 
-  fn update(mut self, props: Arc<CpuMemoryProps>) {
-    let system_mut = Arc::get_mut(&mut self.sysinfo_system).unwrap();
-    CpuMemoryWidget::update_cpu(system_mut, &self.builder, &self.cpu_bar_senders, &self.cpu_graph_sender);
-    CpuMemoryWidget::update_memory(system_mut, &self.builder, &self.memory_graph_sender);
-    CpuMemoryWidget::update_system(system_mut, &self.builder);
-    CpuMemoryWidget::update_processes(
-      system_mut,
-      props.process_list.num_processes,
-      &self.grouped_process_labels,
-      &self.builder,
-    );
-    glib::source::timeout_add_seconds_local_once(props.update_interval, move || self.update(props));
+  fn update(&self, mut system: Arc<System>, props: Arc<CpuMemoryProps>) {
+    let system_deref = Arc::get_mut(&mut system).unwrap();
+    system_deref.refresh_networks();
+
+    self.update_cpu(system_deref);
+    self.update_memory(system_deref);
+    self.update_system(system_deref);
+    self.update_processes(system_deref, &props.as_ref());
+
+    let self_clone = self.clone();
+    glib::source::timeout_add_seconds_local_once(props.update_interval, move || self_clone.update(system, props));
   }
 }

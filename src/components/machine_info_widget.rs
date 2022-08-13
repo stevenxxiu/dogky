@@ -3,6 +3,7 @@ use sysinfo::{System, SystemExt};
 
 use crate::gtk_utils::{set_copyable_label, set_label};
 
+#[derive(Clone)]
 pub struct MachineInfoWidget {}
 
 impl MachineInfoWidget {

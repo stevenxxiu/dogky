@@ -27,6 +27,7 @@ static ICON_MAP: phf::Map<&'static str, &'static str> = phf_map! {
   "50" => "🌫",
 };
 
+#[derive(Clone)]
 pub struct WeatherWidget {
   builder: Arc<Builder>,
   cache_path: Arc<PathBuf>,
@@ -58,7 +59,7 @@ impl WeatherWidget {
 
     let props = Arc::new(props);
     let cache_path = Arc::new(get_xdg_dirs().place_cache_file("weather.json").unwrap());
-    let updater = WeatherWidget {
+    let mut updater = WeatherWidget {
       builder: Arc::new(builder),
       cache_path,
       data: Arc::new(None),
@@ -86,28 +87,29 @@ impl WeatherWidget {
     self.data = Arc::new(Some(data));
   }
 
-  fn update_error(error_str: &Option<String>, builder: &Builder) {
-    builder
+  fn update_error(&mut self) {
+    self
+      .builder
       .object::<gtk::Box>("weather_error_container")
       .unwrap()
-      .set_visible(error_str.is_some());
-    builder
+      .set_visible(self.error_str.is_some());
+    self
+      .builder
       .object::<gtk::Box>("weather_connected_container")
       .unwrap()
-      .set_visible(error_str.is_none());
-    if let Some(error_str) = error_str {
-      set_label(builder, "error", &error_str);
+      .set_visible(self.error_str.is_none());
+    if let Some(error_str) = self.error_str.as_ref() {
+      set_label(self.builder.as_ref(), "error", &error_str);
     }
   }
 
-  fn update_data(mut self, props: &WeatherProps) -> Self {
+  fn update_data(&mut self, props: &WeatherProps) {
     // No need to fetch data from server if cache time is close enough
     if let Ok(metadata) = std::fs::metadata(self.cache_path.as_ref()) {
       let cache_time = metadata.modified().unwrap();
       let time_since_cache = SystemTime::now().duration_since(cache_time).unwrap();
       if time_since_cache < Duration::from_secs(props.update_interval as u64) {
         self.load_cache();
-        return self;
       }
     }
 
@@ -123,15 +125,14 @@ impl WeatherWidget {
         self.error_str = Arc::new(Some(error.to_string()));
       }
     }
-    self
   }
 
-  fn update_components(self) -> Self {
-    let builder = self.builder.as_ref();
-    WeatherWidget::update_error(self.error_str.as_ref(), builder);
+  fn update_components(&mut self) {
+    self.update_error();
     if self.error_str.is_some() {
-      return self;
+      return;
     }
+    let builder = self.builder.as_ref();
     let data = Option::as_ref(&self.data).unwrap();
     let icon_key: String = data.weather[0].icon.chars().take(2).collect();
     set_label(builder, "icon", *ICON_MAP.get(icon_key.as_str()).unwrap());
@@ -146,17 +147,18 @@ impl WeatherWidget {
     set_label(builder, "wind", &wind);
     set_label(builder, "sunrise", &format_sun_timestamp(data.sys.sunrise));
     set_label(builder, "sunset", &format_sun_timestamp(data.sys.sunset));
-    self
   }
 
-  fn update(mut self, props: Arc<WeatherProps>) {
-    self = self.update_data(&props.as_ref());
+  fn update(&mut self, props: Arc<WeatherProps>) {
+    self.update_data(&props.as_ref());
     let timeout = if self.error_str.is_none() {
       props.update_interval
     } else {
       props.retry_timeout
     };
-    self = self.update_components();
-    glib::source::timeout_add_seconds_local_once(timeout, || self.update(props));
+    self.update_components();
+
+    let mut self_clone = self.clone();
+    glib::source::timeout_add_seconds_local_once(timeout, move || self_clone.update(props));
   }
 }

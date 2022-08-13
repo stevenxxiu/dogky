@@ -16,9 +16,9 @@ use crate::utils::join_str_iter;
 
 const NETWORK_DECIMAL_PLACES: usize = 2usize;
 
+#[derive(Clone)]
 pub struct NetworkWidget {
   builder: Arc<Builder>,
-  sysinfo_system: Arc<System>,
   download_graph_sender: Sender<f32>,
   upload_graph_sender: Sender<f32>,
 }
@@ -30,18 +30,17 @@ impl NetworkWidget {
 
     let props = Arc::new(props);
     let refresh_kind = RefreshKind::new().with_networks().with_networks_list();
-    let sysinfo_system = System::new_with_specifics(refresh_kind);
+    let system = System::new_with_specifics(refresh_kind);
 
     let [download_graph_sender, upload_graph_sender] =
       NetworkWidget::build_graphs(&props.graphs, container_width, &builder);
 
     let updater = NetworkWidget {
       builder: builder.clone(),
-      sysinfo_system: Arc::new(sysinfo_system),
       download_graph_sender,
       upload_graph_sender,
     };
-    updater.update(props.clone());
+    updater.update(Arc::new(system), props.clone());
 
     NetworkWidgetPublicIp::build(props.public_ip_update_interval, builder.clone());
 
@@ -70,22 +69,24 @@ impl NetworkWidget {
     })
   }
 
-  fn update_is_connected(is_connected: bool, builder: &Builder) {
-    builder
+  fn update_is_connected(&self, is_connected: bool) {
+    self
+      .builder
       .object::<gtk::Box>("network_connected_container")
       .unwrap()
       .set_visible(is_connected);
-    builder
+    self
+      .builder
       .object::<Label>("network_error_label")
       .unwrap()
       .set_visible(!is_connected);
   }
 
   fn get_network<'a>(
-    sysinfo_system: &'a System,
+    system: &'a System,
     interface_regex: &'a SerializableRegex,
   ) -> Option<(&'a String, &'a NetworkData)> {
-    sysinfo_system
+    system
       .networks()
       .into_iter()
       .filter(|(interface_name, _data)| interface_regex.is_match(interface_name))
@@ -101,7 +102,7 @@ impl NetworkWidget {
       .collect()
   }
 
-  fn update_local_ips(network_with_data: &Option<(&String, &NetworkData)>, builder: &Builder) -> bool {
+  fn update_local_ips(&self, network_with_data: &Option<(&String, &NetworkData)>) -> bool {
     if network_with_data.is_none() {
       return false;
     }
@@ -110,7 +111,7 @@ impl NetworkWidget {
     if local_ips.is_empty() {
       return false;
     }
-    set_label(builder, "network_interface", network_name);
+    set_label(&self.builder, "network_interface", network_name);
 
     // Only include IPv4, as IPv6 addresses are too long
     let local_ips_str = join_str_iter(
@@ -119,53 +120,43 @@ impl NetworkWidget {
         .filter_map(|ip| ip.is_ipv4().then(|| ip.to_string())),
       " ",
     );
-    set_copyable_label(builder, "local_ips", local_ips_str);
+    set_copyable_label(&self.builder, "local_ips", local_ips_str);
     true
   }
 
-  fn update_network(
-    update_interval: u32,
-    network_data: &NetworkData,
-    builder: &Builder,
-    download_graph_sender: &Sender<f32>,
-    upload_graph_sender: &Sender<f32>,
-  ) {
+  fn update_network(&self, network_data: &NetworkData, update_interval: u32) {
     let total_received = network_data.total_received();
     let download_total_str = format_size(total_received, NETWORK_DECIMAL_PLACES);
-    set_label(builder, "download_total", &download_total_str);
+    set_label(&self.builder, "download_total", &download_total_str);
 
     let total_transmitted = network_data.total_transmitted();
     let total_transmitted_str = format_size(total_transmitted, NETWORK_DECIMAL_PLACES);
-    set_label(builder, "upload_total", &total_transmitted_str);
+    set_label(&self.builder, "upload_total", &total_transmitted_str);
 
     let download_speed = network_data.received() as f32 / update_interval as f32;
     let download_speed_str = format_speed(download_speed, NETWORK_DECIMAL_PLACES);
-    set_label(builder, "download_speed", &download_speed_str);
-    download_graph_sender.send(download_speed).unwrap();
+    set_label(&self.builder, "download_speed", &download_speed_str);
+    self.download_graph_sender.send(download_speed).unwrap();
 
     let upload_speed = network_data.transmitted() as f32 / update_interval as f32;
     let upload_speed_str = format_speed(upload_speed, NETWORK_DECIMAL_PLACES);
-    set_label(builder, "upload_speed", &upload_speed_str);
-    upload_graph_sender.send(upload_speed).unwrap();
+    set_label(&self.builder, "upload_speed", &upload_speed_str);
+    self.upload_graph_sender.send(upload_speed).unwrap();
   }
 
-  fn update(mut self, props: Arc<NetworkProps>) {
-    let system = Arc::get_mut(&mut self.sysinfo_system).unwrap();
-    system.refresh_networks();
+  fn update(&self, mut system: Arc<System>, props: Arc<NetworkProps>) {
+    let system_deref = Arc::get_mut(&mut system).unwrap();
+    system_deref.refresh_networks();
 
-    let network_with_data = NetworkWidget::get_network(system, &props.interface_regex);
-    let is_connected = NetworkWidget::update_local_ips(&network_with_data, &self.builder);
-    NetworkWidget::update_is_connected(is_connected, &self.builder);
+    let network_with_data = NetworkWidget::get_network(system_deref, &props.interface_regex);
+    let is_connected = self.update_local_ips(&network_with_data);
+    self.update_is_connected(is_connected);
     if let Some((_network_name, network_data)) = network_with_data {
-      NetworkWidget::update_network(
-        props.update_interval,
-        network_data,
-        &self.builder,
-        &self.download_graph_sender,
-        &self.upload_graph_sender,
-      );
+      self.update_network(network_data, props.update_interval);
     }
-    glib::source::timeout_add_seconds_local_once(props.update_interval, move || self.update(props));
+
+    let self_clone = self.clone();
+    glib::source::timeout_add_seconds_local_once(props.update_interval, move || self_clone.update(system, props));
   }
 }
 
