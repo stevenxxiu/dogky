@@ -3,12 +3,6 @@ name = "dogky"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[build-dependencies]
-gtk = { version = "0.4", package = "gtk4" }
-sass-rs = "0.2.2"
-
 [dependencies]
 chrono = "0.4.19"
 circular-queue = "0.2.6"
@@ -36,3 +30,7 @@ tokio = "1.20.1"
 uname = "0.1.1"
 whoami = "1.2.1"
 xdg = "2.4.1"
+
+[build-dependencies]
+gtk = { version = "0.4", package = "gtk4" }
+sass-rs = "0.2.2"
