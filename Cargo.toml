@@ -34,3 +34,8 @@ xdg = "2.4.1"
 [build-dependencies]
 gtk = { version = "0.4", package = "gtk4" }
 sass-rs = "0.2.2"
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1
