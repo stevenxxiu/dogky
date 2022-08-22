@@ -83,7 +83,7 @@
             <property name="halign">center</property>
             <child>
               <object class="GtkLabel">
-                <property name="label">☼</property>
+                <property name="label">☀️</property>
                 <property name="name">weather-sunrise-icon</property>
               </object>
             </child>
@@ -94,7 +94,7 @@
             </child>
             <child>
               <object class="GtkLabel">
-                <property name="label">☾</property>
+                <property name="label">🌙</property>
                 <property name="name">weather-sunset-icon</property>
               </object>
             </child>
