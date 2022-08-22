@@ -49,7 +49,7 @@ fn degrees_to_direction(degrees: f64) -> &'static str {
 
 fn format_sun_timestamp(timestamp: u64) -> String {
   let naive = NaiveDateTime::from_timestamp(timestamp as i64, 0);
-  naive.format("%l:%M %p").to_string()
+  naive.format("%-l:%M %p").to_string()
 }
 
 impl WeatherWidget {
