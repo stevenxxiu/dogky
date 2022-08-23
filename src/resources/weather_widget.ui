@@ -72,8 +72,14 @@
               </object>
             </child>
             <child>
-              <object class="GtkLabel" id="wind">
-                <property name="name">weather-wind</property>
+              <object class="GtkLabel" id="wind_speed">
+                <property name="name">weather-wind-speed</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label">⮕</property>
+                <property name="name">weather-wind-direction</property>
               </object>
             </child>
           </object>

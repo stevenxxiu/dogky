@@ -1,6 +1,7 @@
 use chrono::{FixedOffset, NaiveDateTime};
+use gtk::gdk::Display;
 use gtk::prelude::{GestureExt, WidgetExt};
-use gtk::{glib, Builder};
+use gtk::{glib, Builder, CssProvider, StyleContext};
 use heck::ToTitleCase;
 use std::fs::File;
 use std::ops::Add;
@@ -34,18 +35,7 @@ pub struct WeatherWidget {
   cache_path: Arc<PathBuf>,
   data: Arc<Option<WeatherData>>,
   error_str: Arc<Option<String>>,
-}
-
-fn degrees_to_direction(degrees: f64) -> &'static str {
-  let directions = [
-    "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW",
-  ];
-  let sector_angle = 360.0 / (directions.len() as f64);
-  // `[0]` is `-sector_angle / 2 <= degrees < sector_angle / 2`
-  // `[1]` is `sector_angle / 2 <= degrees < 3 * sector_angle / 2`
-  // ...
-  let i = ((degrees + sector_angle / 2.0) / sector_angle) as usize % directions.len();
-  directions[i]
+  css_provider: Arc<CssProvider>,
 }
 
 fn format_sun_timestamp(timestamp: u64, timezone: FixedOffset) -> String {
@@ -65,7 +55,11 @@ impl WeatherWidget {
       cache_path,
       data: Arc::new(None),
       error_str: Arc::new(None),
+      css_provider: Arc::new(CssProvider::new()),
     };
+    let display = Display::default().expect("Could not connect to a display.");
+    let priority = gtk::STYLE_PROVIDER_PRIORITY_APPLICATION;
+    StyleContext::add_provider_for_display(&display, updater.css_provider.as_ref(), priority);
     updater.update(props.clone());
     WeatherWidget::add_click_listener(props.clone(), &container);
     container
@@ -143,12 +137,15 @@ impl WeatherWidget {
     set_label(builder, "temperature", &format!("{}°C", data.main.temp.round()));
     set_label(builder, "humidity", &format!("{}%", data.main.humidity));
 
-    let wind = format!(
-      "{} kph {}",
-      data.wind.speed.round(),
-      degrees_to_direction(data.wind.deg)
+    let wind_speed = format!("{} kph", data.wind.speed.round());
+    set_label(builder, "wind_speed", &wind_speed);
+
+    // The wind degrees character used is `⮕`, which is at 90°
+    let wind_css = format!(
+      "#weather-wind-direction {{ transform: rotate({}deg); }}",
+      data.wind.deg - 90.0
     );
-    set_label(builder, "wind", &wind);
+    self.css_provider.load_from_data(wind_css.as_bytes());
 
     let timezone = FixedOffset::east(data.timezone);
     set_label(builder, "sunrise", &format_sun_timestamp(data.sys.sunrise, timezone));
