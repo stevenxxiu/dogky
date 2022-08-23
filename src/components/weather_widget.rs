@@ -134,10 +134,10 @@ impl WeatherWidget {
     set_label(builder, "icon", *ICON_MAP.get(icon_key.as_str()).unwrap());
 
     set_label(builder, "conditions", &data.weather[0].description.to_title_case());
-    set_label(builder, "temperature", &format!("{}°C", data.main.temp.round()));
+    set_label(builder, "temperature", &format!("{:.0}°C", data.main.temp));
     set_label(builder, "humidity", &format!("{}%", data.main.humidity));
 
-    let wind_speed = format!("{} kph", data.wind.speed.round());
+    let wind_speed = format!("{:.0} kph", data.wind.speed);
     set_label(builder, "wind_speed", &wind_speed);
 
     // The wind degrees character used is `⮕`, which is at 90°
