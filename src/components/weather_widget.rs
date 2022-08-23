@@ -1,8 +1,9 @@
-use chrono::NaiveDateTime;
+use chrono::{FixedOffset, NaiveDateTime};
 use gtk::prelude::{GestureExt, WidgetExt};
 use gtk::{glib, Builder};
 use heck::ToTitleCase;
 use std::fs::File;
+use std::ops::Add;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
@@ -47,9 +48,9 @@ fn degrees_to_direction(degrees: f64) -> &'static str {
   directions[i]
 }
 
-fn format_sun_timestamp(timestamp: u64) -> String {
-  let naive = NaiveDateTime::from_timestamp(timestamp as i64, 0);
-  naive.format("%-l:%M %p").to_string()
+fn format_sun_timestamp(timestamp: u64, timezone: FixedOffset) -> String {
+  let date_time = NaiveDateTime::from_timestamp(timestamp as i64, 0).add(timezone);
+  date_time.format("%-l:%M %p").to_string()
 }
 
 impl WeatherWidget {
@@ -134,19 +135,24 @@ impl WeatherWidget {
     }
     let builder = self.builder.as_ref();
     let data = Option::as_ref(&self.data).unwrap();
+
     let icon_key: String = data.weather[0].icon.chars().take(2).collect();
     set_label(builder, "icon", *ICON_MAP.get(icon_key.as_str()).unwrap());
+
     set_label(builder, "conditions", &data.weather[0].description.to_title_case());
     set_label(builder, "temperature", &format!("{}°C", data.main.temp.round()));
     set_label(builder, "humidity", &format!("{}%", data.main.humidity));
+
     let wind = format!(
       "{} kph {}",
       data.wind.speed.round(),
       degrees_to_direction(data.wind.deg)
     );
     set_label(builder, "wind", &wind);
-    set_label(builder, "sunrise", &format_sun_timestamp(data.sys.sunrise));
-    set_label(builder, "sunset", &format_sun_timestamp(data.sys.sunset));
+
+    let timezone = FixedOffset::east(data.timezone);
+    set_label(builder, "sunrise", &format_sun_timestamp(data.sys.sunrise, timezone));
+    set_label(builder, "sunset", &format_sun_timestamp(data.sys.sunset, timezone));
   }
 
   fn update(&mut self, props: Arc<WeatherProps>) {
