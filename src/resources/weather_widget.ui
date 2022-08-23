@@ -88,8 +88,8 @@
               </object>
             </child>
             <child>
-              <object class="GtkLabel" id="sunset">
-                <property name="name">weather-sunset</property>
+              <object class="GtkLabel" id="sunrise">
+                <property name="name">weather-sunrise</property>
               </object>
             </child>
             <child>
@@ -99,8 +99,8 @@
               </object>
             </child>
             <child>
-              <object class="GtkLabel" id="sunrise">
-                <property name="name">weather-sunrise</property>
+              <object class="GtkLabel" id="sunset">
+                <property name="name">weather-sunset</property>
               </object>
             </child>
           </object>
