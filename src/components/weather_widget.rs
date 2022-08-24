@@ -140,10 +140,10 @@ impl WeatherWidget {
     let wind_speed = format!("{:.0} kph", data.wind.speed);
     set_label(builder, "wind_speed", &wind_speed);
 
-    // The wind degrees character used is `⮕`, which is at 90°
+    // The data is offset by -180°. The wind degrees character used is `⮕`, which is at 90°.
     let wind_css = format!(
       "#weather-wind-direction {{ transform: rotate({}deg); }}",
-      data.wind.deg - 90.0
+      data.wind.deg + 180.0 - 90.0
     );
     self.css_provider.load_from_data(wind_css.as_bytes());
 
