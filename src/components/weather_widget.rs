@@ -137,7 +137,7 @@ impl WeatherWidget {
     set_label(builder, "temperature", &format!("{:.0}°C", data.main.temp));
     set_label(builder, "humidity", &format!("{}%", data.main.humidity));
 
-    let wind_speed = format!("{:.0} kph", data.wind.speed);
+    let wind_speed = format!("{:.1} m/s", data.wind.speed);
     set_label(builder, "wind_speed", &wind_speed);
 
     // The data is offset by -180°. The wind degrees character used is `⮕`, which is at 90°.
