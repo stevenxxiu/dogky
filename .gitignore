@@ -1,4 +1,5 @@
 /node_modules/
 /target/
 /src/resources/style.css
+__pycache__/
 *.cmb

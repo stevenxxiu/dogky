@@ -37,8 +37,8 @@ fn compile_sass(cur_dir: &PathBuf) {
 
 fn copy_scripts(cur_dir: &PathBuf) {
   let target_dir = get_output_path();
-  let src = Path::join(&cur_dir, "src/move_window.sh");
-  let dest = Path::join(Path::new(&target_dir), Path::new("move_window.sh"));
+  let src = Path::join(&cur_dir, "src/move_window.py");
+  let dest = Path::join(Path::new(&target_dir), Path::new("move_window.py"));
   std::fs::copy(src, dest).unwrap();
 }
 

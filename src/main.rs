@@ -37,7 +37,7 @@ fn load_css(css_bytes: &Option<Vec<u8>>) {
 }
 
 fn move_window(app: &Application, window: &Window, config_props: &ConfigProps) {
-  // Set initial opacity to 0, to avoid flickering when `move_window.sh` runs
+  // Set initial opacity to 0, to avoid flickering when `move_window.py` runs
   window.set_opacity(0f64);
   let (monitor_width, monitor_height, window_width, window_height) = config_props.calculate_size(window);
   window.set_size_request(window_width as i32, window_height as i32);
@@ -46,7 +46,7 @@ fn move_window(app: &Application, window: &Window, config_props: &ConfigProps) {
     .unwrap()
     .parent()
     .unwrap()
-    .join("move_window.sh");
+    .join("move_window.py");
   let output = Command::new(move_window_script_path)
     .args([monitor_width, monitor_height, window_width, window_height].map(|n| n.to_string()))
     .output()
