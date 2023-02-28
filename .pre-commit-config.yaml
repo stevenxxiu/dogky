@@ -12,19 +12,19 @@ repos:
       - id: debug-statements
       - id: detect-private-key
   - repo: https://github.com/doublify/pre-commit-rust
-    rev: master
+    rev: v1.0
     hooks:
       - id: fmt
   - repo: https://github.com/PyCQA/isort
-    rev: 5.11.3
+    rev: 5.12.0
     hooks:
       - id: isort
   - repo: https://github.com/PyCQA/prospector
-    rev: v1.8.3
+    rev: v1.9.0
     hooks:
       - id: prospector
   - repo: https://github.com/psf/black
-    rev: 22.12.0
+    rev: 23.1.0
     hooks:
       - id: black
   - repo: https://github.com/pre-commit/mirrors-prettier
@@ -33,7 +33,7 @@ repos:
       - id: prettier
         stages: [commit]
   - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
-    rev: v9.3.0
+    rev: v9.4.0
     hooks:
       - id: commitlint
         stages: [commit-msg]
