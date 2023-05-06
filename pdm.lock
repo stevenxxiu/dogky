@@ -32,8 +32,9 @@ dependencies = [
 ]
 
 [metadata]
-lock_version = "4.1"
-content_hash = "sha256:42523943210c2949c4b9543785c98f4417cb01382d5988fff4186a162f247020"
+lock_version = "4.2"
+groups = ["default"]
+content_hash = "sha256:094fc21e2b93d0bf770477ad710b2518748070f0c4d62a2ddbd202571d8435b3"
 
 [metadata.files]
 "ewmh 0.1.6" = [

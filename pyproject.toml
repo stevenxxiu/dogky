@@ -9,11 +9,11 @@ dependencies = [
     'ewmh>=0.1.6',
     'xlib>=0.21',
 ]
-requires-python = '>=3.10'
+requires-python = '>=3.11'
 license = {text = 'MIT'}
 
 [tool.black]
-target-version = ['py310']
+target-version = ['py311']
 line-length = 120
 skip-string-normalization = true
 quiet = true

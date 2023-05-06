@@ -1,5 +1,6 @@
 /node_modules/
 /target/
+/.pdm-python
 /src/resources/style.css
 __pycache__/
 *.cmb
