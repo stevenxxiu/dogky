@@ -9,30 +9,42 @@ dependencies = [
     'ewmh>=0.1.6',
     'xlib>=0.21',
 ]
-requires-python = '>=3.11'
+requires-python = '>=3.13'
 license = {text = 'MIT'}
 
-[tool.black]
-target-version = ['py311']
-line-length = 120
-skip-string-normalization = true
-quiet = true
-exclude = '''
-/(
-    \.git
-)/
-'''
-
-[tool.isort]
-profile = 'black'
-line_length = 120
-sections = ['FUTURE', 'STDLIB', 'THIRDPARTY', 'FIRSTPARTY', 'LOCALFOLDER']
-multi_line_output = 3
-use_parentheses = true
-atomic = true
-lines_after_imports = 2
-combine_star = true
-include_trailing_comma = true
-force_grid_wrap = 0
+[build-system]
+requires = [
+    'pdm-pep517>=1.0.0',
+]
+build-backend = 'pdm.pep517.api'
 
 [tool.pdm]
+
+[tool.pdm.dev-dependencies]
+lint = [
+    'vulture',
+]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.format]
+quote-style = 'single'
+
+[tool.pylint]
+init-hook = 'import sys; sys.path.append(".")'
+disable = [
+    'invalid-name',
+    'missing-class-docstring',
+    'missing-function-docstring',
+    'missing-module-docstring',
+    'no-member',
+    'too-few-public-methods',
+]
+max-line-length = 120
+
+[tool.pyright]
+extraPaths = [
+    '__pypackages__/3.13/lib/',
+    '/usr/lib/python3.13/site-packages/pdm/pep582/',
+]
