@@ -3,7 +3,7 @@ import argparse
 import time
 
 from ewmh import EWMH
-from Xlib.protocol.rq import Window
+from Xlib.xobject.drawable import Window
 
 
 WINDOW_VISIBLE_POLL_INTERVAL = 0.1  # Seconds
@@ -13,6 +13,7 @@ def find_window_sync(ewmh: EWMH, win_instance: str, win_class: str) -> Window:
     while True:
         windows = ewmh.getClientList()
         for window in windows:
+            assert isinstance(window, Window)
             if ewmh.getWmDesktop(window) == 0xFFFFFFFF:
                 continue
             if window.get_wm_class() == (win_instance, win_class):
