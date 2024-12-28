@@ -1,75 +1,75 @@
-use std::process::Command;
-use std::sync::Arc;
+use iced::event::{self, Event};
+use iced::widget::{self, column, Column};
+use iced::window;
+use iced::{Point, Size, Subscription, Task};
 
-use gtk::gdk::Display;
-use gtk::prelude::{ApplicationExt, ApplicationExtManual, GtkApplicationExt, GtkWindowExt, WidgetExt};
-use gtk::{gio, Application, CssProvider, StyleContext};
-use gtk::{glib, Window};
-
-use crate::components::build_window;
-use crate::config::{Config, ConfigProps};
-
-mod api;
-mod components;
 mod config;
-mod custom_components;
-mod format_size;
-mod gtk_utils;
 mod path;
 mod serde_structs;
-mod utils;
+mod styles;
 
-const APP_ID: &str = "org.dogky";
+const HIDDEN_OFFSET: f32 = 10000.;
 
-fn load_css(css_bytes: &Option<Vec<u8>>) {
-  let display = Display::default().expect("Could not connect to a display.");
-  let priority = gtk::STYLE_PROVIDER_PRIORITY_APPLICATION;
+fn set_pos_to_res(_window: Size<f32>, resolution: Size<f32>) -> Point<f32> {
+  Point::new(resolution.width + HIDDEN_OFFSET, resolution.height + HIDDEN_OFFSET)
+}
 
-  let provider_static = CssProvider::new();
-  provider_static.load_from_data(include_bytes!("resources/style.css"));
-  StyleContext::add_provider_for_display(&display, &provider_static, priority);
+#[derive(Debug, Clone)]
+enum Message {
+  EventOccurred(Event),
+}
 
-  if let Some(css_bytes) = css_bytes {
-    let provider_custom = CssProvider::new();
-    provider_custom.load_from_data(css_bytes);
-    StyleContext::add_provider_for_display(&display, &provider_custom, priority);
+#[derive(Default)]
+struct Dogky {
+  config_props: Option<config::ConfigProps>,
+}
+
+impl Dogky {
+  fn new() -> (Self, Task<Message>) {
+    (
+      Self {
+        config_props: Some(config::load_config().unwrap()),
+      },
+      widget::focus_next(),
+    )
+  }
+
+  fn update(&mut self, message: Message) -> Task<Message> {
+    let config_props = self.config_props.as_ref().unwrap();
+    match message {
+      Message::EventOccurred(event) => match event {
+        Event::Window(window::Event::Opened { position, size: _ }) => {
+          let position = position.unwrap();
+          let (width, height) = (position.x - HIDDEN_OFFSET, position.y - HIDDEN_OFFSET);
+          let size = Size::new(config_props.width as f32, height);
+          let pos = Point {
+            x: (width - config_props.width as f32),
+            y: 0.,
+          };
+          window::get_latest().and_then(move |id| Task::batch([window::resize(id, size), window::move_to(id, pos)]))
+        }
+        _ => Task::none(),
+      },
+    }
+  }
+
+  fn subscription(&self) -> Subscription<Message> {
+    event::listen().map(Message::EventOccurred)
+  }
+
+  fn view(&self) -> Column<Message> {
+    column![]
   }
 }
 
-fn move_window(app: &Application, window: &Window, config_props: &ConfigProps) {
-  // Set initial opacity to 0, to avoid flickering when `move_window.py` runs
-  window.set_opacity(0f64);
-  let (monitor_width, monitor_height, window_width, window_height) = config_props.calculate_size(window);
-  window.set_size_request(window_width as i32, window_height as i32);
-
-  let move_window_script_path = std::env::current_exe()
-    .unwrap()
-    .parent()
-    .unwrap()
-    .join("move_window.py");
-  let output = Command::new(move_window_script_path)
-    .args([monitor_width, monitor_height, window_width, window_height].map(|n| n.to_string()))
-    .output()
-    .unwrap();
-  if !output.status.success() {
-    app.quit();
-    return;
-  }
-  window.set_opacity(1f64);
-}
-
-fn build_ui(app: &Application, config_props: &ConfigProps) {
-  let window = build_window(config_props);
-  app.add_window(&window);
-  window.present();
-  move_window(app, &window, config_props);
-}
-
-fn main() {
-  let config = Arc::new(Config::load().unwrap());
-  gio::resources_register_include!("dogky.gresource").unwrap();
-  let app = Application::builder().application_id(APP_ID).build();
-  app.connect_startup(glib::clone!(@strong config => move |_| load_css(&config.css_bytes)));
-  app.connect_activate(glib::clone!(@strong config => move |app| build_ui(app, &config.config_props)));
-  app.run();
+pub fn main() {
+  let _ = iced::application("dogky", Dogky::update, Dogky::view)
+    .subscription(Dogky::subscription)
+    .antialiasing(true)
+    .position(window::Position::SpecificWith(set_pos_to_res))
+    .decorations(false)
+    .transparent(true)
+    .level(window::Level::AlwaysOnBottom)
+    .style(|_state, _theme| styles::get_window_appearance())
+    .run_with(Dogky::new);
 }
