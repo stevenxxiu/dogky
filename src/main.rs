@@ -1,6 +1,6 @@
 use iced::event::{self, Event};
 use iced::widget::{self, column, Column};
-use iced::window;
+use iced::window::{self, Mode};
 use iced::{Point, Size, Subscription, Task};
 
 mod config;
@@ -8,10 +8,8 @@ mod path;
 mod serde_structs;
 mod styles;
 
-const HIDDEN_OFFSET: f32 = 10000.;
-
 fn set_pos_to_res(_window: Size<f32>, resolution: Size<f32>) -> Point<f32> {
-  Point::new(resolution.width + HIDDEN_OFFSET, resolution.height + HIDDEN_OFFSET)
+  Point::new(resolution.width, resolution.height)
 }
 
 #[derive(Debug, Clone)]
@@ -40,13 +38,19 @@ impl Dogky {
       Message::EventOccurred(event) => match event {
         Event::Window(window::Event::Opened { position, size: _ }) => {
           let position = position.unwrap();
-          let (width, height) = (position.x - HIDDEN_OFFSET, position.y - HIDDEN_OFFSET);
+          let (width, height) = (position.x, position.y);
           let size = Size::new(config_props.width as f32, height);
           let pos = Point {
             x: (width - config_props.width as f32),
             y: 0.,
           };
-          window::get_latest().and_then(move |id| Task::batch([window::resize(id, size), window::move_to(id, pos)]))
+          window::get_latest().and_then(move |id| {
+            Task::batch([
+              window::resize(id, size),
+              window::move_to(id, pos),
+              window::change_mode(id, Mode::Windowed),
+            ])
+          })
         }
         _ => Task::none(),
       },
@@ -66,9 +70,13 @@ pub fn main() {
   let _ = iced::application("dogky", Dogky::update, Dogky::view)
     .subscription(Dogky::subscription)
     .antialiasing(true)
-    .position(window::Position::SpecificWith(set_pos_to_res))
-    .decorations(false)
-    .transparent(true)
+    .window(iced::window::Settings {
+      position: window::Position::SpecificWith(set_pos_to_res),
+      visible: false,
+      decorations: false,
+      transparent: true,
+      ..Default::default()
+    })
     .level(window::Level::AlwaysOnBottom)
     .style(|_state, _theme| styles::get_window_appearance())
     .run_with(Dogky::new);
