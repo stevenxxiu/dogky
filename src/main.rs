@@ -2,6 +2,7 @@ use iced::event::{self, Event};
 use iced::widget::{self, column, Column};
 use iced::window::{self, Mode};
 use iced::{Point, Size, Subscription, Task};
+use xcb::{x, Xid, XidNew};
 
 mod config;
 mod path;
@@ -32,6 +33,40 @@ impl Dogky {
     )
   }
 
+  fn set_wm_states(window_id: u32) {
+    let (conn, _screen_num) = xcb::Connection::connect(None).unwrap();
+    let setup = conn.get_setup();
+    let screen = setup.roots().nth(0).unwrap(); // Assume screen 0
+    let window: x::Window = unsafe { XidNew::new(window_id) };
+
+    let get_net_wm_atom = |name| {
+      let cookie = conn.send_request(&x::InternAtom {
+        only_if_exists: true,
+        name,
+      });
+      conn.wait_for_reply(cookie).unwrap().atom()
+    };
+
+    let wm_state = get_net_wm_atom(b"_NET_WM_STATE");
+    for name in [
+      b"_NET_WM_STATE_STICKY".as_ref(),
+      b"_NET_WM_STATE_SKIP_TASKBAR".as_ref(),
+      b"_NET_WM_STATE_SKIP_PAGER".as_ref(),
+      b"_NET_WM_STATE_BELOW".as_ref(),
+    ] {
+      let atom = get_net_wm_atom(name);
+      let data = x::ClientMessageData::Data32([1, atom.resource_id(), 0, 0, 0]);
+      let event = x::ClientMessageEvent::new(window, wm_state, data);
+      let cookie = conn.send_request_checked(&x::SendEvent {
+        propagate: false,
+        destination: x::SendEventDest::Window(screen.root()),
+        event_mask: x::EventMask::STRUCTURE_NOTIFY,
+        event: &event,
+      });
+      conn.check_request(cookie).unwrap();
+    }
+  }
+
   fn update(&mut self, message: Message) -> Task<Message> {
     let config_props = self.config_props.as_ref().unwrap();
     match message {
@@ -48,6 +83,10 @@ impl Dogky {
             Task::batch([
               window::resize(id, size),
               window::move_to(id, pos),
+              window::get_raw_id::<Message>(id).then(|raw_id| {
+                Self::set_wm_states(raw_id as u32);
+                Task::none()
+              }),
               window::change_mode(id, Mode::Windowed),
             ])
           })
