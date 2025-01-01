@@ -117,6 +117,6 @@ pub fn main() {
       ..Default::default()
     })
     .level(window::Level::AlwaysOnBottom)
-    .style(|_state, _theme| styles::get_window_appearance())
+    .style(|_state, _theme| styles::WINDOW_APPEARANCE)
     .run_with(Dogky::new);
 }
