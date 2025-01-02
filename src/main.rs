@@ -1,10 +1,10 @@
 use iced::event::{self, Event};
-use iced::widget::{self, column};
+use iced::widget::{self, column, container, horizontal_rule};
 use iced::window::{self, Mode};
 use iced::{Element, Point, Size, Subscription, Task};
 use xcb::{x, Xid, XidNew};
 
-use components::WeatherWidget;
+use components::{MachineInfoWidget, WeatherWidget};
 use message::Message;
 
 mod api;
@@ -14,6 +14,7 @@ mod message;
 mod path;
 mod serde_structs;
 mod styles;
+mod ui_utils;
 
 fn set_pos_to_res(_window: Size<f32>, resolution: Size<f32>) -> Point<f32> {
   Point::new(resolution.width, resolution.height)
@@ -22,6 +23,7 @@ fn set_pos_to_res(_window: Size<f32>, resolution: Size<f32>) -> Point<f32> {
 struct Dogky {
   width: u32,
   weather: WeatherWidget,
+  machine_info: MachineInfoWidget,
 }
 
 impl Dogky {
@@ -31,6 +33,7 @@ impl Dogky {
       Self {
         width: config.width,
         weather: WeatherWidget::new(config.weather),
+        machine_info: MachineInfoWidget::new(),
       },
       widget::focus_next(),
     )
@@ -96,6 +99,7 @@ impl Dogky {
         _ => Task::none(),
       },
       Message::WeatherWidgetTick | Message::WeatherWidgetClick => self.weather.update(message),
+      Message::MachineInfoKernelVersionClick => self.machine_info.update(message),
     }
   }
 
@@ -104,7 +108,10 @@ impl Dogky {
   }
 
   fn view(&self) -> Element<Message> {
-    column![self.weather.view()].padding(styles::get_padding()).into()
+    let separator = container(horizontal_rule(1)).padding(styles::get_separator_padding());
+    column![self.weather.view(), separator, self.machine_info.view()]
+      .padding(styles::get_padding())
+      .into()
   }
 }
 

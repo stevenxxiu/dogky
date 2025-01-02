@@ -18,6 +18,7 @@ use crate::config::WeatherProps;
 use crate::message::Message;
 use crate::path::get_xdg_dirs;
 use crate::styles::weather as styles;
+use crate::ui_utils::space_row;
 
 // Unicode weather symbols to use
 static ICON_MAP: phf::Map<&'static str, &'static str> = phf_map! {

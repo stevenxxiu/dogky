@@ -5,4 +5,5 @@ pub enum Message {
   EventOccurred(Event),
   WeatherWidgetTick,
   WeatherWidgetClick,
+  MachineInfoKernelVersionClick,
 }

@@ -18,13 +18,19 @@ pub static WINDOW_APPEARANCE: Appearance = Appearance {
   text_color: Color::WHITE,
 };
 
+pub fn get_separator_padding() -> Padding {
+  Padding::from([8, 0])
+}
+
 pub fn get_padding() -> Padding {
   Padding::from([0, 10])
 }
 
 const MARGIN_SIDE: f32 = 4.;
+pub const SPACING: f32 = 8.;
 
 pub mod weather {
+  pub use super::SPACING;
   use super::*;
 
   pub const CONTAINER_PADDING: Padding = Padding {
@@ -33,8 +39,6 @@ pub mod weather {
     bottom: 0.,
     left: MARGIN_SIDE,
   };
-
-  pub const SPACING: f32 = 8.;
 
   pub const ICON_FONT: Font = Font::with_name("Noto Color Emoji");
 
@@ -64,4 +68,15 @@ pub mod weather {
     bottom: 0.,
     left: 0.,
   };
+}
+
+pub mod machine_info {
+  use super::*;
+
+  pub const USER_COLOR: Color = color!(0x9cff9f);
+  pub const AT_COLOR: Color = color!(0x4251f5);
+  pub const HOST_COLOR: Color = color!(0x42d1f5);
+  pub const DISTRO_COLOR: Color = color!(0xdddddd);
+  pub const ARCHITECTURE_COLOR: Color = color!(0xdddddd);
+  pub const KERNEL_VERSION_COLOR: Color = color!(0xd9d900);
 }

@@ -172,12 +172,6 @@ impl WeatherComponent {
   }
 
   pub fn view(&self) -> Element<Message> {
-    macro_rules! space_row {
-      ($row:expr) => {
-        $row.spacing(styles::SPACING)
-      };
-    }
-
     let content = if let Some(error_str) = &self.error_str {
       column![space_row!(row![
         text("Weather: "),
