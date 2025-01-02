@@ -32,7 +32,7 @@ impl Serialize for SerializableCommand {
   }
 }
 
-impl<'de> Visitor<'de> for CommandVisitor {
+impl Visitor<'_> for CommandVisitor {
   type Value = SerializableCommand;
 
   fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
