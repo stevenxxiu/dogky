@@ -3,7 +3,7 @@ use iced::mouse::Interaction;
 use iced::widget::{column, container, mouse_area, row, text};
 use iced::{clipboard, Task};
 use iced::{Element, Length};
-use sysinfo::{System, SystemExt};
+use sysinfo::System;
 
 use crate::message::Message;
 use crate::styles::machine_info as styles;
@@ -20,13 +20,12 @@ pub struct MachineInfoComponent {
 
 impl MachineInfoComponent {
   pub fn new() -> Self {
-    let system = System::new();
     let uname_info = uname::uname().unwrap();
     Self {
       username: whoami::username(),
       hostname: whoami::fallible::hostname().unwrap(),
       distro: whoami::distro(),
-      kernel_version: system.kernel_version().unwrap(),
+      kernel_version: System::kernel_version().unwrap(),
       architecture: uname_info.machine,
     }
   }
