@@ -28,7 +28,7 @@ impl Serialize for SerializableCommand {
   where
     S: Serializer,
   {
-    serializer.serialize_str(&shlex::join(self.0.iter().map(|s| s.as_str())).to_string().as_str())
+    serializer.serialize_str(shlex::try_join(self.0.iter().map(|s| s.as_str())).unwrap().as_str())
   }
 }
 
