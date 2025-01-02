@@ -1,5 +1,5 @@
-mod machine_info_widget;
-mod weather_widget;
+mod machine_info;
+mod weather;
 
-pub use machine_info_widget::MachineInfoWidget;
-pub use weather_widget::WeatherWidget;
+pub use machine_info::MachineInfoComponent;
+pub use weather::WeatherComponent;

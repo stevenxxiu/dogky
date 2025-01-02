@@ -4,7 +4,7 @@ use iced::window::{self, Mode};
 use iced::{Element, Point, Size, Subscription, Task};
 use xcb::{x, Xid, XidNew};
 
-use components::{MachineInfoWidget, WeatherWidget};
+use components::{MachineInfoComponent, WeatherComponent};
 use message::Message;
 
 mod api;
@@ -22,8 +22,8 @@ fn set_pos_to_res(_window: Size<f32>, resolution: Size<f32>) -> Point<f32> {
 
 struct Dogky {
   width: u32,
-  weather: WeatherWidget,
-  machine_info: MachineInfoWidget,
+  weather: WeatherComponent,
+  machine_info: MachineInfoComponent,
 }
 
 impl Dogky {
@@ -32,8 +32,8 @@ impl Dogky {
     (
       Self {
         width: config.width,
-        weather: WeatherWidget::new(config.weather),
-        machine_info: MachineInfoWidget::new(),
+        weather: WeatherComponent::new(config.weather),
+        machine_info: MachineInfoComponent::new(),
       },
       widget::focus_next(),
     )

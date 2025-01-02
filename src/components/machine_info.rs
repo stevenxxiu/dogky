@@ -10,7 +10,7 @@ use crate::styles::machine_info as styles;
 use crate::ui_utils::space_row;
 
 #[derive(Default)]
-pub struct MachineInfoWidget {
+pub struct MachineInfoComponent {
   username: String,
   hostname: String,
   distro: String,
@@ -18,7 +18,7 @@ pub struct MachineInfoWidget {
   architecture: String,
 }
 
-impl MachineInfoWidget {
+impl MachineInfoComponent {
   pub fn new() -> Self {
     let system = System::new();
     let uname_info = uname::uname().unwrap();
