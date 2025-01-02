@@ -8,15 +8,15 @@ use serde_derive::Deserialize;
 use crate::path::get_xdg_dirs;
 use crate::serde_structs::{SerializableCommand, SerializableRegex};
 
-#[derive(Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct WeatherProps {
-  pub update_interval: u32,
-  pub retry_timeout: u32,
+  pub update_interval: u64,
+  pub retry_timeout: u64,
   pub openweather_api_key: String,
   pub openweather_city_id: u64,
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct CpuBarsProps {
   pub num_per_row: usize,
   pub width: u32,
@@ -25,13 +25,13 @@ pub struct CpuBarsProps {
   pub fill_color: String,
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct CpuMemoryGraphProps {
   pub border_color: String,
   pub fill_color: String,
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct CpuMemoryGraphContainerProps {
   pub width: u32,
   pub height: u32,
@@ -39,7 +39,7 @@ pub struct CpuMemoryGraphContainerProps {
   pub memory: CpuMemoryGraphProps,
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct CpuMemoryProcessListProps {
   pub num_processes: usize,
   pub pid_width: usize,
@@ -48,7 +48,7 @@ pub struct CpuMemoryProcessListProps {
   pub top_command: SerializableCommand,
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct CpuMemoryProps {
   pub update_interval: u32,
   pub cpu_bars: CpuBarsProps,
@@ -56,14 +56,14 @@ pub struct CpuMemoryProps {
   pub process_list: CpuMemoryProcessListProps,
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct DiskBarProps {
   pub height: u32,
   pub border_color: String,
   pub fill_color: String,
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct DiskProps {
   pub update_interval: u32,
   pub name: String,
@@ -72,19 +72,19 @@ pub struct DiskProps {
   pub bar: DiskBarProps,
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct GpuProps {
   pub update_interval: u32,
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct NetworkGraphProps {
   pub border_color: String,
   pub fill_color: String,
   pub maximum_bytes_per_sec: u64,
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct NetworkGraphContainerProps {
   pub width: u32,
   pub height: u32,
@@ -92,7 +92,7 @@ pub struct NetworkGraphContainerProps {
   pub download: NetworkGraphProps,
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct NetworkProps {
   pub update_interval: u32,
   pub public_ip_update_interval: Option<u32>,
@@ -100,7 +100,7 @@ pub struct NetworkProps {
   pub graphs: NetworkGraphContainerProps,
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Deserialize)]
 pub struct ConfigProps {
   pub width: u32,
   pub weather: WeatherProps,

@@ -18,6 +18,7 @@ use crate::config::WeatherProps;
 use crate::message::Message;
 use crate::path::get_xdg_dirs;
 use crate::styles::weather as styles;
+use crate::ui_utils::space_row;
 
 // Unicode weather symbols to use
 static ICON_MAP: phf::Map<&'static str, &'static str> = phf_map! {
@@ -92,14 +93,14 @@ fn format_sun_timestamp(timestamp: u64, timezone: FixedOffset) -> String {
   date_time.format("%-l:%M %p").to_string()
 }
 
-pub struct WeatherWidget {
+pub struct WeatherComponent {
   config_props: WeatherProps,
   cache_path: PathBuf,
   data: Option<WeatherData>,
   error_str: Option<String>,
 }
 
-impl WeatherWidget {
+impl WeatherComponent {
   pub fn new(config_props: WeatherProps) -> Self {
     let mut res = Self {
       config_props,
@@ -125,6 +126,7 @@ impl WeatherWidget {
       let time_since_cache = SystemTime::now().duration_since(cache_time).unwrap();
       if time_since_cache < Duration::from_secs(props.update_interval) {
         self.data = Some(self.load_cache());
+        return;
       }
     }
 
@@ -185,7 +187,7 @@ impl WeatherWidget {
     } else {
       let data = self.data.as_ref().unwrap();
 
-      let value_text = |s: String| -> Text { text(s).color(styles::TEXT_COLOR) };
+      let value_text = |s: String| -> Text { text(s).color(styles::VALUE_COLOR) };
 
       let cond_icon_key: String = data.weather[0].icon.chars().take(2).collect();
       let cond_icon = *ICON_MAP.get(cond_icon_key.as_str()).unwrap();
@@ -203,7 +205,7 @@ impl WeatherWidget {
         wind_arrow_offset,
         styles::WIND_ARROW_SIZE,
         data.wind.deg,
-        styles::TEXT_COLOR,
+        styles::VALUE_COLOR,
       ))
       .width(styles::WIND_ARROW_CANVAS_SIZE)
       .height(styles::WIND_ARROW_CANVAS_SIZE);

@@ -10,8 +10,8 @@ use serde_derive::{Deserialize, Serialize};
 #[allow(dead_code)]
 #[derive(Serialize, Deserialize)]
 pub struct WeatherDataCoord {
-  pub lon: f64,
-  pub lat: f64,
+  pub lon: f32,
+  pub lat: f32,
 }
 
 #[allow(dead_code)]
@@ -26,25 +26,25 @@ pub struct WeatherDataWeather {
 #[allow(dead_code)]
 #[derive(Serialize, Deserialize)]
 pub struct WeatherDataMain {
-  pub temp: f64,
-  pub feels_like: f64,
-  pub temp_min: f64,
-  pub temp_max: f64,
-  pub pressure: f64,
-  pub humidity: f64,
+  pub temp: f32,
+  pub feels_like: f32,
+  pub temp_min: f32,
+  pub temp_max: f32,
+  pub pressure: f32,
+  pub humidity: f32,
 }
 
 #[allow(dead_code)]
 #[derive(Serialize, Deserialize)]
 pub struct WeatherDataWind {
-  pub speed: f64,
-  pub deg: f64,
+  pub speed: f32,
+  pub deg: f32,
 }
 
 #[allow(dead_code)]
 #[derive(Serialize, Deserialize)]
 pub struct WeatherDataClouds {
-  pub all: f64,
+  pub all: f32,
 }
 
 #[allow(dead_code)]
@@ -61,7 +61,7 @@ pub struct WeatherData {
   pub coord: WeatherDataCoord,
   pub weather: Vec<WeatherDataWeather>,
   pub main: WeatherDataMain,
-  pub visibility: f64,
+  pub visibility: f32,
   pub wind: WeatherDataWind,
   pub clouds: WeatherDataClouds,
   pub dt: u64,

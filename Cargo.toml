@@ -8,7 +8,7 @@ chrono = "0.4.19"
 circular-queue = "0.2.6"
 enum-map = "2.4.1"
 heck = "0.4.0"
-iced = "0.13.1"
+iced = { version = "0.13.1", features = ["advanced", "canvas", "smol"] }
 lazy_static = "1.4.0"
 local-ip-address = "0.4.6"
 nvml-wrapper = "0.8.0"
