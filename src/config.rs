@@ -113,6 +113,6 @@ pub struct ConfigProps {
 pub fn load_config() -> Result<ConfigProps, Box<dyn Error>> {
   let config_path = get_xdg_dirs().place_config_file("dogky.yaml")?;
   let config_file = File::open(config_path)?;
-  let config_props: ConfigProps = serde_yaml::from_reader(config_file)?;
+  let config_props: ConfigProps = serde_yml::from_reader(config_file)?;
   Ok(config_props)
 }
