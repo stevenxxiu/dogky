@@ -96,6 +96,11 @@ fn format_sun_timestamp(timestamp: u64, timezone: FixedOffset) -> String {
 pub struct WeatherComponent {
   config_props: WeatherProps,
   cache_path: PathBuf,
+  live: WeatherLiveProps,
+}
+
+#[derive(Default)]
+struct WeatherLiveProps {
   data: Option<WeatherData>,
   error_str: Option<String>,
 }
@@ -105,8 +110,7 @@ impl WeatherComponent {
     let mut res = Self {
       config_props,
       cache_path: get_xdg_dirs().place_cache_file("weather.json").unwrap(),
-      data: None,
-      error_str: None,
+      live: WeatherLiveProps::default(),
     };
     let _ = res.update(Message::WeatherWidgetTick);
     res
@@ -125,21 +129,22 @@ impl WeatherComponent {
       let cache_time = metadata.modified().unwrap();
       let time_since_cache = SystemTime::now().duration_since(cache_time).unwrap();
       if time_since_cache < Duration::from_secs(props.update_interval) {
-        self.data = Some(self.load_cache());
+        self.live.data = Some(self.load_cache());
         return;
       }
     }
 
     // Update data from server
+    let live = &mut self.live;
     match get_weather(props.openweather_city_id, &props.openweather_api_key) {
       Ok(weather_data) => {
         let data_file = File::create(&self.cache_path).unwrap();
         serde_json::to_writer(data_file, &weather_data).unwrap();
-        self.data = Some(weather_data);
-        self.error_str = None;
+        live.data = Some(weather_data);
+        live.error_str = None;
       }
       Err(error) => {
-        self.error_str = Some(error.to_string());
+        live.error_str = Some(error.to_string());
       }
     }
   }
@@ -163,7 +168,8 @@ impl WeatherComponent {
 
   pub fn subscription(&self) -> Subscription<Message> {
     let props = &self.config_props;
-    let timeout = if self.error_str.is_none() {
+    let live = &self.live;
+    let timeout = if live.error_str.is_none() {
       props.update_interval
     } else {
       props.retry_timeout
@@ -172,14 +178,15 @@ impl WeatherComponent {
   }
 
   pub fn view(&self) -> Element<Message> {
-    let content = if let Some(error_str) = &self.error_str {
+    let live = &self.live;
+    let content = if let Some(error_str) = &live.error_str {
       column![space_row!(row![
         text("Weather: "),
         text(error_str).wrapping(text::Wrapping::Glyph),
       ])]
       .align_x(Horizontal::Center)
     } else {
-      let data = self.data.as_ref().unwrap();
+      let data = live.data.as_ref().unwrap();
 
       let value_text = |s: String| -> Text { text(s).color(styles::VALUE_COLOR) };
 
