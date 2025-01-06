@@ -33,25 +33,13 @@ static ICON_MAP: phf::Map<&'static str, &'static str> = phf_map! {
   "50" => "🌫️",
 };
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 struct WindArrow {
   offset: Vector,
   size: f32,
   angle: f32, // In degrees
   color: Color,
   cache: canvas::Cache,
-}
-
-impl WindArrow {
-  fn new(offset: Vector, size: f32, angle: f32, color: Color) -> Self {
-    Self {
-      offset,
-      size,
-      angle,
-      color,
-      cache: canvas::Cache::new(),
-    }
-  }
 }
 
 impl<Message> canvas::Program<Message> for WindArrow {
@@ -202,12 +190,13 @@ impl WeatherComponent {
       let wind_speed = format!("{:.1} m/s", data.wind.speed);
 
       let wind_arrow_offset = Vector::new(styles::WIND_ARROW_OFFSET, styles::WIND_ARROW_OFFSET);
-      let wind_arrow = canvas(WindArrow::new(
-        wind_arrow_offset,
-        styles::WIND_ARROW_SIZE,
-        data.wind.deg,
-        styles::VALUE_COLOR,
-      ))
+      let wind_arrow = canvas(WindArrow {
+        offset: wind_arrow_offset,
+        size: styles::WIND_ARROW_SIZE,
+        angle: data.wind.deg,
+        color: styles::VALUE_COLOR,
+        ..Default::default()
+      })
       .width(styles::WIND_ARROW_CANVAS_SIZE)
       .height(styles::WIND_ARROW_CANVAS_SIZE);
 
