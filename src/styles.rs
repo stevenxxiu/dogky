@@ -6,7 +6,7 @@ use std::borrow::Cow;
 pub fn get_settings() -> Settings {
   Settings {
     id: Some("dogky".to_string()),
-    fonts: vec![Cow::Borrowed(b"Liberation Mono")],
+    fonts: vec![],
     default_font: Font::with_name("Liberation Mono"),
     default_text_size: Pixels(16.),
     antialiasing: true,
