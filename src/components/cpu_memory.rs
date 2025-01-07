@@ -1,7 +1,7 @@
 use circular_queue::CircularQueue;
 use iced::alignment::Horizontal;
 use iced::mouse::Interaction;
-use iced::widget::{canvas, column, container, mouse_area, row, text, Column, Row, Text};
+use iced::widget::{canvas, column, container, mouse_area, row, text, Column, MouseArea, Row, Text};
 use iced::{clipboard, time, Color, Element, Length, Subscription, Task};
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -237,23 +237,11 @@ impl CpuMemoryComponent {
     time::every(Duration::from_secs(props.update_interval)).map(|_instant| Message::CPUMemoryTick)
   }
 
-  pub fn view(&self) -> Element<Message> {
+  fn view_cpu_bars(&self) -> Element<'_, Message> {
     let props = &self.config_props.cpu_bars;
-    let ps_props = &self.config_props.process_list;
-    let live = &self.live;
-
-    let value_text = |s: String| -> Text { text(s).color(styles::VALUE_COLOR) };
-
-    let cpu_model_text = value_text(self.cpu_model.to_string());
-    let cpu_model_copy = mouse_area(cpu_model_text)
-      .interaction(Interaction::Copy)
-      .on_press(Message::CPUModelClick);
-
-    let processes_status = format!("{} / {: >4}", live.num_running, live.processes.len());
-
     let n = props.num_per_row;
     let bar_width: f32 = (self.container_width - (n - 1) as f32 * styles::BAR_H_GAP) / n as f32;
-    let cpu_bars: Element<'_, Message> = column(self.live.cpu_core_usage.chunks(n).map(|row_cpu_usages| {
+    column(self.live.cpu_core_usage.chunks(n).map(|row_cpu_usages| {
       row(row_cpu_usages.iter().map(|&cpu_usage| {
         let cpu_usage = cpu_usage / 100.0;
         let bar = Bar {
@@ -272,18 +260,44 @@ impl CpuMemoryComponent {
     }))
     .spacing(styles::BARS_V_GAP)
     .width(Length::Fill)
-    .into();
+    .into()
+  }
 
-    let format_memory = |used, total| {
-      format!(
-        "{: >10}/{: >10} = {: >3.0}%",
-        format_size(used, MEMORY_DECIMAL_PLACES),
-        format_size(total, MEMORY_DECIMAL_PLACES),
-        (used as f32) / (total as f32) * 100.0
-      )
-    };
-
+  fn view_graphs(&self) -> Row<Message> {
     let graph_width: f32 = (self.container_width - styles::GRAPH_H_GAP) / 2.0;
+    row![
+      container(
+        canvas(Graph {
+          datasets: vec![self.history.cpu.clone()],
+          width: graph_width,
+          height: styles::GRAPH_HEIGHT,
+          border_color: styles::GRAPH_CPU_BORDER_COLOR,
+          graph_colors: vec![styles::GRAPH_CPU_FILL_COLOR],
+          cache: canvas::Cache::new(),
+        })
+        .width(graph_width)
+        .height(styles::GRAPH_HEIGHT)
+      ),
+      container(
+        canvas(Graph {
+          datasets: vec![self.history.memory.clone(), self.history.swap.clone()],
+          width: graph_width,
+          height: styles::GRAPH_HEIGHT,
+          border_color: styles::GRAPH_MEMORY_BORDER_COLOR,
+          graph_colors: vec![styles::GRAPH_MEMORY_FILL_COLOR, styles::GRAPH_SWAP_FILL_COLOR],
+          cache: canvas::Cache::new(),
+        })
+        .width(graph_width)
+        .height(styles::GRAPH_HEIGHT)
+      )
+    ]
+    .width(Length::Fill)
+    .spacing(styles::GRAPH_H_GAP)
+  }
+
+  fn view_process_table(&self) -> MouseArea<'_, Message> {
+    let live = &self.live;
+    let ps_props = &self.config_props.process_list;
 
     let cmd_cell = |s: String| text(s).width(Length::Fill);
     let pid_cell = |s: String| text(s).width(Length::Fixed(ps_props.pid_width));
@@ -368,11 +382,33 @@ impl CpuMemoryComponent {
       ],
       process_by_memory,
     ];
-    let process_table_launch = mouse_area(process_table)
+    mouse_area(process_table)
       .interaction(Interaction::Pointer)
-      .on_press(Message::ProcessTableClick);
+      .on_press(Message::ProcessTableClick)
+  }
 
-    let content = column![
+  pub fn view(&self) -> Element<Message> {
+    let live = &self.live;
+
+    let value_text = |s: String| -> Text { text(s).color(styles::VALUE_COLOR) };
+
+    let cpu_model_text = value_text(self.cpu_model.to_string());
+    let cpu_model_copy = mouse_area(cpu_model_text)
+      .interaction(Interaction::Copy)
+      .on_press(Message::CPUModelClick);
+
+    let processes_status = format!("{} / {: >4}", live.num_running, live.processes.len());
+
+    let format_memory = |used, total| {
+      format!(
+        "{: >10}/{: >10} = {: >3.0}%",
+        format_size(used, MEMORY_DECIMAL_PLACES),
+        format_size(total, MEMORY_DECIMAL_PLACES),
+        (used as f32) / (total as f32) * 100.0
+      )
+    };
+
+    column![
       row![
         space_row![row![text("CPU"), cpu_model_copy]],
         expand_right![value_text(format!("{}°C", live.cpu_temperature))]
@@ -399,7 +435,7 @@ impl CpuMemoryComponent {
         row![text("Processes"), expand_right![value_text(processes_status)]].width(Length::Fill),
       ]
       .width(Length::Fill)],
-      cpu_bars,
+      self.view_cpu_bars(),
       row![
         text("Memory").width(Length::Fill),
         value_text(self.memory_frequency.to_string()).width(Length::Fill),
@@ -411,37 +447,10 @@ impl CpuMemoryComponent {
         value_text(format_memory(live.swap_usage, self.swap_total)),
       ]
       .width(Length::Fill),
-      row![
-        container(
-          canvas(Graph {
-            datasets: vec![self.history.cpu.clone()],
-            width: graph_width,
-            height: styles::GRAPH_HEIGHT,
-            border_color: styles::GRAPH_CPU_BORDER_COLOR,
-            graph_colors: vec![styles::GRAPH_CPU_FILL_COLOR],
-            cache: canvas::Cache::new(),
-          })
-          .width(graph_width)
-          .height(styles::GRAPH_HEIGHT)
-        ),
-        container(
-          canvas(Graph {
-            datasets: vec![self.history.memory.clone(), self.history.swap.clone()],
-            width: graph_width,
-            height: styles::GRAPH_HEIGHT,
-            border_color: styles::GRAPH_MEMORY_BORDER_COLOR,
-            graph_colors: vec![styles::GRAPH_MEMORY_FILL_COLOR, styles::GRAPH_SWAP_FILL_COLOR],
-            cache: canvas::Cache::new(),
-          })
-          .width(graph_width)
-          .height(styles::GRAPH_HEIGHT)
-        )
-      ]
-      .width(Length::Fill)
-      .spacing(styles::GRAPH_H_GAP),
-      process_table_launch,
+      self.view_graphs(),
+      self.view_process_table(),
     ]
-    .width(Length::Fill);
-    container(content).into()
+    .width(Length::Fill)
+    .into()
   }
 }
