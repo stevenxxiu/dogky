@@ -6,4 +6,7 @@ pub enum Message {
   WeatherWidgetTick,
   WeatherWidgetClick,
   MachineInfoKernelVersionClick,
+  CPUMemoryTick,
+  CPUModelClick,
+  ProcessTableClick,
 }

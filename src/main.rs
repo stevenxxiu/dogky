@@ -4,17 +4,20 @@ use iced::window::{self, Mode};
 use iced::{Element, Point, Size, Subscription, Task};
 use xcb::{x, Xid, XidNew};
 
-use components::{MachineInfoComponent, WeatherComponent};
+use components::{CpuMemoryComponent, MachineInfoComponent, WeatherComponent};
 use message::Message;
 
 mod api;
 mod components;
 mod config;
+mod custom_components;
+mod format_size;
 mod message;
 mod path;
 mod serde_structs;
 mod styles;
 mod ui_utils;
+mod utils;
 
 fn set_pos_to_res(_window: Size<f32>, resolution: Size<f32>) -> Point<f32> {
   Point::new(resolution.width, resolution.height)
@@ -24,16 +27,20 @@ struct Dogky {
   width: u32,
   weather: WeatherComponent,
   machine_info: MachineInfoComponent,
+  cpu_memory: CpuMemoryComponent,
 }
 
 impl Dogky {
   fn new() -> (Self, Task<Message>) {
     let config = config::load_config().unwrap();
+    let padding = styles::get_padding();
+    let container_width = config.width as f32 - padding.left - padding.right;
     (
       Self {
         width: config.width,
         weather: WeatherComponent::new(config.weather),
         machine_info: MachineInfoComponent::new(),
+        cpu_memory: CpuMemoryComponent::new(config.cpu_memory, container_width),
       },
       widget::focus_next(),
     )
@@ -100,18 +107,29 @@ impl Dogky {
       },
       Message::WeatherWidgetTick | Message::WeatherWidgetClick => self.weather.update(message),
       Message::MachineInfoKernelVersionClick => self.machine_info.update(message),
+      Message::CPUMemoryTick | Message::CPUModelClick | Message::ProcessTableClick => self.cpu_memory.update(message),
     }
   }
 
   fn subscription(&self) -> Subscription<Message> {
-    Subscription::batch([event::listen().map(Message::EventOccurred), self.weather.subscription()])
+    Subscription::batch([
+      event::listen().map(Message::EventOccurred),
+      self.weather.subscription(),
+      self.cpu_memory.subscription(),
+    ])
   }
 
   fn view(&self) -> Element<Message> {
-    let separator = container(horizontal_rule(1)).padding(styles::get_separator_padding());
-    column![self.weather.view(), separator, self.machine_info.view()]
-      .padding(styles::get_padding())
-      .into()
+    let separator = || container(horizontal_rule(1)).padding(styles::get_separator_padding());
+    column![
+      self.weather.view(),
+      separator(),
+      self.machine_info.view(),
+      separator(),
+      self.cpu_memory.view()
+    ]
+    .padding(styles::get_padding())
+    .into()
   }
 }
 

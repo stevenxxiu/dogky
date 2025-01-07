@@ -19,8 +19,8 @@ pub struct WeatherProps {
 #[derive(Deserialize)]
 pub struct CpuBarsProps {
   pub num_per_row: usize,
-  pub width: u32,
-  pub height: u32,
+  pub width: f32,
+  pub height: f32,
   pub border_color: String,
   pub fill_color: String,
 }
@@ -42,15 +42,15 @@ pub struct CpuMemoryGraphContainerProps {
 #[derive(Deserialize)]
 pub struct CpuMemoryProcessListProps {
   pub num_processes: usize,
-  pub pid_width: usize,
-  pub cpu_width: usize,
-  pub memory_width: usize,
+  pub pid_width: f32,
+  pub cpu_width: f32,
+  pub memory_width: f32,
   pub top_command: SerializableCommand,
 }
 
 #[derive(Deserialize)]
 pub struct CpuMemoryProps {
-  pub update_interval: u32,
+  pub update_interval: u64,
   pub cpu_bars: CpuBarsProps,
   pub graphs: CpuMemoryGraphContainerProps,
   pub process_list: CpuMemoryProcessListProps,
