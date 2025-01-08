@@ -12,5 +12,5 @@ trim_trailing_whitespace = true
 [*.rs]
 indent_size = 2
 
-[*.{toml,yaml}]
+[*.yaml]
 indent_size = 2
