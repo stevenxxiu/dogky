@@ -4,7 +4,7 @@ use iced::window::{self, Mode};
 use iced::{Element, Point, Size, Subscription, Task};
 use xcb::{x, Xid, XidNew};
 
-use components::{CpuMemoryComponent, DiskComponent, MachineInfoComponent, WeatherComponent};
+use components::{CpuMemoryComponent, DiskComponent, GpuComponent, MachineInfoComponent, WeatherComponent};
 use message::Message;
 
 mod api;
@@ -29,6 +29,7 @@ struct Dogky {
   machine_info: MachineInfoComponent,
   cpu_memory: CpuMemoryComponent,
   disk: DiskComponent,
+  gpu: GpuComponent,
 }
 
 impl Dogky {
@@ -43,6 +44,7 @@ impl Dogky {
         machine_info: MachineInfoComponent::new(),
         cpu_memory: CpuMemoryComponent::new(config.cpu_memory, container_width),
         disk: DiskComponent::new(config.disk, container_width),
+        gpu: GpuComponent::new(config.gpu),
       },
       widget::focus_next(),
     )
@@ -111,6 +113,7 @@ impl Dogky {
       Message::MachineInfoKernelVersionClick => self.machine_info.update(message),
       Message::CPUMemoryTick | Message::CPUModelClick | Message::ProcessTableClick => self.cpu_memory.update(message),
       Message::DiskTick | Message::DiskModelClick => self.disk.update(message),
+      Message::GPUTick | Message::GPUModelClick => self.gpu.update(message),
     }
   }
 
@@ -120,6 +123,7 @@ impl Dogky {
       self.weather.subscription(),
       self.cpu_memory.subscription(),
       self.disk.subscription(),
+      self.gpu.subscription(),
     ])
   }
 
@@ -132,7 +136,9 @@ impl Dogky {
       separator(),
       self.cpu_memory.view(),
       separator(),
-      self.disk.view()
+      self.disk.view(),
+      separator(),
+      self.gpu.view()
     ]
     .padding(styles::get_padding())
     .into()

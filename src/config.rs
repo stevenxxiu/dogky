@@ -74,7 +74,7 @@ pub struct DiskProps {
 
 #[derive(Deserialize)]
 pub struct GpuProps {
-  pub update_interval: u32,
+  pub update_interval: u64,
 }
 
 #[derive(Deserialize)]

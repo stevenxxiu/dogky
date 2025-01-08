@@ -11,4 +11,6 @@ pub enum Message {
   ProcessTableClick,
   DiskTick,
   DiskModelClick,
+  GPUTick,
+  GPUModelClick,
 }

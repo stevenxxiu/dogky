@@ -138,3 +138,11 @@ pub mod disk {
   pub const BAR_BORDER_COLOR: Color = color!(0xdddddd);
   pub const BAR_FILL_COLOR: Color = color!(0xffffff);
 }
+
+pub mod gpu {
+  use super::*;
+
+  pub const NAME_COLOR: Color = color!(0xcccccc);
+  pub const USAGE_NAME_COLOR: Color = color!(0xdddddd);
+  pub const VALUE_COLOR: Color = color!(0xffffff);
+}
