@@ -4,7 +4,7 @@ use iced::window::{self, Mode};
 use iced::{Element, Point, Size, Subscription, Task};
 use xcb::{x, Xid, XidNew};
 
-use components::{CpuMemoryComponent, MachineInfoComponent, WeatherComponent};
+use components::{CpuMemoryComponent, DiskComponent, MachineInfoComponent, WeatherComponent};
 use message::Message;
 
 mod api;
@@ -28,6 +28,7 @@ struct Dogky {
   weather: WeatherComponent,
   machine_info: MachineInfoComponent,
   cpu_memory: CpuMemoryComponent,
+  disk: DiskComponent,
 }
 
 impl Dogky {
@@ -41,6 +42,7 @@ impl Dogky {
         weather: WeatherComponent::new(config.weather),
         machine_info: MachineInfoComponent::new(),
         cpu_memory: CpuMemoryComponent::new(config.cpu_memory, container_width),
+        disk: DiskComponent::new(config.disk, container_width),
       },
       widget::focus_next(),
     )
@@ -108,6 +110,7 @@ impl Dogky {
       Message::WeatherWidgetTick | Message::WeatherWidgetClick => self.weather.update(message),
       Message::MachineInfoKernelVersionClick => self.machine_info.update(message),
       Message::CPUMemoryTick | Message::CPUModelClick | Message::ProcessTableClick => self.cpu_memory.update(message),
+      Message::DiskTick | Message::DiskModelClick => self.disk.update(message),
     }
   }
 
@@ -116,6 +119,7 @@ impl Dogky {
       event::listen().map(Message::EventOccurred),
       self.weather.subscription(),
       self.cpu_memory.subscription(),
+      self.disk.subscription(),
     ])
   }
 
@@ -126,7 +130,9 @@ impl Dogky {
       separator(),
       self.machine_info.view(),
       separator(),
-      self.cpu_memory.view()
+      self.cpu_memory.view(),
+      separator(),
+      self.disk.view()
     ]
     .padding(styles::get_padding())
     .into()

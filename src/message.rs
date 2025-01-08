@@ -9,4 +9,6 @@ pub enum Message {
   CPUMemoryTick,
   CPUModelClick,
   ProcessTableClick,
+  DiskTick,
+  DiskModelClick,
 }

@@ -128,3 +128,13 @@ pub mod cpu_memory {
   pub const PS_CPU_COLOR: Color = color!(0x555555);
   pub const PS_MEMORY_COLOR: Color = color!(0xeeeeee);
 }
+
+pub mod disk {
+  use super::*;
+
+  pub const NAME_COLOR: Color = color!(0xcccccc);
+  pub const VALUE_COLOR: Color = color!(0xffffff);
+  pub const BAR_HEIGHT: f32 = 5.;
+  pub const BAR_BORDER_COLOR: Color = color!(0xdddddd);
+  pub const BAR_FILL_COLOR: Color = color!(0xffffff);
+}
