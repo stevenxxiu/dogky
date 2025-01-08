@@ -191,13 +191,14 @@ impl CpuMemoryComponent {
         .iter()
         .skip(1)
         .fold(String::new(), |res, cur| res + cur.to_str().unwrap() + " ");
-      let live_process = self.system.process(*pid).unwrap();
-      self.live.processes.push(ProcessProps {
-        cmd: format!("{} {}", live_process.name().to_str().unwrap(), args),
-        pid: *pid,
-        cpu_usage: live_process.cpu_usage(),
-        memory_usage: live_process.memory(),
-      });
+      if let Some(live_process) = self.system.process(*pid) {
+        self.live.processes.push(ProcessProps {
+          cmd: format!("{} {}", live_process.name().to_str().unwrap(), args),
+          pid: *pid,
+          cpu_usage: live_process.cpu_usage(),
+          memory_usage: live_process.memory(),
+        });
+      }
     }
   }
 
