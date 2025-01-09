@@ -11,7 +11,7 @@ use sysinfo::Networks;
 use crate::config::NetworkProps;
 use crate::custom_components::Graph;
 use crate::format_size::{format_size, format_speed};
-use crate::message::Message;
+use crate::message::{Message, NetworkMessage};
 use crate::styles::network as styles;
 use crate::ui_utils::{expand_right, space_row, WithStyle};
 use crate::utils::join_str_iter;
@@ -58,7 +58,7 @@ impl NetworkComponent {
         download_speed: CircularQueue::with_capacity(process_data_size),
       },
     };
-    let _ = res.update(Message::NetworkWanIPTick);
+    let _ = res.update(Message::Network(NetworkMessage::WanIPTick));
     res
   }
 
@@ -109,40 +109,44 @@ impl NetworkComponent {
   }
 
   pub fn update(&mut self, message: Message) -> Task<Message> {
-    match message {
-      Message::NetworkTick => {
-        self.update_data();
-        Task::none()
-      }
-      Message::NetworkWanIPTick => Task::perform(public_ip::addr_with(GOOGLE_V6, public_ip::Version::V6), |res| {
-        Message::NetworkWanIPAssign(res)
-      }),
-      Message::NetworkWanIPAssign(res) => {
-        self.live.public_ip = res;
-        Task::none()
-      }
-      Message::NetworkWanIPClick => {
-        if let Some(public_ip) = self.live.public_ip {
-          clipboard::write(public_ip.to_string())
-        } else {
+    if let Message::Network(message) = message {
+      return match message {
+        NetworkMessage::Tick => {
+          self.update_data();
           Task::none()
         }
-      }
-      Message::NetworkLocalIPClick => {
-        let local_ips_str = join_str_iter(self.live.local_ips.iter().map(|ip| ip.to_string()), "\n");
-        clipboard::write(local_ips_str)
-      }
-      _ => Task::none(),
+        NetworkMessage::WanIPTick => Task::perform(public_ip::addr_with(GOOGLE_V6, public_ip::Version::V6), |res| {
+          Message::Network(NetworkMessage::WanIPAssign(res))
+        }),
+        NetworkMessage::WanIPAssign(res) => {
+          self.live.public_ip = res;
+          Task::none()
+        }
+        NetworkMessage::WanIPClick => {
+          if let Some(public_ip) = self.live.public_ip {
+            clipboard::write(public_ip.to_string())
+          } else {
+            Task::none()
+          }
+        }
+        NetworkMessage::LocalIPClick => {
+          let local_ips_str = join_str_iter(self.live.local_ips.iter().map(|ip| ip.to_string()), "\n");
+          clipboard::write(local_ips_str)
+        }
+      };
     }
+    Task::none()
   }
 
   pub fn subscription(&self) -> Subscription<Message> {
     let props = &self.config_props;
-    let mut subscriptions =
-      vec![time::every(Duration::from_secs(props.update_interval)).map(|_instant| Message::NetworkTick)];
+    let mut subscriptions = vec![
+      time::every(Duration::from_secs(props.update_interval)).map(|_instant| Message::Network(NetworkMessage::Tick))
+    ];
     if let Some(interval) = props.public_ip_update_interval {
       if self.live.public_ip.is_none() {
-        subscriptions.push(time::every(Duration::from_secs(interval)).map(|_instant| Message::NetworkWanIPTick));
+        subscriptions
+          .push(time::every(Duration::from_secs(interval)).map(|_instant| Message::Network(NetworkMessage::WanIPTick)));
       }
     }
     Subscription::batch(subscriptions)
@@ -196,7 +200,7 @@ impl NetworkComponent {
       .width(Length::Fill);
       let wan_ip_copy = mouse_area(wan_ip_text)
         .interaction(Interaction::Copy)
-        .on_press(Message::NetworkWanIPClick);
+        .on_press(Message::Network(NetworkMessage::WanIPClick));
 
       // Only include IPv4, as IPv6 addresses are too long
       let local_ips_str = join_str_iter(
@@ -215,7 +219,7 @@ impl NetworkComponent {
       .width(Length::Fill);
       let local_ips_copy = mouse_area(local_ips_text)
         .interaction(Interaction::Copy)
-        .on_press(Message::NetworkLocalIPClick);
+        .on_press(Message::Network(NetworkMessage::LocalIPClick));
 
       column![
         wan_ip_copy,

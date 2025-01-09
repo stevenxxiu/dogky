@@ -113,16 +113,12 @@ impl Dogky {
         }
         _ => Task::none(),
       },
-      Message::WeatherTick | Message::WeatherClick => self.weather.update(message),
-      Message::MachineInfoKernelVersionClick => self.machine_info.update(message),
-      Message::CPUMemoryTick | Message::CPUModelClick | Message::ProcessTableClick => self.cpu_memory.update(message),
-      Message::DiskTick | Message::DiskModelClick => self.disk.update(message),
-      Message::GPUTick | Message::GPUModelClick => self.gpu.update(message),
-      Message::NetworkTick
-      | Message::NetworkWanIPTick
-      | Message::NetworkWanIPAssign(_)
-      | Message::NetworkWanIPClick
-      | Message::NetworkLocalIPClick => self.network.update(message),
+      Message::Weather(_) => self.weather.update(message),
+      Message::MachineInfo(_) => self.machine_info.update(message),
+      Message::CPUMemory(_) => self.cpu_memory.update(message),
+      Message::Disk(_) => self.disk.update(message),
+      Message::GPU(_) => self.gpu.update(message),
+      Message::Network(_) => self.network.update(message),
     }
   }
 

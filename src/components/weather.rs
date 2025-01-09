@@ -15,7 +15,7 @@ use phf::phf_map;
 
 use crate::api::{get_weather, WeatherData};
 use crate::config::WeatherProps;
-use crate::message::Message;
+use crate::message::{Message, WeatherMessage};
 use crate::path::get_xdg_dirs;
 use crate::styles::weather as styles;
 use crate::ui_utils::{space_row, WithStyle};
@@ -100,7 +100,7 @@ impl WeatherComponent {
       cache_path: get_xdg_dirs().place_cache_file("weather.json").unwrap(),
       live: WeatherLiveProps::default(),
     };
-    let _ = res.update(Message::WeatherTick);
+    let _ = res.update(Message::Weather(WeatherMessage::Tick));
     res
   }
 
@@ -138,18 +138,19 @@ impl WeatherComponent {
   }
 
   pub fn update(&mut self, message: Message) -> Task<Message> {
-    match message {
-      Message::WeatherTick => self.update_data(),
-      Message::WeatherClick => {
-        // Open weather forecast link
-        let props = &self.config_props;
-        open::that(format!(
-          "https://openweathermap.org/city/{0}#weather-widget",
-          props.openweather_city_id
-        ))
-        .unwrap();
+    if let Message::Weather(message) = message {
+      match message {
+        WeatherMessage::Tick => self.update_data(),
+        WeatherMessage::Click => {
+          // Open weather forecast link
+          let props = &self.config_props;
+          open::that(format!(
+            "https://openweathermap.org/city/{0}#weather-widget",
+            props.openweather_city_id
+          ))
+          .unwrap();
+        }
       }
-      _ => {}
     }
     Task::none()
   }
@@ -162,7 +163,7 @@ impl WeatherComponent {
     } else {
       props.retry_timeout
     };
-    time::every(Duration::from_secs(timeout)).map(|_instant| Message::WeatherTick)
+    time::every(Duration::from_secs(timeout)).map(|_instant| Message::Weather(WeatherMessage::Tick))
   }
 
   pub fn view(&self) -> Element<Message> {
@@ -231,7 +232,7 @@ impl WeatherComponent {
       .padding(styles::CONTAINER_PADDING);
     mouse_area(cur_container)
       .interaction(Interaction::Pointer)
-      .on_press(Message::WeatherClick)
+      .on_press(Message::Weather(WeatherMessage::Click))
       .into()
   }
 }

@@ -5,7 +5,7 @@ use iced::{clipboard, Task};
 use iced::{Element, Length};
 use sysinfo::System;
 
-use crate::message::Message;
+use crate::message::{MachineInfoMessage, Message};
 use crate::styles::machine_info as styles;
 use crate::ui_utils::space_row;
 
@@ -31,10 +31,12 @@ impl MachineInfoComponent {
   }
 
   pub fn update(&mut self, message: Message) -> Task<Message> {
-    match message {
-      Message::MachineInfoKernelVersionClick => clipboard::write(self.kernel_version.to_string()),
-      _ => Task::none(),
+    if let Message::MachineInfo(message) = message {
+      return match message {
+        MachineInfoMessage::KernelVersionClick => clipboard::write(self.kernel_version.to_string()),
+      };
     }
+    Task::none()
   }
 
   pub fn view(&self) -> Element<Message> {
@@ -47,7 +49,7 @@ impl MachineInfoComponent {
     let kernel_version_text = text(self.kernel_version.to_string()).color(styles::KERNEL_VERSION_COLOR);
     let kernel_version_copy = mouse_area(kernel_version_text)
       .interaction(Interaction::Copy)
-      .on_press(Message::MachineInfoKernelVersionClick);
+      .on_press(Message::MachineInfo(MachineInfoMessage::KernelVersionClick));
     let architecture_text = text(self.architecture.to_string()).color(styles::ARCHITECTURE_COLOR);
 
     let content = column![space_row![row![

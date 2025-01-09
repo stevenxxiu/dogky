@@ -16,7 +16,7 @@ use sysinfo::{
 use crate::config::CpuMemoryProps;
 use crate::custom_components::{Bar, Graph};
 use crate::format_size::format_size;
-use crate::message::Message;
+use crate::message::{CPUMemoryMessage, Message};
 use crate::styles::cpu_memory as styles;
 use crate::ui_utils::{expand_right, space_row, WithStyle};
 use crate::utils;
@@ -210,32 +210,34 @@ impl CpuMemoryComponent {
   }
 
   pub fn update(&mut self, message: Message) -> Task<Message> {
-    match message {
-      Message::CPUMemoryTick => {
-        self.update_data();
-        Task::none()
-      }
-      Message::CPUModelClick => clipboard::write(self.cpu_model.to_string()),
-      Message::ProcessTableClick => {
-        let top_command = &self.config_props.process_list.top_command;
-        if top_command.is_empty() {
-          return Task::none();
+    if let Message::CPUMemory(message) = message {
+      return match message {
+        CPUMemoryMessage::Tick => {
+          self.update_data();
+          Task::none()
         }
-        let top_command: Vec<String> = top_command
-          .iter()
-          .map(|part| utils::substitute_env_vars(part))
-          .collect();
-        let (binary, args) = top_command.split_at(1);
-        Command::new(&binary[0]).args(args).status().unwrap();
-        Task::none()
-      }
-      _ => Task::none(),
+        CPUMemoryMessage::CPUModelClick => clipboard::write(self.cpu_model.to_string()),
+        CPUMemoryMessage::ProcessTableClick => {
+          let top_command = &self.config_props.process_list.top_command;
+          if top_command.is_empty() {
+            return Task::none();
+          }
+          let top_command: Vec<String> = top_command
+            .iter()
+            .map(|part| utils::substitute_env_vars(part))
+            .collect();
+          let (binary, args) = top_command.split_at(1);
+          Command::new(&binary[0]).args(args).status().unwrap();
+          Task::none()
+        }
+      };
     }
+    Task::none()
   }
 
   pub fn subscription(&self) -> Subscription<Message> {
     let props = &self.config_props;
-    time::every(Duration::from_secs(props.update_interval)).map(|_instant| Message::CPUMemoryTick)
+    time::every(Duration::from_secs(props.update_interval)).map(|_instant| Message::CPUMemory(CPUMemoryMessage::Tick))
   }
 
   fn view_cpu_bars(&self) -> Element<'_, Message> {
@@ -385,7 +387,7 @@ impl CpuMemoryComponent {
     ];
     mouse_area(process_table)
       .interaction(Interaction::Pointer)
-      .on_press(Message::ProcessTableClick)
+      .on_press(Message::CPUMemory(CPUMemoryMessage::ProcessTableClick))
   }
 
   pub fn view(&self) -> Element<Message> {
@@ -396,7 +398,7 @@ impl CpuMemoryComponent {
     let cpu_model_text = value_style.text(self.cpu_model.to_string());
     let cpu_model_copy = mouse_area(cpu_model_text)
       .interaction(Interaction::Copy)
-      .on_press(Message::CPUModelClick);
+      .on_press(Message::CPUMemory(CPUMemoryMessage::CPUModelClick));
 
     let processes_status = format!("{} / {: >4}", live.num_running, live.processes.len());
 

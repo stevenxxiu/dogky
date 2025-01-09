@@ -8,7 +8,7 @@ use std::time::Duration;
 
 use crate::config::GpuProps;
 use crate::format_size::format_size;
-use crate::message::Message;
+use crate::message::{GPUMessage, Message};
 use crate::styles::gpu as styles;
 use crate::ui_utils::{expand_right, space_row, WithStyle};
 
@@ -69,19 +69,21 @@ impl GpuComponent {
   }
 
   pub fn update(&mut self, message: Message) -> Task<Message> {
-    match message {
-      Message::GPUTick => {
-        self.update_data();
-        Task::none()
-      }
-      Message::GPUModelClick => clipboard::write(self.model.to_string()),
-      _ => Task::none(),
+    if let Message::GPU(message) = message {
+      return match message {
+        GPUMessage::Tick => {
+          self.update_data();
+          Task::none()
+        }
+        GPUMessage::ModelClick => clipboard::write(self.model.to_string()),
+      };
     }
+    Task::none()
   }
 
   pub fn subscription(&self) -> Subscription<Message> {
     let props = &self.config_props;
-    time::every(Duration::from_secs(props.update_interval)).map(|_instant| Message::GPUTick)
+    time::every(Duration::from_secs(props.update_interval)).map(|_instant| Message::GPU(GPUMessage::Tick))
   }
 
   pub fn view(&self) -> Element<Message> {
@@ -94,7 +96,7 @@ impl GpuComponent {
     let model_text = name_style.text(self.model.to_string());
     let model_copy = mouse_area(model_text)
       .interaction(Interaction::Copy)
-      .on_press(Message::GPUModelClick);
+      .on_press(Message::GPU(GPUMessage::ModelClick));
 
     let temperature_string = format!("{:.0}°C/{:.0}°C", live.temperature, live.temperature_threshold);
 

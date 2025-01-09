@@ -14,7 +14,7 @@ use sysinfo::{Disk, DiskRefreshKind, Disks};
 use crate::config::DiskProps;
 use crate::custom_components::Bar;
 use crate::format_size::format_size;
-use crate::message::Message;
+use crate::message::{DiskMessage, Message};
 use crate::styles::disk as styles;
 use crate::ui_utils::{expand_right, space_row, WithStyle};
 
@@ -110,19 +110,21 @@ impl DiskComponent {
   }
 
   pub fn update(&mut self, message: Message) -> Task<Message> {
-    match message {
-      Message::DiskTick => {
-        self.update_data();
-        Task::none()
-      }
-      Message::DiskModelClick => clipboard::write(self.model.to_string()),
-      _ => Task::none(),
+    if let Message::Disk(message) = message {
+      return match message {
+        DiskMessage::Tick => {
+          self.update_data();
+          Task::none()
+        }
+        DiskMessage::ModelClick => clipboard::write(self.model.to_string()),
+      };
     }
+    Task::none()
   }
 
   pub fn subscription(&self) -> Subscription<Message> {
     let props = &self.config_props;
-    time::every(Duration::from_secs(props.update_interval)).map(|_instant| Message::DiskTick)
+    time::every(Duration::from_secs(props.update_interval)).map(|_instant| Message::Disk(DiskMessage::Tick))
   }
 
   pub fn view(&self) -> Element<Message> {
@@ -134,7 +136,7 @@ impl DiskComponent {
     let model_text = name_style.text(self.model.to_string());
     let model_copy = mouse_area(model_text)
       .interaction(Interaction::Copy)
-      .on_press(Message::DiskModelClick);
+      .on_press(Message::Disk(DiskMessage::ModelClick));
 
     let used_space = self.total_space - live.available_space;
     let file_system_usage = format!(
