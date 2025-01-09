@@ -1,6 +1,6 @@
 use iced::alignment::Horizontal;
 use iced::mouse::Interaction;
-use iced::widget::{canvas, column, container, mouse_area, row, text, Text};
+use iced::widget::{canvas, column, container, mouse_area, row, text};
 use iced::{clipboard, time, Element, Length, Subscription, Task};
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -16,7 +16,7 @@ use crate::custom_components::Bar;
 use crate::format_size::format_size;
 use crate::message::Message;
 use crate::styles::disk as styles;
-use crate::ui_utils::{expand_right, space_row};
+use crate::ui_utils::{expand_right, space_row, WithStyle};
 
 pub struct DiskComponent {
   config_props: DiskProps,
@@ -126,12 +126,12 @@ impl DiskComponent {
   }
 
   pub fn view(&self) -> Element<Message> {
+    let name_style = WithStyle::new(styles::NAME_COLOR);
+    let value_style = WithStyle::new(styles::VALUE_COLOR);
+
     let live = &self.live;
 
-    let name_text = |s: String| -> Text { text(s).color(styles::NAME_COLOR) };
-    let value_text = |s: String| -> Text { text(s).color(styles::VALUE_COLOR) };
-
-    let model_text = name_text(self.model.to_string());
+    let model_text = name_style.text(self.model.to_string());
     let model_copy = mouse_area(model_text)
       .interaction(Interaction::Copy)
       .on_press(Message::DiskModelClick);
@@ -155,11 +155,11 @@ impl DiskComponent {
     column![
       row![
         space_row![row![text("Disk"), model_copy]],
-        expand_right![value_text(format!("{:.0}°C", live.temperature))]
+        expand_right![value_style.text(format!("{:.0}°C", live.temperature))]
       ],
       row![
-        name_text(self.file_system_name.to_string()),
-        expand_right![value_text(file_system_usage)]
+        name_style.text(self.file_system_name.to_string()),
+        expand_right![value_style.text(file_system_usage)]
       ],
       container(canvas(bar).width(self.container_width).height(styles::BAR_HEIGHT)),
     ]

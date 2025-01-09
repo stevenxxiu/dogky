@@ -1,7 +1,7 @@
 use circular_queue::CircularQueue;
 use iced::alignment::Horizontal;
 use iced::mouse::Interaction;
-use iced::widget::{canvas, column, container, mouse_area, row, text, Row};
+use iced::widget::{canvas, column, container, mouse_area, row, Row};
 use iced::{clipboard, time, Element, Length, Subscription, Task};
 use public_ip::dns::GOOGLE_V6;
 use std::net::IpAddr;
@@ -13,7 +13,7 @@ use crate::custom_components::Graph;
 use crate::format_size::{format_size, format_speed};
 use crate::message::Message;
 use crate::styles::network as styles;
-use crate::ui_utils::{expand_right, space_row};
+use crate::ui_utils::{expand_right, space_row, WithStyle};
 use crate::utils::join_str_iter;
 
 pub struct NetworkComponent {
@@ -181,28 +181,17 @@ impl NetworkComponent {
   }
 
   pub fn view(&self) -> Element<Message> {
-    macro_rules! name_text {
-      ($s:expr) => {
-        text($s).color(styles::NAME_COLOR)
-      };
-    }
-    macro_rules! value_text {
-      ($s:expr) => {
-        text($s).color(styles::VALUE_COLOR)
-      };
-    }
+    let name_style = WithStyle::new(styles::NAME_COLOR);
+    let value_style = WithStyle::new(styles::VALUE_COLOR);
 
     let live = &self.live;
 
     if live.local_ips.is_empty() {
-      name_text!("Disconnected").align_x(Horizontal::Left).into()
+      name_style.text("Disconnected").align_x(Horizontal::Left).into()
     } else {
       let wan_ip_text = space_row![row![
-        name_text!("WAN IP"),
-        expand_right![value_text!(live
-          .public_ip
-          .map(|ip| ip.to_string())
-          .unwrap_or("".to_string()))],
+        name_style.text("WAN IP"),
+        expand_right![value_style.text(live.public_ip.map(|ip| ip.to_string()).unwrap_or("".to_string()))],
       ]]
       .width(Length::Fill);
       let wan_ip_copy = mouse_area(wan_ip_text)
@@ -220,8 +209,8 @@ impl NetworkComponent {
         " ",
       );
       let local_ips_text = space_row![row![
-        name_text!(format!("{} IP", live.network_name)),
-        expand_right![value_text!(local_ips_str)],
+        name_style.text(format!("{} IP", live.network_name)),
+        expand_right![value_style.text(local_ips_str)],
       ]]
       .width(Length::Fill);
       let local_ips_copy = mouse_area(local_ips_text)
@@ -233,25 +222,25 @@ impl NetworkComponent {
         local_ips_copy,
         space_row![row![
           row![
-            name_text!("Net Down"),
-            expand_right![value_text!(format_speed(live.download_speed, NETWORK_DECIMAL_PLACES))]
+            name_style.text("Net Down"),
+            expand_right![value_style.text(format_speed(live.download_speed, NETWORK_DECIMAL_PLACES))]
           ]
           .width(Length::Fill),
           row![
-            name_text!("Net Up"),
-            expand_right![value_text!(format_speed(live.upload_speed, NETWORK_DECIMAL_PLACES))]
+            name_style.text("Net Up"),
+            expand_right![value_style.text(format_speed(live.upload_speed, NETWORK_DECIMAL_PLACES))]
           ]
           .width(Length::Fill),
         ]],
         space_row![row![
           row![
-            name_text!("Total Down"),
-            expand_right![value_text!(format_size(live.total_received, NETWORK_DECIMAL_PLACES))]
+            name_style.text("Total Down"),
+            expand_right![value_style.text(format_size(live.total_received, NETWORK_DECIMAL_PLACES))]
           ]
           .width(Length::Fill),
           row![
-            name_text!("Total Up"),
-            expand_right![value_text!(format_size(live.total_transmitted, NETWORK_DECIMAL_PLACES))]
+            name_style.text("Total Up"),
+            expand_right![value_style.text(format_size(live.total_transmitted, NETWORK_DECIMAL_PLACES))]
           ]
           .width(Length::Fill),
         ]],

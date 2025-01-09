@@ -1,7 +1,7 @@
 use circular_queue::CircularQueue;
 use iced::alignment::Horizontal;
 use iced::mouse::Interaction;
-use iced::widget::{canvas, column, container, mouse_area, row, text, Column, MouseArea, Row, Text};
+use iced::widget::{canvas, column, container, mouse_area, row, text, Column, MouseArea, Row};
 use iced::{clipboard, time, Color, Element, Length, Subscription, Task};
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -18,7 +18,7 @@ use crate::custom_components::{Bar, Graph};
 use crate::format_size::format_size;
 use crate::message::Message;
 use crate::styles::cpu_memory as styles;
-use crate::ui_utils::{expand_right, space_row};
+use crate::ui_utils::{expand_right, space_row, WithStyle};
 use crate::utils;
 
 pub struct CpuMemoryComponent {
@@ -389,11 +389,11 @@ impl CpuMemoryComponent {
   }
 
   pub fn view(&self) -> Element<Message> {
+    let value_style = WithStyle::new(styles::VALUE_COLOR);
+
     let live = &self.live;
 
-    let value_text = |s: String| -> Text { text(s).color(styles::VALUE_COLOR) };
-
-    let cpu_model_text = value_text(self.cpu_model.to_string());
+    let cpu_model_text = value_style.text(self.cpu_model.to_string());
     let cpu_model_copy = mouse_area(cpu_model_text)
       .interaction(Interaction::Copy)
       .on_press(Message::CPUModelClick);
@@ -412,17 +412,17 @@ impl CpuMemoryComponent {
     column![
       row![
         space_row![row![text("CPU"), cpu_model_copy]],
-        expand_right![value_text(format!("{}°C", live.cpu_temperature))]
+        expand_right![value_style.text(format!("{}°C", live.cpu_temperature))]
       ],
       space_row![row![
         row![
           text("Frequency"),
-          expand_right![value_text(format!("{:.2} GHz", live.cpu_frequency))]
+          expand_right![value_style.text(format!("{:.2} GHz", live.cpu_frequency))]
         ]
         .width(Length::Fill),
         row![
           text("Usage"),
-          expand_right![value_text(format!("{:.1}%", live.cpu_usage))]
+          expand_right![value_style.text(format!("{:.1}%", live.cpu_usage))]
         ]
         .width(Length::Fill),
       ]
@@ -430,22 +430,22 @@ impl CpuMemoryComponent {
       space_row![row![
         row![
           text("Uptime"),
-          expand_right![value_text(utils::format_duration(live.uptime))]
+          expand_right![value_style.text(utils::format_duration(live.uptime))]
         ]
         .width(Length::Fill),
-        row![text("Processes"), expand_right![value_text(processes_status)]].width(Length::Fill),
+        row![text("Processes"), expand_right![value_style.text(processes_status)]].width(Length::Fill),
       ]
       .width(Length::Fill)],
       self.view_cpu_bars(),
       row![
         text("Memory").width(Length::Fill),
-        value_text(self.memory_frequency.to_string()).width(Length::Fill),
-        value_text(format_memory(live.memory_usage, self.memory_total)),
+        value_style.text(self.memory_frequency.to_string()).width(Length::Fill),
+        value_style.text(format_memory(live.memory_usage, self.memory_total)),
       ]
       .width(Length::Fill),
       row![
         text("Swap").width(Length::Fill),
-        value_text(format_memory(live.swap_usage, self.swap_total)),
+        value_style.text(format_memory(live.swap_usage, self.swap_total)),
       ]
       .width(Length::Fill),
       self.view_graphs(),

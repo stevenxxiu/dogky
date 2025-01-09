@@ -18,7 +18,7 @@ use crate::config::WeatherProps;
 use crate::message::Message;
 use crate::path::get_xdg_dirs;
 use crate::styles::weather as styles;
-use crate::ui_utils::space_row;
+use crate::ui_utils::{space_row, WithStyle};
 
 // Unicode weather symbols to use
 static ICON_MAP: phf::Map<&'static str, &'static str> = phf_map! {
@@ -166,6 +166,8 @@ impl WeatherComponent {
   }
 
   pub fn view(&self) -> Element<Message> {
+    let value_style = WithStyle::new(styles::VALUE_COLOR);
+
     let live = &self.live;
     let content = if let Some(error_str) = &live.error_str {
       column![space_row!(row![
@@ -175,8 +177,6 @@ impl WeatherComponent {
       .align_x(Horizontal::Center)
     } else {
       let data = live.data.as_ref().unwrap();
-
-      let value_text = |s: String| -> Text { text(s).color(styles::VALUE_COLOR) };
 
       let cond_icon_key: String = data.weather[0].icon.chars().take(2).collect();
       let cond_icon = *ICON_MAP.get(cond_icon_key.as_str()).unwrap();
@@ -209,19 +209,19 @@ impl WeatherComponent {
       let sunset_text = format_sun_timestamp(data.sys.sunset, timezone);
 
       column![
-        space_row![row![cond_icon_cont, text(conditions), value_text(temperature)].align_y(Vertical::Center)],
+        space_row![row![cond_icon_cont, text(conditions), value_style.text(temperature)].align_y(Vertical::Center)],
         space_row![row![
           text("Humidity"),
-          value_text(humidity),
+          value_style.text(humidity),
           text("Wind"),
-          value_text(wind_speed),
+          value_style.text(wind_speed),
           wind_arrow
         ]],
         space_row![row![
           sunrise_icon_cont,
-          value_text(sunrise_text),
+          value_style.text(sunrise_text),
           sunset_icon_cont,
-          value_text(sunset_text)
+          value_style.text(sunset_text)
         ]],
       ]
       .align_x(Horizontal::Center)

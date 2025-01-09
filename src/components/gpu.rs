@@ -1,6 +1,6 @@
 use iced::alignment::Horizontal;
 use iced::mouse::Interaction;
-use iced::widget::{column, mouse_area, row, text, Text};
+use iced::widget::{column, mouse_area, row, text};
 use iced::{clipboard, time, Element, Length, Subscription, Task};
 use nvml_wrapper::enum_wrappers::device::{Clock, ClockId, TemperatureSensor, TemperatureThreshold};
 use nvml_wrapper::{Device, Nvml};
@@ -10,7 +10,7 @@ use crate::config::GpuProps;
 use crate::format_size::format_size;
 use crate::message::Message;
 use crate::styles::gpu as styles;
-use crate::ui_utils::{expand_right, space_row};
+use crate::ui_utils::{expand_right, space_row, WithStyle};
 
 pub struct GpuComponent {
   config_props: GpuProps,
@@ -85,13 +85,13 @@ impl GpuComponent {
   }
 
   pub fn view(&self) -> Element<Message> {
+    let name_style = WithStyle::new(styles::NAME_COLOR);
+    let usage_name_style = WithStyle::new(styles::USAGE_NAME_COLOR);
+    let value_style = WithStyle::new(styles::VALUE_COLOR);
+
     let live = &self.live;
 
-    let name_text = |s: String| -> Text { text(s).color(styles::NAME_COLOR) };
-    let usage_name_text = |s| -> Text { text(s).color(styles::USAGE_NAME_COLOR) };
-    let value_text = |s: String| -> Text { text(s).color(styles::VALUE_COLOR) };
-
-    let model_text = name_text(self.model.to_string());
+    let model_text = name_style.text(self.model.to_string());
     let model_copy = mouse_area(model_text)
       .interaction(Interaction::Copy)
       .on_press(Message::GPUModelClick);
@@ -109,25 +109,25 @@ impl GpuComponent {
     column![
       row![
         space_row![row![text("GPU"), model_copy]],
-        expand_right![value_text(temperature_string)]
+        expand_right![value_style.text(temperature_string)]
       ],
       space_row![row![
         row![
-          usage_name_text("Usage"),
-          expand_right![value_text(format!("{}%", live.utilization_rates))]
+          usage_name_style.text("Usage"),
+          expand_right![value_style.text(format!("{}%", live.utilization_rates))]
         ]
         .width(Length::Fill),
         row![
-          usage_name_text("Frequency"),
-          expand_right![value_text(format!("{} MHz", live.gpu_frequency))]
+          usage_name_style.text("Frequency"),
+          expand_right![value_style.text(format!("{} MHz", live.gpu_frequency))]
         ]
         .width(Length::Fill),
       ]
       .width(Length::Fill)],
       row![
-        usage_name_text("Memory").width(Length::Fill),
-        value_text(memory_frequency_str).width(Length::Fill),
-        value_text(memory_usage_str),
+        usage_name_style.text("Memory").width(Length::Fill),
+        value_style.text(memory_frequency_str).width(Length::Fill),
+        value_style.text(memory_usage_str),
       ]
       .width(Length::Fill),
     ]
