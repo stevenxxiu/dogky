@@ -2,11 +2,5 @@
 /src/resources/style.css
 *.cmb
 
-__pycache__/
-
-# *PDM*
-/__pypackages__/
-/.pdm-python
-
 # *Neovim*
 /.vscode/launch.json
