@@ -113,7 +113,7 @@ impl Dogky {
         }
         _ => Task::none(),
       },
-      Message::WeatherWidgetTick | Message::WeatherWidgetClick => self.weather.update(message),
+      Message::WeatherTick | Message::WeatherClick => self.weather.update(message),
       Message::MachineInfoKernelVersionClick => self.machine_info.update(message),
       Message::CPUMemoryTick | Message::CPUModelClick | Message::ProcessTableClick => self.cpu_memory.update(message),
       Message::DiskTick | Message::DiskModelClick => self.disk.update(message),

@@ -100,7 +100,7 @@ impl WeatherComponent {
       cache_path: get_xdg_dirs().place_cache_file("weather.json").unwrap(),
       live: WeatherLiveProps::default(),
     };
-    let _ = res.update(Message::WeatherWidgetTick);
+    let _ = res.update(Message::WeatherTick);
     res
   }
 
@@ -139,8 +139,8 @@ impl WeatherComponent {
 
   pub fn update(&mut self, message: Message) -> Task<Message> {
     match message {
-      Message::WeatherWidgetTick => self.update_data(),
-      Message::WeatherWidgetClick => {
+      Message::WeatherTick => self.update_data(),
+      Message::WeatherClick => {
         // Open weather forecast link
         let props = &self.config_props;
         open::that(format!(
@@ -162,7 +162,7 @@ impl WeatherComponent {
     } else {
       props.retry_timeout
     };
-    time::every(Duration::from_secs(timeout)).map(|_instant| Message::WeatherWidgetTick)
+    time::every(Duration::from_secs(timeout)).map(|_instant| Message::WeatherTick)
   }
 
   pub fn view(&self) -> Element<Message> {
@@ -231,7 +231,7 @@ impl WeatherComponent {
       .padding(styles::CONTAINER_PADDING);
     mouse_area(cur_container)
       .interaction(Interaction::Pointer)
-      .on_press(Message::WeatherWidgetClick)
+      .on_press(Message::WeatherClick)
       .into()
   }
 }
