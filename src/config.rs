@@ -6,7 +6,7 @@ use std::fs::File;
 use serde_derive::Deserialize;
 
 use crate::path::get_xdg_dirs;
-use crate::serde_structs::{SerializableCommand, SerializableRegex};
+use crate::serde_structs::{SerdeCommand, SerdeRegex};
 
 #[derive(Deserialize)]
 pub struct WeatherProps {
@@ -45,7 +45,7 @@ pub struct CpuMemoryProcessListProps {
   pub pid_width: f32,
   pub cpu_width: f32,
   pub memory_width: f32,
-  pub top_command: SerializableCommand,
+  pub top_command: SerdeCommand,
 }
 
 #[derive(Deserialize)]
@@ -96,7 +96,7 @@ pub struct NetworkGraphContainerProps {
 pub struct NetworkProps {
   pub update_interval: u64,
   pub public_ip_retry_timeout: Option<u64>,
-  pub interface_regex: SerializableRegex,
+  pub interface_regex: SerdeRegex,
   pub graphs: NetworkGraphContainerProps,
 }
 

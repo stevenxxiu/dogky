@@ -1,5 +1,5 @@
-mod serializable_command;
-mod serializable_regex;
+mod serde_command;
+mod serde_regex;
 
-pub use serializable_command::SerializableCommand;
-pub use serializable_regex::SerializableRegex;
+pub use serde_command::SerdeCommand;
+pub use serde_regex::SerdeRegex;
