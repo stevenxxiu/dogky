@@ -1,6 +1,4 @@
 /target/
-/src/resources/style.css
-*.cmb
 
 # *Neovim*
 /.vscode/launch.json

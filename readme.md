@@ -16,9 +16,6 @@ Issues with *Conky*:
 - `~/.config/dogky/dogky.yaml`
     - See `src/config.rs` for options.
     - Commands, e.g. `cpu_memory.process_list.top_command`, have environment variable support.
-- `~/.config/dogky/style.css`
-    - See `src/resources/style.sass` for defaults.
-    - See `src/resources/*.ui` for element IDs.
 
 The UI layout isn't configurable.
 
@@ -42,5 +39,3 @@ To set up the project for development, run:
     $ cd dogky/
     $ pnpm install conventional-changelog-conventionalcommits
     $ pre-commit install --hook-type pre-commit --hook-type commit-msg
-
-The GUI is designed using *Cambalache*.
