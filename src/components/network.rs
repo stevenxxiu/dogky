@@ -143,7 +143,7 @@ impl NetworkComponent {
     let mut subscriptions = vec![
       time::every(Duration::from_secs(props.update_interval)).map(|_instant| Message::Network(NetworkMessage::Tick))
     ];
-    if let Some(interval) = props.public_ip_update_interval {
+    if let Some(interval) = props.public_ip_retry_timeout {
       if self.live.public_ip.is_none() {
         subscriptions
           .push(time::every(Duration::from_secs(interval)).map(|_instant| Message::Network(NetworkMessage::WanIPTick)));
