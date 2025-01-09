@@ -146,3 +146,17 @@ pub mod gpu {
   pub const USAGE_NAME_COLOR: Color = color!(0xdddddd);
   pub const VALUE_COLOR: Color = color!(0xffffff);
 }
+
+pub mod network {
+  use super::*;
+
+  pub const NAME_COLOR: Color = color!(0xaaaaaa);
+  pub const VALUE_COLOR: Color = color!(0xffffff);
+
+  pub const GRAPH_H_GAP: f32 = 4.;
+  pub const GRAPH_HEIGHT: f32 = 60.;
+  pub const GRAPH_DOWNLOAD_BORDER_COLOR: Color = color!(0x42e694);
+  pub const GRAPH_DOWNLOAD_FILL_COLOR: Color = color!(0x4bffa5);
+  pub const GRAPH_UPLOAD_BORDER_COLOR: Color = color!(0x3de9e9);
+  pub const GRAPH_UPLOAD_FILL_COLOR: Color = color!(0x44ffff);
+}

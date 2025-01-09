@@ -4,7 +4,9 @@ use iced::window::{self, Mode};
 use iced::{Element, Point, Size, Subscription, Task};
 use xcb::{x, Xid, XidNew};
 
-use components::{CpuMemoryComponent, DiskComponent, GpuComponent, MachineInfoComponent, WeatherComponent};
+use components::{
+  CpuMemoryComponent, DiskComponent, GpuComponent, MachineInfoComponent, NetworkComponent, WeatherComponent,
+};
 use message::Message;
 
 mod api;
@@ -30,6 +32,7 @@ struct Dogky {
   cpu_memory: CpuMemoryComponent,
   disk: DiskComponent,
   gpu: GpuComponent,
+  network: NetworkComponent,
 }
 
 impl Dogky {
@@ -45,6 +48,7 @@ impl Dogky {
         cpu_memory: CpuMemoryComponent::new(config.cpu_memory, container_width),
         disk: DiskComponent::new(config.disk, container_width),
         gpu: GpuComponent::new(config.gpu),
+        network: NetworkComponent::new(config.network, container_width),
       },
       widget::focus_next(),
     )
@@ -114,6 +118,11 @@ impl Dogky {
       Message::CPUMemoryTick | Message::CPUModelClick | Message::ProcessTableClick => self.cpu_memory.update(message),
       Message::DiskTick | Message::DiskModelClick => self.disk.update(message),
       Message::GPUTick | Message::GPUModelClick => self.gpu.update(message),
+      Message::NetworkTick
+      | Message::NetworkWanIPTick
+      | Message::NetworkWanIPAssign(_)
+      | Message::NetworkWanIPClick
+      | Message::NetworkLocalIPClick => self.network.update(message),
     }
   }
 
@@ -124,6 +133,7 @@ impl Dogky {
       self.cpu_memory.subscription(),
       self.disk.subscription(),
       self.gpu.subscription(),
+      self.network.subscription(),
     ])
   }
 
@@ -138,7 +148,9 @@ impl Dogky {
       separator(),
       self.disk.view(),
       separator(),
-      self.gpu.view()
+      self.gpu.view(),
+      separator(),
+      self.network.view()
     ]
     .padding(styles::get_padding())
     .into()
