@@ -12,7 +12,6 @@ iced_graphics = "0.13.0"
 lazy_static = "1.5.0"
 local-ip-address = "0.6.3"
 nvml-wrapper = "0.10.0"
-once_cell = "1.20.2"
 open = "5.3.1"
 phf = { version = "0.11", features = ["macros"] }
 public-ip = "0.2.2"
@@ -23,8 +22,6 @@ serde_derive = "1.0.217"
 serde_json = { version = "1.0.134", features = ["float_roundtrip"] }
 serde_yml = "0.0.12"
 shlex = "1.3.0"
-strum = "0.26.3"
-strum_macros = "0.26.4"
 sysinfo = "0.33.1"
 tokio = "1.42.0"
 uname = "0.1.1"
@@ -34,7 +31,6 @@ xdg = "2.5.2"
 
 [build-dependencies]
 iced = "0.13.1"
-sass-rs = "0.2.2"
 
 [profile.release]
 strip = true
