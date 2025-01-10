@@ -48,7 +48,6 @@ pub fn get_padding() -> Padding {
   Padding::from([0, 10])
 }
 
-const MARGIN_SIDE: f32 = 4.;
 pub const H_GAP: f32 = 8.;
 
 pub mod weather {
@@ -56,9 +55,9 @@ pub mod weather {
 
   pub const CONTAINER_PADDING: Padding = Padding {
     top: 10.,
-    right: MARGIN_SIDE,
+    right: 0.,
     bottom: 0.,
-    left: MARGIN_SIDE,
+    left: 0.,
   };
 
   pub const ICON_FONT: Font = Font::with_name("Noto Color Emoji");
