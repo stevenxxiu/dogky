@@ -19,24 +19,6 @@ pub struct WeatherProps {
 #[derive(Deserialize)]
 pub struct CpuBarsProps {
   pub num_per_row: usize,
-  pub width: f32,
-  pub height: f32,
-  pub border_color: String,
-  pub fill_color: String,
-}
-
-#[derive(Deserialize)]
-pub struct CpuMemoryGraphProps {
-  pub border_color: String,
-  pub fill_color: String,
-}
-
-#[derive(Deserialize)]
-pub struct CpuMemoryGraphContainerProps {
-  pub width: u32,
-  pub height: u32,
-  pub cpu: CpuMemoryGraphProps,
-  pub memory: CpuMemoryGraphProps,
 }
 
 #[derive(Deserialize)]
@@ -52,15 +34,7 @@ pub struct CpuMemoryProcessListProps {
 pub struct CpuMemoryProps {
   pub update_interval: u64,
   pub cpu_bars: CpuBarsProps,
-  pub graphs: CpuMemoryGraphContainerProps,
   pub process_list: CpuMemoryProcessListProps,
-}
-
-#[derive(Deserialize)]
-pub struct DiskBarProps {
-  pub height: u32,
-  pub border_color: String,
-  pub fill_color: String,
 }
 
 #[derive(Deserialize)]
@@ -69,7 +43,6 @@ pub struct DiskProps {
   pub name: String,
   pub device_path: String,
   pub mount_point: String,
-  pub bar: DiskBarProps,
 }
 
 #[derive(Deserialize)]
@@ -79,15 +52,11 @@ pub struct GpuProps {
 
 #[derive(Deserialize)]
 pub struct NetworkGraphProps {
-  pub border_color: String,
-  pub fill_color: String,
   pub maximum_bytes_per_sec: u64,
 }
 
 #[derive(Deserialize)]
 pub struct NetworkGraphContainerProps {
-  pub width: u32,
-  pub height: u32,
   pub upload: NetworkGraphProps,
   pub download: NetworkGraphProps,
 }
@@ -102,7 +71,6 @@ pub struct NetworkProps {
 
 #[derive(Deserialize)]
 pub struct ConfigProps {
-  pub width: u32,
   pub weather: WeatherProps,
   pub cpu_memory: CpuMemoryProps,
   pub disk: DiskProps,

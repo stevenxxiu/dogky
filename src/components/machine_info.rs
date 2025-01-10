@@ -6,11 +6,12 @@ use iced::{Element, Length};
 use sysinfo::System;
 
 use crate::message::{MachineInfoMessage, Message};
-use crate::styles::machine_info as styles;
-use crate::ui_utils::space_row;
+use crate::styles_config::MachineInfoStyles;
+use crate::ui_utils::WithSpacing;
 
-#[derive(Default)]
 pub struct MachineInfoComponent {
+  h_gap: f32,
+  styles: MachineInfoStyles,
   username: String,
   hostname: String,
   distro: String,
@@ -19,9 +20,11 @@ pub struct MachineInfoComponent {
 }
 
 impl MachineInfoComponent {
-  pub fn new() -> Self {
+  pub fn new(h_gap: f32, styles: MachineInfoStyles) -> Self {
     let uname_info = uname::uname().unwrap();
     Self {
+      h_gap,
+      styles,
       username: whoami::username(),
       hostname: whoami::fallible::hostname().unwrap(),
       distro: whoami::distro(),
@@ -40,25 +43,23 @@ impl MachineInfoComponent {
   }
 
   pub fn view(&self) -> Element<Message> {
-    let user_text = text(self.username.to_string()).color(styles::USER_COLOR);
-    let at_text = text("@").color(styles::AT_COLOR);
-    let host_text = text(self.hostname.to_string()).color(styles::HOST_COLOR);
+    let styles = &self.styles;
+    let row_style = WithSpacing::new(self.h_gap);
+
+    let user_text = text(self.username.to_string()).color(styles.user_color.clone());
+    let at_text = text("@").color(styles.at_color.clone());
+    let host_text = text(self.hostname.to_string()).color(styles.host_color.clone());
     let user_at_host = row![user_text, at_text, host_text];
 
-    let distro_text = text(self.distro.to_string()).color(styles::DISTRO_COLOR);
-    let kernel_version_text = text(self.kernel_version.to_string()).color(styles::KERNEL_VERSION_COLOR);
+    let distro_text = text(self.distro.to_string()).color(styles.distro_color.clone());
+    let kernel_version_text = text(self.kernel_version.to_string()).color(styles.kernel_version_color.clone());
     let kernel_version_copy = mouse_area(kernel_version_text)
       .interaction(Interaction::Copy)
       .on_press(Message::MachineInfo(MachineInfoMessage::KernelVersionClick));
-    let architecture_text = text(self.architecture.to_string()).color(styles::ARCHITECTURE_COLOR);
+    let architecture_text = text(self.architecture.to_string()).color(styles.architecture_color.clone());
 
-    let content = column![space_row![row![
-      user_at_host,
-      distro_text,
-      kernel_version_copy,
-      architecture_text,
-    ]]]
-    .align_x(Horizontal::Center);
+    let content = column![row_style.row(row![user_at_host, distro_text, kernel_version_copy, architecture_text,])]
+      .align_x(Horizontal::Center);
     container(content).center_x(Length::Fill).into()
   }
 }

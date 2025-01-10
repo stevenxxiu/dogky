@@ -15,12 +15,14 @@ use crate::config::DiskProps;
 use crate::custom_components::Bar;
 use crate::format_size::format_size;
 use crate::message::{DiskMessage, Message};
-use crate::styles::disk as styles;
-use crate::ui_utils::{expand_right, space_row, WithStyle};
+use crate::styles_config::DiskStyles;
+use crate::ui_utils::{expand_right, WithColor, WithSpacing};
 
 pub struct DiskComponent {
   config_props: DiskProps,
   container_width: f32,
+  styles: DiskStyles,
+  h_gap: f32,
   disks: Disks,
   model: String,
   file_system_name: String,
@@ -67,7 +69,7 @@ fn get_disk_temperature(device_path: &str) -> f32 {
 }
 
 impl DiskComponent {
-  pub fn new(config_props: DiskProps, container_width: f32) -> Self {
+  pub fn new(config_props: DiskProps, container_width: f32, styles: DiskStyles, h_gap: f32) -> Self {
     let refresh_kind = DiskRefreshKind::nothing().with_storage();
     let disks = Disks::new_with_refreshed_list_specifics(refresh_kind);
 
@@ -83,6 +85,8 @@ impl DiskComponent {
     Self {
       config_props,
       container_width,
+      styles,
+      h_gap,
       disks,
       model,
       file_system_name,
@@ -128,8 +132,10 @@ impl DiskComponent {
   }
 
   pub fn view(&self) -> Element<Message> {
-    let name_style = WithStyle::new(styles::NAME_COLOR);
-    let value_style = WithStyle::new(styles::VALUE_COLOR);
+    let styles = &self.styles;
+    let row_style = WithSpacing::new(self.h_gap);
+    let name_style = WithColor::new(*styles.name_color);
+    let value_style = WithColor::new(*styles.value_color);
 
     let live = &self.live;
 
@@ -148,22 +154,22 @@ impl DiskComponent {
     let bar = Bar {
       value: used_space as f32 / self.total_space as f32,
       width: self.container_width,
-      height: styles::BAR_HEIGHT,
-      fill_color: styles::BAR_FILL_COLOR,
-      border_color: styles::BAR_BORDER_COLOR,
+      height: styles.bar_height,
+      fill_color: *styles.bar_fill_color,
+      border_color: *styles.bar_border_color,
       ..Default::default()
     };
 
     column![
       row![
-        space_row![row![text("Disk"), model_copy]],
+        row_style.row(row![text("Disk"), model_copy]),
         expand_right![value_style.text(format!("{:.0}°C", live.temperature))]
       ],
       row![
         name_style.text(self.file_system_name.to_string()),
         expand_right![value_style.text(file_system_usage)]
       ],
-      container(canvas(bar).width(self.container_width).height(styles::BAR_HEIGHT)),
+      container(canvas(bar).width(self.container_width).height(styles.bar_height)),
     ]
     .width(Length::Fill)
     .into()

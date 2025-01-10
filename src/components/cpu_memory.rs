@@ -2,7 +2,7 @@ use circular_queue::CircularQueue;
 use iced::alignment::Horizontal;
 use iced::mouse::Interaction;
 use iced::widget::{canvas, column, container, mouse_area, row, text, Column, MouseArea, Row};
-use iced::{clipboard, time, Color, Element, Length, Subscription, Task};
+use iced::{clipboard, time, Color, Element, Font, Length, Subscription, Task};
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::collections::HashSet;
@@ -17,13 +17,15 @@ use crate::config::CpuMemoryProps;
 use crate::custom_components::{Bar, Graph};
 use crate::format_size::format_size;
 use crate::message::{CPUMemoryMessage, Message};
-use crate::styles::cpu_memory as styles;
-use crate::ui_utils::{expand_right, space_row, WithStyle};
+use crate::styles_config::CPUMemoryStyles;
+use crate::ui_utils::{expand_right, WithColor, WithSpacing};
 use crate::utils;
 
 pub struct CpuMemoryComponent {
   config_props: CpuMemoryProps,
   container_width: f32,
+  styles: CPUMemoryStyles,
+  h_gap: f32,
   char_width: f32,
   system: System,
   components: Components,
@@ -67,9 +69,13 @@ const CPU_MODEL_REMOVE: &[&str] = &["(R)", "(TM)", "!"];
 const MEMORY_DECIMAL_PLACES: usize = 1usize;
 
 impl CpuMemoryComponent {
-  pub fn new(config_props: CpuMemoryProps, container_width: f32) -> Self {
-    let char_width = crate::styles::get_char_dims().width;
-
+  pub fn new(
+    config_props: CpuMemoryProps,
+    container_width: f32,
+    styles: CPUMemoryStyles,
+    h_gap: f32,
+    char_width: f32,
+  ) -> Self {
     let refresh_kind = RefreshKind::nothing()
       .with_cpu(CpuRefreshKind::nothing())
       .with_memory(MemoryRefreshKind::nothing().with_ram().with_swap());
@@ -97,12 +103,14 @@ impl CpuMemoryComponent {
     let memory_total = system.total_memory();
     let swap_total = system.total_swap();
 
-    let process_data_size = ((container_width - styles::GRAPH_H_GAP) / 2.0) as usize;
+    let process_data_size = ((container_width - styles.graph_h_gap) / 2.0) as usize;
 
     Self {
       config_props,
       char_width,
       container_width,
+      styles,
+      h_gap,
       system,
       components,
       cpu_model,
@@ -241,66 +249,70 @@ impl CpuMemoryComponent {
   }
 
   fn view_cpu_bars(&self) -> Element<'_, Message> {
+    let styles = &self.styles;
     let props = &self.config_props.cpu_bars;
     let n = props.num_per_row;
-    let bar_width: f32 = (self.container_width - (n - 1) as f32 * styles::BAR_H_GAP) / n as f32;
+    let bar_width: f32 = (self.container_width - (n - 1) as f32 * styles.bar_h_gap) / n as f32;
     column(self.live.cpu_core_usage.chunks(n).map(|row_cpu_usages| {
       row(row_cpu_usages.iter().map(|&cpu_usage| {
         let cpu_usage = cpu_usage / 100.0;
         let bar = Bar {
           value: cpu_usage,
           width: bar_width,
-          height: styles::BAR_HEIGHT,
-          fill_color: styles::BAR_FILL_COLOR,
-          border_color: styles::BAR_BORDER_COLOR,
+          height: styles.bar_height,
+          fill_color: *styles.bar_fill_color,
+          border_color: *styles.bar_border_color,
           ..Default::default()
         };
-        container(canvas(bar).width(bar_width).height(styles::BAR_HEIGHT)).into()
+        container(canvas(bar).width(bar_width).height(styles.bar_height)).into()
       }))
       .width(Length::Fill)
-      .spacing(styles::BAR_H_GAP)
+      .spacing(styles.bar_h_gap)
       .into()
     }))
-    .spacing(styles::BARS_V_GAP)
+    .spacing(styles.bars_v_gap)
     .width(Length::Fill)
     .into()
   }
 
   fn view_graphs(&self) -> Row<Message> {
-    let graph_width: f32 = (self.container_width - styles::GRAPH_H_GAP) / 2.0;
+    let styles = &self.styles;
+    let graph_width: f32 = (self.container_width - styles.graph_h_gap) / 2.0;
     row![
       container(
         canvas(Graph {
           datasets: vec![self.history.cpu.clone()],
           width: graph_width,
-          height: styles::GRAPH_HEIGHT,
-          border_color: styles::GRAPH_CPU_BORDER_COLOR,
-          graph_colors: vec![styles::GRAPH_CPU_FILL_COLOR],
+          height: styles.graph_height,
+          border_color: *styles.graph_cpu_border_color,
+          graph_colors: vec![*styles.graph_cpu_fill_color],
           cache: canvas::Cache::new(),
         })
         .width(graph_width)
-        .height(styles::GRAPH_HEIGHT)
+        .height(styles.graph_height)
       ),
       container(
         canvas(Graph {
           datasets: vec![self.history.memory.clone(), self.history.swap.clone()],
           width: graph_width,
-          height: styles::GRAPH_HEIGHT,
-          border_color: styles::GRAPH_MEMORY_BORDER_COLOR,
-          graph_colors: vec![styles::GRAPH_MEMORY_FILL_COLOR, styles::GRAPH_SWAP_FILL_COLOR],
+          height: styles.graph_height,
+          border_color: *styles.graph_memory_border_color,
+          graph_colors: vec![*styles.graph_memory_fill_color, *styles.graph_swap_fill_color],
           cache: canvas::Cache::new(),
         })
         .width(graph_width)
-        .height(styles::GRAPH_HEIGHT)
+        .height(styles.graph_height)
       )
     ]
     .width(Length::Fill)
-    .spacing(styles::GRAPH_H_GAP)
+    .spacing(styles.graph_h_gap)
   }
 
   fn view_process_table(&self) -> MouseArea<'_, Message> {
+    let styles = &self.styles;
     let live = &self.live;
     let ps_props = &self.config_props.process_list;
+    let ps_sort_font = Font::with_name("Noto Sans Symbols 2");
 
     let cmd_cell = |s: String| text(s).width(Length::Fill);
     let pid_cell = |s: String| text(s).width(Length::Fixed(ps_props.pid_width));
@@ -338,7 +350,7 @@ impl CpuMemoryComponent {
       processes
         .iter()
         .take(ps_props.num_processes)
-        .map(|process| process_to_row(process, styles::PS_CPU_COLOR))
+        .map(|process| process_to_row(process, *styles.ps_cpu_color))
         .map(Element::from),
     );
 
@@ -347,29 +359,29 @@ impl CpuMemoryComponent {
       processes
         .iter()
         .take(ps_props.num_processes)
-        .map(|process| process_to_row(process, styles::PS_MEMORY_COLOR))
+        .map(|process| process_to_row(process, *styles.ps_memory_color))
         .map(Element::from),
     );
 
     let process_table = column![
       row![
-        cmd_cell("Command".to_string()).color(styles::PS_HEADER_COLOR),
+        cmd_cell("Command".to_string()).color(*styles.ps_header_color),
         pid_cell("PID".to_string())
-          .color(styles::PS_HEADER_COLOR)
+          .color(*styles.ps_header_color)
           .align_x(Horizontal::Right),
         cpu_cell("CPU%".to_string())
-          .color(styles::PS_HEADER_COLOR)
+          .color(*styles.ps_header_color)
           .align_x(Horizontal::Right),
         memory_cell("MEM".to_string())
-          .color(styles::PS_HEADER_COLOR)
+          .color(*styles.ps_header_color)
           .align_x(Horizontal::Right),
       ],
       row![
         cmd_cell("".to_string()),
         pid_cell("".to_string()),
         cpu_cell("🞃".to_string())
-          .font(styles::PS_SORT_FONT)
-          .color(styles::PS_SORT_CPU_COLOR)
+          .font(ps_sort_font)
+          .color(*styles.ps_sort_cpu_color)
           .align_x(Horizontal::Center),
         memory_cell("".to_string()),
       ],
@@ -379,8 +391,8 @@ impl CpuMemoryComponent {
         pid_cell("".to_string()),
         cpu_cell("".to_string()),
         memory_cell("🞃".to_string())
-          .font(styles::PS_SORT_FONT)
-          .color(styles::PS_SORT_MEMORY_COLOR)
+          .font(ps_sort_font)
+          .color(*styles.ps_sort_memory_color)
           .align_x(Horizontal::Center),
       ],
       process_by_memory,
@@ -391,7 +403,9 @@ impl CpuMemoryComponent {
   }
 
   pub fn view(&self) -> Element<Message> {
-    let value_style = WithStyle::new(styles::VALUE_COLOR);
+    let styles = &self.styles;
+    let row_style = WithSpacing::new(self.h_gap);
+    let value_style = WithColor::new(*styles.value_color);
 
     let live = &self.live;
 
@@ -413,31 +427,34 @@ impl CpuMemoryComponent {
 
     column![
       row![
-        space_row![row![text("CPU"), cpu_model_copy]],
+        row_style.row(row![text("CPU"), cpu_model_copy]),
         expand_right![value_style.text(format!("{}°C", live.cpu_temperature))]
       ],
-      space_row![row![
+      row_style.row(
         row![
-          text("Frequency"),
-          expand_right![value_style.text(format!("{:.2} GHz", live.cpu_frequency))]
+          row![
+            text("Frequency"),
+            expand_right![value_style.text(format!("{:.2} GHz", live.cpu_frequency))]
+          ]
+          .width(Length::Fill),
+          row![
+            text("Usage"),
+            expand_right![value_style.text(format!("{:.1}%", live.cpu_usage))]
+          ]
+          .width(Length::Fill),
         ]
+        .width(Length::Fill)
+      ),
+      row_style
+        .row(row![
+          row![
+            text("Uptime"),
+            expand_right![value_style.text(utils::format_duration(live.uptime))]
+          ]
+          .width(Length::Fill),
+          row![text("Processes"), expand_right![value_style.text(processes_status)]].width(Length::Fill),
+        ])
         .width(Length::Fill),
-        row![
-          text("Usage"),
-          expand_right![value_style.text(format!("{:.1}%", live.cpu_usage))]
-        ]
-        .width(Length::Fill),
-      ]
-      .width(Length::Fill)],
-      space_row![row![
-        row![
-          text("Uptime"),
-          expand_right![value_style.text(utils::format_duration(live.uptime))]
-        ]
-        .width(Length::Fill),
-        row![text("Processes"), expand_right![value_style.text(processes_status)]].width(Length::Fill),
-      ]
-      .width(Length::Fill)],
       self.view_cpu_bars(),
       row![
         text("Memory").width(Length::Fill),

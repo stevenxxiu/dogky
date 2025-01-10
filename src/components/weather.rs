@@ -8,7 +8,7 @@ use iced::advanced::mouse;
 use iced::alignment::{Horizontal, Vertical};
 use iced::mouse::Interaction;
 use iced::widget::{canvas, column, container, mouse_area, row, text, Text};
-use iced::{alignment, Color, Element, Length, Point, Rectangle, Renderer, Subscription, Theme, Vector};
+use iced::{alignment, Color, Element, Font, Length, Point, Rectangle, Renderer, Subscription, Theme, Vector};
 use iced::{time, Task};
 
 use phf::phf_map;
@@ -17,8 +17,8 @@ use crate::api::{get_weather, WeatherData};
 use crate::config::WeatherProps;
 use crate::message::{Message, WeatherMessage};
 use crate::path::get_xdg_dirs;
-use crate::styles::weather as styles;
-use crate::ui_utils::{space_row, WithStyle};
+use crate::styles_config::WeatherStyles;
+use crate::ui_utils::{WithColor, WithSpacing};
 
 // Unicode weather symbols to use
 static ICON_MAP: phf::Map<&'static str, &'static str> = phf_map! {
@@ -83,6 +83,8 @@ fn format_sun_timestamp(timestamp: u64, timezone: FixedOffset) -> String {
 
 pub struct WeatherComponent {
   config_props: WeatherProps,
+  styles: WeatherStyles,
+  h_gap: f32,
   cache_path: PathBuf,
   live: WeatherLiveProps,
 }
@@ -94,9 +96,11 @@ struct WeatherLiveProps {
 }
 
 impl WeatherComponent {
-  pub fn new(config_props: WeatherProps) -> Self {
+  pub fn new(config_props: WeatherProps, styles: WeatherStyles, h_gap: f32) -> Self {
     let mut res = Self {
       config_props,
+      styles,
+      h_gap,
       cache_path: get_xdg_dirs().place_cache_file("weather.json").unwrap(),
       live: WeatherLiveProps::default(),
     };
@@ -167,22 +171,22 @@ impl WeatherComponent {
   }
 
   pub fn view(&self) -> Element<Message> {
-    let value_style = WithStyle::new(styles::VALUE_COLOR);
+    let styles = &self.styles;
+    let row_style = WithSpacing::new(self.h_gap);
+    let value_style = WithColor::new(*styles.value_color);
+    let icon_font = Font::with_name("Noto Color Emoji");
 
     let live = &self.live;
     let content = if let Some(error_str) = &live.error_str {
-      column![space_row!(row![
-        text("Weather: "),
-        text(error_str).wrapping(text::Wrapping::Glyph),
-      ])]
-      .align_x(Horizontal::Center)
+      column![row_style.row(row![text("Weather: "), text(error_str).wrapping(text::Wrapping::Glyph),])]
+        .align_x(Horizontal::Center)
     } else {
       let data = live.data.as_ref().unwrap();
 
       let cond_icon_key: String = data.weather[0].icon.chars().take(2).collect();
       let cond_icon = *ICON_MAP.get(cond_icon_key.as_str()).unwrap();
-      let cond_icon_text: Text = text(cond_icon).font(styles::ICON_FONT).size(styles::COND_ICON_SIZE);
-      let cond_icon_cont = container(cond_icon_text).padding(styles::COND_ICON_PADDING);
+      let cond_icon_text: Text = text(cond_icon).font(icon_font).size(styles.cond_icon_size);
+      let cond_icon_cont = container(cond_icon_text).padding(styles.cond_icon_padding.clone());
 
       let conditions = data.weather[0].description.to_title_case();
       let temperature = format!("{:.0}°C", data.main.temp);
@@ -190,46 +194,46 @@ impl WeatherComponent {
       let humidity = format!("{}%", data.main.humidity);
       let wind_speed = format!("{:.1} m/s", data.wind.speed);
 
-      let wind_arrow_offset = Vector::new(styles::WIND_ARROW_OFFSET, styles::WIND_ARROW_OFFSET);
+      let wind_arrow_offset = Vector::new(styles.wind_arrow_offset, styles.wind_arrow_offset);
       let wind_arrow = canvas(WindArrow {
         offset: wind_arrow_offset,
-        size: styles::WIND_ARROW_SIZE,
+        size: styles.wind_arrow_size,
         angle: data.wind.deg,
-        color: styles::VALUE_COLOR,
+        color: *styles.value_color,
         ..Default::default()
       })
-      .width(styles::WIND_ARROW_CANVAS_SIZE)
-      .height(styles::WIND_ARROW_CANVAS_SIZE);
+      .width(styles.wind_arrow_canvas_size)
+      .height(styles.wind_arrow_canvas_size);
 
       let timezone = FixedOffset::east_opt(data.timezone).unwrap();
-      let sunrise_icon_text = text("☀️").font(styles::ICON_FONT);
-      let sunrise_icon_cont = container(sunrise_icon_text).padding(styles::SUNRISE_ICON_PADDING);
+      let sunrise_icon_text = text("☀️").font(icon_font);
+      let sunrise_icon_cont = container(sunrise_icon_text).padding(styles.sunrise_icon_padding.clone());
       let sunrise_text = format_sun_timestamp(data.sys.sunrise, timezone);
-      let sunset_icon_text = text("🌙").font(styles::ICON_FONT);
-      let sunset_icon_cont = container(sunset_icon_text).padding(styles::SUNSET_ICON_PADDING);
+      let sunset_icon_text = text("🌙").font(icon_font);
+      let sunset_icon_cont = container(sunset_icon_text).padding(styles.sunset_icon_padding.clone());
       let sunset_text = format_sun_timestamp(data.sys.sunset, timezone);
 
       column![
-        space_row![row![cond_icon_cont, text(conditions), value_style.text(temperature)].align_y(Vertical::Center)],
-        space_row![row![
+        row_style.row(row![cond_icon_cont, text(conditions), value_style.text(temperature)].align_y(Vertical::Center)),
+        row_style.row(row![
           text("Humidity"),
           value_style.text(humidity),
           text("Wind"),
           value_style.text(wind_speed),
           wind_arrow
-        ]],
-        space_row![row![
+        ]),
+        row_style.row(row![
           sunrise_icon_cont,
           value_style.text(sunrise_text),
           sunset_icon_cont,
           value_style.text(sunset_text)
-        ]],
+        ]),
       ]
       .align_x(Horizontal::Center)
     };
     let cur_container = container(content)
       .center_x(Length::Fill)
-      .padding(styles::CONTAINER_PADDING);
+      .padding(styles.container_padding.clone());
     mouse_area(cur_container)
       .interaction(Interaction::Pointer)
       .on_press(Message::Weather(WeatherMessage::Click))

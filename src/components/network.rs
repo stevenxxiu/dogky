@@ -12,13 +12,15 @@ use crate::config::NetworkProps;
 use crate::custom_components::Graph;
 use crate::format_size::{format_size, format_speed};
 use crate::message::{Message, NetworkMessage};
-use crate::styles::network as styles;
-use crate::ui_utils::{expand_right, space_row, WithStyle};
+use crate::styles_config::NetworkStyles;
+use crate::ui_utils::{expand_right, WithColor, WithSpacing};
 use crate::utils::join_str_iter;
 
 pub struct NetworkComponent {
   config_props: NetworkProps,
   container_width: f32,
+  h_gap: f32,
+  styles: NetworkStyles,
   networks: Networks,
   live: NetworkLiveProps,
   history: HistoryProps,
@@ -43,14 +45,16 @@ struct HistoryProps {
 const NETWORK_DECIMAL_PLACES: usize = 2usize;
 
 impl NetworkComponent {
-  pub fn new(config_props: NetworkProps, container_width: f32) -> Self {
+  pub fn new(config_props: NetworkProps, container_width: f32, h_gap: f32, styles: NetworkStyles) -> Self {
     let networks = Networks::new();
 
-    let process_data_size = ((container_width - styles::GRAPH_H_GAP) / 2.0) as usize;
+    let process_data_size = ((container_width - styles.graph_h_gap) / 2.0) as usize;
 
     let mut res = Self {
       config_props,
       container_width,
+      h_gap,
+      styles,
       networks,
       live: NetworkLiveProps::default(),
       history: HistoryProps {
@@ -153,51 +157,55 @@ impl NetworkComponent {
   }
 
   fn view_graphs(&self) -> Row<Message> {
-    let graph_width: f32 = (self.container_width - styles::GRAPH_H_GAP) / 2.0;
+    let styles = &self.styles;
+    let graph_width: f32 = (self.container_width - styles.graph_h_gap) / 2.0;
     row![
       container(
         canvas(Graph {
           datasets: vec![self.history.download_speed.clone()],
           width: graph_width,
-          height: styles::GRAPH_HEIGHT,
-          border_color: styles::GRAPH_DOWNLOAD_BORDER_COLOR,
-          graph_colors: vec![styles::GRAPH_DOWNLOAD_FILL_COLOR],
+          height: styles.graph_height,
+          border_color: *styles.graph_download_border_color,
+          graph_colors: vec![*styles.graph_download_fill_color],
           cache: canvas::Cache::new(),
         })
         .width(graph_width)
-        .height(styles::GRAPH_HEIGHT)
+        .height(styles.graph_height)
       ),
       container(
         canvas(Graph {
           datasets: vec![self.history.upload_speed.clone()],
           width: graph_width,
-          height: styles::GRAPH_HEIGHT,
-          border_color: styles::GRAPH_UPLOAD_BORDER_COLOR,
-          graph_colors: vec![styles::GRAPH_UPLOAD_FILL_COLOR],
+          height: styles.graph_height,
+          border_color: *styles.graph_upload_border_color,
+          graph_colors: vec![*styles.graph_upload_fill_color],
           cache: canvas::Cache::new(),
         })
         .width(graph_width)
-        .height(styles::GRAPH_HEIGHT)
+        .height(styles.graph_height)
       )
     ]
     .width(Length::Fill)
-    .spacing(styles::GRAPH_H_GAP)
+    .spacing(styles.graph_h_gap)
   }
 
   pub fn view(&self) -> Element<Message> {
-    let name_style = WithStyle::new(styles::NAME_COLOR);
-    let value_style = WithStyle::new(styles::VALUE_COLOR);
+    let styles = &self.styles;
+    let row_style = WithSpacing::new(self.h_gap);
+    let name_style = WithColor::new(*styles.name_color);
+    let value_style = WithColor::new(*styles.value_color);
 
     let live = &self.live;
 
     if live.local_ips.is_empty() {
       name_style.text("Disconnected").align_x(Horizontal::Left).into()
     } else {
-      let wan_ip_text = space_row![row![
-        name_style.text("WAN IP"),
-        expand_right![value_style.text(live.public_ip.map(|ip| ip.to_string()).unwrap_or("".to_string()))],
-      ]]
-      .width(Length::Fill);
+      let wan_ip_text = row_style
+        .row(row![
+          name_style.text("WAN IP"),
+          expand_right![value_style.text(live.public_ip.map(|ip| ip.to_string()).unwrap_or("".to_string()))],
+        ])
+        .width(Length::Fill);
       let wan_ip_copy = mouse_area(wan_ip_text)
         .interaction(Interaction::Copy)
         .on_press(Message::Network(NetworkMessage::WanIPClick));
@@ -212,11 +220,12 @@ impl NetworkComponent {
           .map(|ip| ip.to_string()),
         " ",
       );
-      let local_ips_text = space_row![row![
-        name_style.text(format!("{} IP", live.network_name)),
-        expand_right![value_style.text(local_ips_str)],
-      ]]
-      .width(Length::Fill);
+      let local_ips_text = row_style
+        .row(row![
+          name_style.text(format!("{} IP", live.network_name)),
+          expand_right![value_style.text(local_ips_str)],
+        ])
+        .width(Length::Fill);
       let local_ips_copy = mouse_area(local_ips_text)
         .interaction(Interaction::Copy)
         .on_press(Message::Network(NetworkMessage::LocalIPClick));
@@ -224,7 +233,7 @@ impl NetworkComponent {
       column![
         wan_ip_copy,
         local_ips_copy,
-        space_row![row![
+        row_style.row(row![
           row![
             name_style.text("Net Down"),
             expand_right![value_style.text(format_speed(live.download_speed, NETWORK_DECIMAL_PLACES))]
@@ -235,8 +244,8 @@ impl NetworkComponent {
             expand_right![value_style.text(format_speed(live.upload_speed, NETWORK_DECIMAL_PLACES))]
           ]
           .width(Length::Fill),
-        ]],
-        space_row![row![
+        ]),
+        row_style.row(row![
           row![
             name_style.text("Total Down"),
             expand_right![value_style.text(format_size(live.total_received, NETWORK_DECIMAL_PLACES))]
@@ -247,7 +256,7 @@ impl NetworkComponent {
             expand_right![value_style.text(format_size(live.total_transmitted, NETWORK_DECIMAL_PLACES))]
           ]
           .width(Length::Fill),
-        ]],
+        ]),
         self.view_graphs(),
       ]
       .width(Length::Fill)

@@ -1,7 +1,9 @@
+use iced::application::Appearance;
 use iced::event::{self, Event};
 use iced::widget::{self, column, container, horizontal_rule};
 use iced::window::{self, Mode};
-use iced::{Element, Point, Size, Subscription, Task};
+use iced::{Element, Font, Pixels, Point, Settings, Size, Subscription, Task};
+use styles_config::StylesConfig;
 use xcb::{x, Xid, XidNew};
 
 use components::{
@@ -17,7 +19,8 @@ mod format_size;
 mod message;
 mod path;
 mod serde_structs;
-mod styles;
+mod style_utils;
+mod styles_config;
 mod ui_utils;
 mod utils;
 
@@ -26,7 +29,7 @@ fn set_pos_to_res(_window: Size<f32>, resolution: Size<f32>) -> Point<f32> {
 }
 
 struct Dogky {
-  width: u32,
+  styles: StylesConfig,
   weather: WeatherComponent,
   machine_info: MachineInfoComponent,
   cpu_memory: CpuMemoryComponent,
@@ -36,19 +39,26 @@ struct Dogky {
 }
 
 impl Dogky {
-  fn new() -> (Self, Task<Message>) {
+  fn new(settings: Settings, styles: StylesConfig) -> (Self, Task<Message>) {
     let config = config::load_config().unwrap();
-    let padding = styles::get_padding();
-    let container_width = config.width as f32 - padding.left - padding.right;
+    let container_width = styles.width as f32 - styles.padding.left - styles.padding.right;
+    let h_gap = styles.h_gap;
+    let char_dims = style_utils::get_char_dims(&settings);
     (
       Self {
-        width: config.width,
-        weather: WeatherComponent::new(config.weather),
-        machine_info: MachineInfoComponent::new(),
-        cpu_memory: CpuMemoryComponent::new(config.cpu_memory, container_width),
-        disk: DiskComponent::new(config.disk, container_width),
-        gpu: GpuComponent::new(config.gpu),
-        network: NetworkComponent::new(config.network, container_width),
+        styles: styles.clone(),
+        weather: WeatherComponent::new(config.weather, styles.weather, h_gap),
+        machine_info: MachineInfoComponent::new(h_gap, styles.machine_info),
+        cpu_memory: CpuMemoryComponent::new(
+          config.cpu_memory,
+          container_width,
+          styles.cpu_memory,
+          h_gap,
+          char_dims.width,
+        ),
+        disk: DiskComponent::new(config.disk, container_width, styles.disk, h_gap),
+        gpu: GpuComponent::new(config.gpu, styles.gpu, h_gap),
+        network: NetworkComponent::new(config.network, container_width, h_gap, styles.network),
       },
       widget::focus_next(),
     )
@@ -94,9 +104,9 @@ impl Dogky {
         Event::Window(window::Event::Opened { position, size: _ }) => {
           let position = position.unwrap();
           let (width, height) = (position.x, position.y);
-          let size = Size::new(self.width as f32, height);
+          let size = Size::new(self.styles.width as f32, height);
           let pos = Point {
-            x: (width - self.width as f32),
+            x: (width - self.styles.width as f32),
             y: 0.,
           };
           window::get_latest().and_then(move |id| {
@@ -134,7 +144,7 @@ impl Dogky {
   }
 
   fn view(&self) -> Element<Message> {
-    let separator = || container(horizontal_rule(1)).padding(styles::get_separator_padding());
+    let separator = || container(horizontal_rule(1)).padding(self.styles.separator_padding.clone());
     column![
       self.weather.view(),
       separator(),
@@ -148,15 +158,28 @@ impl Dogky {
       separator(),
       self.network.view()
     ]
-    .padding(styles::get_padding())
+    .padding(self.styles.padding.clone())
     .into()
   }
 }
 
 pub fn main() {
+  let styles = styles_config::load_config().unwrap();
+  let settings = Settings {
+    id: Some("dogky".to_string()),
+    fonts: vec![],
+    default_font: Font::with_name("Liberation Mono"), // Requires `&'static str`
+    default_text_size: Pixels(styles.text_size),
+    antialiasing: styles.antialiasing,
+  };
+
+  let appearance = Appearance {
+    background_color: *styles.background_color.clone(),
+    text_color: *styles.text_color.clone(),
+  };
   let _ = iced::application("dogky", Dogky::update, Dogky::view)
     .subscription(Dogky::subscription)
-    .settings(styles::get_settings())
+    .settings(settings.clone())
     .window(iced::window::Settings {
       position: window::Position::SpecificWith(set_pos_to_res),
       visible: false,
@@ -165,6 +188,6 @@ pub fn main() {
       ..Default::default()
     })
     .level(window::Level::AlwaysOnBottom)
-    .style(|_state, _theme| styles::WINDOW_APPEARANCE)
-    .run_with(Dogky::new);
+    .style(move |_state, _theme| appearance)
+    .run_with(|| Dogky::new(settings, styles));
 }

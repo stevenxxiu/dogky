@@ -1,14 +1,5 @@
-use iced::widget::text;
+use iced::widget::{text, Row};
 use iced::{widget::Text, Color};
-
-#[macro_export]
-macro_rules! space_row {
-  ($row:expr) => {
-    $row.spacing($crate::styles::H_GAP)
-  };
-}
-
-pub(crate) use space_row;
 
 #[macro_export]
 macro_rules! expand_right {
@@ -19,11 +10,25 @@ macro_rules! expand_right {
 
 pub(crate) use expand_right;
 
-pub struct WithStyle {
+pub struct WithSpacing {
+  pub spacing: f32,
+}
+
+impl WithSpacing {
+  pub fn new(spacing: f32) -> Self {
+    Self { spacing }
+  }
+
+  pub fn row<'a, T>(&self, row: Row<'a, T>) -> Row<'a, T> {
+    row.spacing(self.spacing)
+  }
+}
+
+pub struct WithColor {
   pub color: Color,
 }
 
-impl WithStyle {
+impl WithColor {
   pub fn new(color: Color) -> Self {
     Self { color }
   }

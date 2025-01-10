@@ -9,11 +9,13 @@ use std::time::Duration;
 use crate::config::GpuProps;
 use crate::format_size::format_size;
 use crate::message::{GPUMessage, Message};
-use crate::styles::gpu as styles;
-use crate::ui_utils::{expand_right, space_row, WithStyle};
+use crate::styles_config::GPUStyles;
+use crate::ui_utils::{expand_right, WithColor, WithSpacing};
 
 pub struct GpuComponent {
   config_props: GpuProps,
+  h_gap: f32,
+  styles: GPUStyles,
   nvml: Nvml,
   model: String,
   live: GpuLiveProps,
@@ -33,7 +35,7 @@ struct GpuLiveProps {
 const MEMORY_DECIMAL_PLACES: usize = 1usize;
 
 impl GpuComponent {
-  pub fn new(config_props: GpuProps) -> Self {
+  pub fn new(config_props: GpuProps, styles: GPUStyles, h_gap: f32) -> Self {
     let nvml = Nvml::init().unwrap();
 
     let gpu = GpuComponent::get_gpu(&nvml);
@@ -41,6 +43,8 @@ impl GpuComponent {
 
     Self {
       config_props,
+      styles,
+      h_gap,
       nvml,
       model,
       live: GpuLiveProps::default(),
@@ -87,9 +91,11 @@ impl GpuComponent {
   }
 
   pub fn view(&self) -> Element<Message> {
-    let name_style = WithStyle::new(styles::NAME_COLOR);
-    let usage_name_style = WithStyle::new(styles::USAGE_NAME_COLOR);
-    let value_style = WithStyle::new(styles::VALUE_COLOR);
+    let styles = &self.styles;
+    let row_style = WithSpacing::new(self.h_gap);
+    let name_style = WithColor::new(*styles.name_color);
+    let usage_name_style = WithColor::new(*styles.usage_name_color);
+    let value_style = WithColor::new(*styles.value_color);
 
     let live = &self.live;
 
@@ -110,22 +116,24 @@ impl GpuComponent {
 
     column![
       row![
-        space_row![row![text("GPU"), model_copy]],
+        row_style.row(row![text("GPU"), model_copy]),
         expand_right![value_style.text(temperature_string)]
       ],
-      space_row![row![
+      row_style.row(
         row![
-          usage_name_style.text("Usage"),
-          expand_right![value_style.text(format!("{}%", live.utilization_rates))]
+          row![
+            usage_name_style.text("Usage"),
+            expand_right![value_style.text(format!("{}%", live.utilization_rates))]
+          ]
+          .width(Length::Fill),
+          row![
+            usage_name_style.text("Frequency"),
+            expand_right![value_style.text(format!("{} MHz", live.gpu_frequency))]
+          ]
+          .width(Length::Fill),
         ]
-        .width(Length::Fill),
-        row![
-          usage_name_style.text("Frequency"),
-          expand_right![value_style.text(format!("{} MHz", live.gpu_frequency))]
-        ]
-        .width(Length::Fill),
-      ]
-      .width(Length::Fill)],
+        .width(Length::Fill)
+      ),
       row![
         usage_name_style.text("Memory").width(Length::Fill),
         value_style.text(memory_frequency_str).width(Length::Fill),

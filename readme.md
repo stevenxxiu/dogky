@@ -16,6 +16,8 @@ Issues with *Conky*:
 - `~/.config/dogky/dogky.yaml`
     - See `src/config.rs` for options.
     - Commands, e.g. `cpu_memory.process_list.top_command`, have environment variable support.
+- `~/.config/dogky/styles.yaml`
+    - See `src/styles_config.rs` for options.
 
 The UI layout isn't configurable.
 
