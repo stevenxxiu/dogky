@@ -184,12 +184,12 @@ impl CpuMemoryComponent {
       if process.status() == ProcessStatus::Run {
         self.live.num_running += 1;
       }
-      let args = process
-        .cmd()
-        .iter()
-        .skip(1)
-        .fold(String::new(), |res, cur| res + cur.to_str().unwrap() + " ");
       if let Some(live_process) = self.system.process(*pid) {
+        let args = live_process
+          .cmd()
+          .iter()
+          .skip(1)
+          .fold(String::new(), |res, cur| res + cur.to_str().unwrap() + " ");
         self.live.processes.push(ProcessProps {
           cmd: format!("{} {}", live_process.name().to_str().unwrap(), args),
           pid: *pid,
