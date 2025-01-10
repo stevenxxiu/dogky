@@ -17,7 +17,7 @@ use crate::api::{get_weather, WeatherData};
 use crate::config::WeatherProps;
 use crate::message::{Message, WeatherMessage};
 use crate::path::get_xdg_dirs;
-use crate::styles_config::WeatherStyles;
+use crate::styles_config::{GlobalStyles, WeatherStyles};
 use crate::ui_utils::{WithColor, WithSpacing};
 
 // Unicode weather symbols to use
@@ -83,8 +83,8 @@ fn format_sun_timestamp(timestamp: u64, timezone: FixedOffset) -> String {
 
 pub struct WeatherComponent {
   config_props: WeatherProps,
+  global_styles: GlobalStyles,
   styles: WeatherStyles,
-  h_gap: f32,
   cache_path: PathBuf,
   live: WeatherLiveProps,
 }
@@ -96,11 +96,11 @@ struct WeatherLiveProps {
 }
 
 impl WeatherComponent {
-  pub fn new(config_props: WeatherProps, styles: WeatherStyles, h_gap: f32) -> Self {
+  pub fn new(config_props: WeatherProps, global_styles: GlobalStyles, styles: WeatherStyles) -> Self {
     let mut res = Self {
       config_props,
+      global_styles,
       styles,
-      h_gap,
       cache_path: get_xdg_dirs().place_cache_file("weather.json").unwrap(),
       live: WeatherLiveProps::default(),
     };
@@ -171,8 +171,9 @@ impl WeatherComponent {
   }
 
   pub fn view(&self) -> Element<Message> {
+    let global_styles = &self.global_styles;
     let styles = &self.styles;
-    let row_style = WithSpacing::new(self.h_gap);
+    let row_style = WithSpacing::new(global_styles.h_gap);
     let value_style = WithColor::new(*styles.value_color);
     let icon_font = Font::with_name("Noto Color Emoji");
 

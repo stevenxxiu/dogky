@@ -15,14 +15,13 @@ use crate::config::DiskProps;
 use crate::custom_components::Bar;
 use crate::format_size::format_size;
 use crate::message::{DiskMessage, Message};
-use crate::styles_config::DiskStyles;
+use crate::styles_config::{DiskStyles, GlobalStyles};
 use crate::ui_utils::{expand_right, WithColor, WithSpacing};
 
 pub struct DiskComponent {
   config_props: DiskProps,
-  container_width: f32,
+  global_styles: GlobalStyles,
   styles: DiskStyles,
-  h_gap: f32,
   disks: Disks,
   model: String,
   file_system_name: String,
@@ -69,7 +68,7 @@ fn get_disk_temperature(device_path: &str) -> f32 {
 }
 
 impl DiskComponent {
-  pub fn new(config_props: DiskProps, container_width: f32, styles: DiskStyles, h_gap: f32) -> Self {
+  pub fn new(config_props: DiskProps, global_styles: GlobalStyles, styles: DiskStyles) -> Self {
     let refresh_kind = DiskRefreshKind::nothing().with_storage();
     let disks = Disks::new_with_refreshed_list_specifics(refresh_kind);
 
@@ -84,9 +83,8 @@ impl DiskComponent {
 
     Self {
       config_props,
-      container_width,
+      global_styles,
       styles,
-      h_gap,
       disks,
       model,
       file_system_name,
@@ -132,8 +130,9 @@ impl DiskComponent {
   }
 
   pub fn view(&self) -> Element<Message> {
+    let global_styles = &self.global_styles;
     let styles = &self.styles;
-    let row_style = WithSpacing::new(self.h_gap);
+    let row_style = WithSpacing::new(global_styles.h_gap);
     let name_style = WithColor::new(*styles.name_color);
     let value_style = WithColor::new(*styles.value_color);
 
@@ -153,9 +152,10 @@ impl DiskComponent {
 
     let bar = Bar {
       value: used_space as f32 / self.total_space as f32,
-      width: self.container_width,
+      width: global_styles.container_width,
       height: styles.bar_height,
       fill_color: *styles.bar_fill_color,
+      border_width: global_styles.border_width,
       border_color: *styles.bar_border_color,
       ..Default::default()
     };
@@ -169,7 +169,11 @@ impl DiskComponent {
         name_style.text(self.file_system_name.to_string()),
         expand_right![value_style.text(file_system_usage)]
       ],
-      container(canvas(bar).width(self.container_width).height(styles.bar_height)),
+      container(
+        canvas(bar)
+          .width(global_styles.container_width)
+          .height(styles.bar_height)
+      ),
     ]
     .width(Length::Fill)
     .into()

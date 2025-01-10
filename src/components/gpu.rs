@@ -9,12 +9,12 @@ use std::time::Duration;
 use crate::config::GpuProps;
 use crate::format_size::format_size;
 use crate::message::{GPUMessage, Message};
-use crate::styles_config::GPUStyles;
+use crate::styles_config::{GPUStyles, GlobalStyles};
 use crate::ui_utils::{expand_right, WithColor, WithSpacing};
 
 pub struct GpuComponent {
   config_props: GpuProps,
-  h_gap: f32,
+  global_styles: GlobalStyles,
   styles: GPUStyles,
   nvml: Nvml,
   model: String,
@@ -35,7 +35,7 @@ struct GpuLiveProps {
 const MEMORY_DECIMAL_PLACES: usize = 1usize;
 
 impl GpuComponent {
-  pub fn new(config_props: GpuProps, styles: GPUStyles, h_gap: f32) -> Self {
+  pub fn new(config_props: GpuProps, global_styles: GlobalStyles, styles: GPUStyles) -> Self {
     let nvml = Nvml::init().unwrap();
 
     let gpu = GpuComponent::get_gpu(&nvml);
@@ -43,8 +43,8 @@ impl GpuComponent {
 
     Self {
       config_props,
+      global_styles,
       styles,
-      h_gap,
       nvml,
       model,
       live: GpuLiveProps::default(),
@@ -91,8 +91,9 @@ impl GpuComponent {
   }
 
   pub fn view(&self) -> Element<Message> {
+    let global_styles = &self.global_styles;
     let styles = &self.styles;
-    let row_style = WithSpacing::new(self.h_gap);
+    let row_style = WithSpacing::new(global_styles.h_gap);
     let name_style = WithColor::new(*styles.name_color);
     let usage_name_style = WithColor::new(*styles.usage_name_color);
     let value_style = WithColor::new(*styles.value_color);

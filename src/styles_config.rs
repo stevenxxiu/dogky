@@ -3,6 +3,7 @@ extern crate xdg;
 use std::error::Error;
 use std::fs::File;
 
+use iced::Size;
 use serde_derive::Deserialize;
 
 use crate::path::get_xdg_dirs;
@@ -95,6 +96,7 @@ pub struct StylesConfig {
   pub padding: SerdePadding,
   pub separator_padding: SerdePadding,
   pub h_gap: f32,
+  pub border_width: f32,
 
   pub weather: WeatherStyles,
   pub machine_info: MachineInfoStyles,
@@ -109,4 +111,12 @@ pub fn load_config() -> Result<StylesConfig, Box<dyn Error>> {
   let config_file = File::open(config_path)?;
   let config_styles: StylesConfig = serde_yml::from_reader(config_file)?;
   Ok(config_styles)
+}
+
+#[derive(Clone)]
+pub struct GlobalStyles {
+  pub container_width: f32,
+  pub h_gap: f32,
+  pub border_width: f32,
+  pub char_dims: Size,
 }

@@ -12,14 +12,13 @@ use crate::config::NetworkProps;
 use crate::custom_components::Graph;
 use crate::format_size::{format_size, format_speed};
 use crate::message::{Message, NetworkMessage};
-use crate::styles_config::NetworkStyles;
+use crate::styles_config::{GlobalStyles, NetworkStyles};
 use crate::ui_utils::{expand_right, WithColor, WithSpacing};
 use crate::utils::join_str_iter;
 
 pub struct NetworkComponent {
   config_props: NetworkProps,
-  container_width: f32,
-  h_gap: f32,
+  global_styles: GlobalStyles,
   styles: NetworkStyles,
   networks: Networks,
   live: NetworkLiveProps,
@@ -45,15 +44,14 @@ struct HistoryProps {
 const NETWORK_DECIMAL_PLACES: usize = 2usize;
 
 impl NetworkComponent {
-  pub fn new(config_props: NetworkProps, container_width: f32, h_gap: f32, styles: NetworkStyles) -> Self {
+  pub fn new(config_props: NetworkProps, global_styles: GlobalStyles, styles: NetworkStyles) -> Self {
     let networks = Networks::new();
 
-    let process_data_size = ((container_width - styles.graph_h_gap) / 2.0) as usize;
+    let process_data_size = ((global_styles.container_width - styles.graph_h_gap) / 2.0) as usize;
 
     let mut res = Self {
       config_props,
-      container_width,
-      h_gap,
+      global_styles,
       styles,
       networks,
       live: NetworkLiveProps::default(),
@@ -157,14 +155,16 @@ impl NetworkComponent {
   }
 
   fn view_graphs(&self) -> Row<Message> {
+    let global_styles = &self.global_styles;
     let styles = &self.styles;
-    let graph_width: f32 = (self.container_width - styles.graph_h_gap) / 2.0;
+    let graph_width: f32 = (global_styles.container_width - styles.graph_h_gap) / 2.0;
     row![
       container(
         canvas(Graph {
           datasets: vec![self.history.download_speed.clone()],
           width: graph_width,
           height: styles.graph_height,
+          border_width: global_styles.border_width,
           border_color: *styles.graph_download_border_color,
           graph_colors: vec![*styles.graph_download_fill_color],
           cache: canvas::Cache::new(),
@@ -177,6 +177,7 @@ impl NetworkComponent {
           datasets: vec![self.history.upload_speed.clone()],
           width: graph_width,
           height: styles.graph_height,
+          border_width: global_styles.border_width,
           border_color: *styles.graph_upload_border_color,
           graph_colors: vec![*styles.graph_upload_fill_color],
           cache: canvas::Cache::new(),
@@ -190,8 +191,9 @@ impl NetworkComponent {
   }
 
   pub fn view(&self) -> Element<Message> {
+    let global_styles = &self.global_styles;
     let styles = &self.styles;
-    let row_style = WithSpacing::new(self.h_gap);
+    let row_style = WithSpacing::new(global_styles.h_gap);
     let name_style = WithColor::new(*styles.name_color);
     let value_style = WithColor::new(*styles.value_color);
 

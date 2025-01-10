@@ -3,7 +3,7 @@ use iced::event::{self, Event};
 use iced::widget::{self, column, container, horizontal_rule};
 use iced::window::{self, Mode};
 use iced::{Element, Font, Pixels, Point, Settings, Size, Subscription, Task};
-use styles_config::StylesConfig;
+use styles_config::{GlobalStyles, StylesConfig};
 use xcb::{x, Xid, XidNew};
 
 use components::{
@@ -41,24 +41,21 @@ struct Dogky {
 impl Dogky {
   fn new(settings: Settings, styles: StylesConfig) -> (Self, Task<Message>) {
     let config = config::load_config().unwrap();
-    let container_width = styles.width as f32 - styles.padding.left - styles.padding.right;
-    let h_gap = styles.h_gap;
-    let char_dims = style_utils::get_char_dims(&settings);
+    let global_styles = GlobalStyles {
+      container_width: styles.width as f32 - styles.padding.left - styles.padding.right,
+      h_gap: styles.h_gap,
+      border_width: styles.border_width,
+      char_dims: style_utils::get_char_dims(&settings),
+    };
     (
       Self {
         styles: styles.clone(),
-        weather: WeatherComponent::new(config.weather, styles.weather, h_gap),
-        machine_info: MachineInfoComponent::new(h_gap, styles.machine_info),
-        cpu_memory: CpuMemoryComponent::new(
-          config.cpu_memory,
-          container_width,
-          styles.cpu_memory,
-          h_gap,
-          char_dims.width,
-        ),
-        disk: DiskComponent::new(config.disk, container_width, styles.disk, h_gap),
-        gpu: GpuComponent::new(config.gpu, styles.gpu, h_gap),
-        network: NetworkComponent::new(config.network, container_width, h_gap, styles.network),
+        weather: WeatherComponent::new(config.weather, global_styles.clone(), styles.weather),
+        machine_info: MachineInfoComponent::new(global_styles.clone(), styles.machine_info),
+        cpu_memory: CpuMemoryComponent::new(config.cpu_memory, global_styles.clone(), styles.cpu_memory),
+        disk: DiskComponent::new(config.disk, global_styles.clone(), styles.disk),
+        gpu: GpuComponent::new(config.gpu, global_styles.clone(), styles.gpu),
+        network: NetworkComponent::new(config.network, global_styles.clone(), styles.network),
       },
       widget::focus_next(),
     )

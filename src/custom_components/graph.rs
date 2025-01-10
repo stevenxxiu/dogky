@@ -9,12 +9,11 @@ pub struct Graph {
   pub datasets: Vec<CircularQueue<f32>>,
   pub width: f32,
   pub height: f32,
+  pub border_width: f32,
   pub border_color: Color,
   pub graph_colors: Vec<Color>,
   pub cache: canvas::Cache,
 }
-
-const BORDER_WIDTH: f32 = 1.0;
 
 impl<Message> canvas::Program<Message> for Graph {
   type State = ();
@@ -28,14 +27,14 @@ impl<Message> canvas::Program<Message> for Graph {
     _cursor: mouse::Cursor,
   ) -> Vec<canvas::Geometry> {
     let geometry = self.cache.draw(renderer, bounds.size(), |frame| {
-      let inner_height = self.height - 2.0 * BORDER_WIDTH;
-      let min_x = BORDER_WIDTH;
-      let max_y = self.height - 2.0 * BORDER_WIDTH;
+      let inner_height = self.height - 2.0 * self.border_width;
+      let min_x = self.border_width;
+      let max_y = self.height - self.border_width;
 
       // Draw graph
       for (i, (dataset, color)) in self.datasets.iter().zip(self.graph_colors.iter()).enumerate() {
         let mut graph_path = Builder::new();
-        let mut x = self.width - BORDER_WIDTH;
+        let mut x = self.width - self.border_width;
         if i != 0 {
           if let Some(value) = dataset.iter().next() {
             let height = inner_height * value;
@@ -45,9 +44,12 @@ impl<Message> canvas::Program<Message> for Graph {
         for value in dataset.iter() {
           let height = inner_height * value;
           if i == 0 {
-            graph_path.rectangle(Point::new(x - 1.0, max_y - height), Size::new(1.0, height));
+            graph_path.rectangle(
+              Point::new(x - self.border_width, max_y - height),
+              Size::new(self.border_width, height),
+            );
           } else {
-            graph_path.line_to(Point::new(x - 1.0, max_y - height));
+            graph_path.line_to(Point::new(x - self.border_width, max_y - height));
           }
           x -= 1.0;
           if x < min_x {
@@ -63,8 +65,14 @@ impl<Message> canvas::Program<Message> for Graph {
       }
 
       // Draw border
-      let stroke = Stroke::default().with_color(self.border_color);
-      frame.stroke_rectangle(Point::ORIGIN, Size::new(self.width - 1.0, self.height - 1.0), stroke);
+      let stroke = Stroke::default()
+        .with_width(self.border_width)
+        .with_color(self.border_color);
+      frame.stroke_rectangle(
+        Point::new(self.border_width / 2.0, self.border_width / 2.0),
+        Size::new(self.width - self.border_width, self.height - self.border_width),
+        stroke,
+      );
     });
     vec![geometry]
   }

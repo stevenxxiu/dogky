@@ -6,11 +6,11 @@ use iced::{Element, Length};
 use sysinfo::System;
 
 use crate::message::{MachineInfoMessage, Message};
-use crate::styles_config::MachineInfoStyles;
+use crate::styles_config::{GlobalStyles, MachineInfoStyles};
 use crate::ui_utils::WithSpacing;
 
 pub struct MachineInfoComponent {
-  h_gap: f32,
+  global_styles: GlobalStyles,
   styles: MachineInfoStyles,
   username: String,
   hostname: String,
@@ -20,10 +20,10 @@ pub struct MachineInfoComponent {
 }
 
 impl MachineInfoComponent {
-  pub fn new(h_gap: f32, styles: MachineInfoStyles) -> Self {
+  pub fn new(global_styles: GlobalStyles, styles: MachineInfoStyles) -> Self {
     let uname_info = uname::uname().unwrap();
     Self {
-      h_gap,
+      global_styles,
       styles,
       username: whoami::username(),
       hostname: whoami::fallible::hostname().unwrap(),
@@ -43,8 +43,9 @@ impl MachineInfoComponent {
   }
 
   pub fn view(&self) -> Element<Message> {
+    let global_styles = &self.global_styles;
     let styles = &self.styles;
-    let row_style = WithSpacing::new(self.h_gap);
+    let row_style = WithSpacing::new(global_styles.h_gap);
 
     let user_text = text(self.username.to_string()).color(styles.user_color.clone());
     let at_text = text("@").color(styles.at_color.clone());
