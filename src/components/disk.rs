@@ -1,7 +1,7 @@
 use iced::alignment::Horizontal;
 use iced::mouse::Interaction;
 use iced::widget::{canvas, column, container, mouse_area, row, text};
-use iced::{clipboard, time, Element, Length, Subscription, Task};
+use iced::{clipboard, time, Alignment, Element, Length, Subscription, Task};
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::fs::File;
@@ -146,7 +146,7 @@ impl DiskComponent {
     let used_space = self.total_space - live.available_space;
     let file_system_usage = format!(
       "{: >8} + {: >8}",
-      format_size(self.total_space, DISK_DECIMAL_PLACES),
+      &format_size(used_space, DISK_DECIMAL_PLACES),
       &format_size(live.available_space, DISK_DECIMAL_PLACES),
     );
 
@@ -169,11 +169,17 @@ impl DiskComponent {
         name_style.text(self.file_system_name.to_string()),
         expand_right![value_style.text(file_system_usage)]
       ],
-      container(
-        canvas(bar)
-          .width(global_styles.container_width)
-          .height(styles.bar_height)
-      ),
+      row_style.row(
+        row![
+          value_style.text(format_size(self.total_space, DISK_DECIMAL_PLACES)),
+          container(
+            canvas(bar)
+              .width(global_styles.container_width)
+              .height(styles.bar_height)
+          ),
+        ]
+        .align_y(Alignment::Center)
+      )
     ]
     .width(Length::Fill)
     .into()
