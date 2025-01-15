@@ -7,17 +7,12 @@ use serde_derive::Deserialize;
 
 use crate::path::get_xdg_dirs;
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, PartialEq, Clone)]
 pub struct WeatherStyles {
   pub container_padding: String,
   pub cond_icon_size: f32,
-  pub cond_icon_padding: String,
   pub value_color: String,
-  pub wind_arrow_offset: f32,
-  pub wind_arrow_size: f32,
-  pub wind_arrow_canvas_size: f32,
-  pub sunrise_icon_padding: String,
-  pub sunset_icon_padding: String,
+  pub wind_arrow_margin: String,
 }
 
 #[derive(Deserialize, Clone)]
@@ -114,6 +109,7 @@ pub fn load_config() -> Result<StylesConfig, Box<dyn Error>> {
 #[derive(Clone)]
 pub struct GlobalStyles {
   pub container_width: f32,
+  pub padding: String,
   pub h_gap: f32,
   pub border_width: f32,
 }
