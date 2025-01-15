@@ -8,14 +8,14 @@ use serde_derive::{Deserialize, Serialize};
 // exist.
 
 #[allow(dead_code)]
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WeatherDataCoord {
   pub lon: f32,
   pub lat: f32,
 }
 
 #[allow(dead_code)]
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WeatherDataWeather {
   pub id: u64,
   pub main: String,
@@ -24,7 +24,7 @@ pub struct WeatherDataWeather {
 }
 
 #[allow(dead_code)]
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WeatherDataMain {
   pub temp: f32,
   pub feels_like: f32,
@@ -35,20 +35,20 @@ pub struct WeatherDataMain {
 }
 
 #[allow(dead_code)]
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WeatherDataWind {
   pub speed: f32,
   pub deg: f32,
 }
 
 #[allow(dead_code)]
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WeatherDataClouds {
   pub all: f32,
 }
 
 #[allow(dead_code)]
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WeatherDataSys {
   pub country: String,
   pub sunrise: u64,
@@ -56,7 +56,7 @@ pub struct WeatherDataSys {
 }
 
 #[allow(dead_code)]
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WeatherData {
   pub coord: WeatherDataCoord,
   pub weather: Vec<WeatherDataWeather>,

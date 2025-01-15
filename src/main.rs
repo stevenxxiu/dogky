@@ -1,12 +1,19 @@
 use freya::prelude::*;
-use styles_config::StylesConfig;
+use styles_config::{GlobalStyles, StylesConfig};
 use winit::dpi::{LogicalPosition, LogicalSize};
 use winit::raw_window_handle::{HasWindowHandle, RawWindowHandle};
 use winit::window::WindowLevel;
 use xcb::{x, Xid, XidNew};
 
+use components::WeatherComponent;
+
+mod api;
+mod components;
+mod config;
 mod path;
+mod serde_structs;
 mod styles_config;
+mod ui_utils;
 
 fn set_wm_states(window_id: u32) {
   let (conn, _screen_num) = xcb::Connection::connect(None).unwrap();
@@ -44,6 +51,16 @@ fn set_wm_states(window_id: u32) {
 
 fn app() -> Element {
   let styles = consume_context::<StylesConfig>();
+  let padding_parsed = ui_utils::parse_padding(&styles.padding).unwrap();
+  let global_styles = GlobalStyles {
+    container_width: styles.width as f32 - padding_parsed.left() - padding_parsed.right(),
+    padding: styles.padding.to_string(),
+    h_gap: styles.h_gap,
+    border_width: styles.border_width,
+  };
+  use_context_provider(|| global_styles);
+
+  let config = config::load_config().unwrap();
 
   rsx!(rect {
     width: "100%",
@@ -51,7 +68,9 @@ fn app() -> Element {
     background: styles.background_color,
     color: styles.text_color,
     font_size: styles.text_size.to_string(),
-    padding: styles.padding,
+    padding: styles.padding.to_string(),
+    direction: "vertical",
+    WeatherComponent { config: config.weather, styles: styles.weather },
   })
 }
 

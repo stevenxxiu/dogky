@@ -8,8 +8,8 @@ use serde_derive::Deserialize;
 use crate::path::get_xdg_dirs;
 use crate::serde_structs::{SerdeCommand, SerdeRegex};
 
-#[derive(Deserialize)]
-pub struct WeatherProps {
+#[derive(Deserialize, PartialEq, Clone)]
+pub struct WeatherConfig {
   pub update_interval: u64,
   pub retry_timeout: u64,
   pub openweather_api_key: String,
@@ -31,14 +31,14 @@ pub struct CpuMemoryProcessListProps {
 }
 
 #[derive(Deserialize)]
-pub struct CpuMemoryProps {
+pub struct CpuMemoryConfig {
   pub update_interval: u64,
   pub cpu_bars: CpuBarsProps,
   pub process_list: CpuMemoryProcessListProps,
 }
 
 #[derive(Deserialize)]
-pub struct DiskProps {
+pub struct DiskConfig {
   pub update_interval: u64,
   pub name: String,
   pub device_path: String,
@@ -46,7 +46,7 @@ pub struct DiskProps {
 }
 
 #[derive(Deserialize)]
-pub struct GpuProps {
+pub struct GpuConfig {
   pub update_interval: u64,
 }
 
@@ -62,7 +62,7 @@ pub struct NetworkGraphContainerProps {
 }
 
 #[derive(Deserialize)]
-pub struct NetworkProps {
+pub struct NetworkConfig {
   pub update_interval: u64,
   pub public_ip_retry_timeout: Option<u64>,
   pub interface_regex: SerdeRegex,
@@ -70,17 +70,17 @@ pub struct NetworkProps {
 }
 
 #[derive(Deserialize)]
-pub struct ConfigProps {
-  pub weather: WeatherProps,
-  pub cpu_memory: CpuMemoryProps,
-  pub disk: DiskProps,
-  pub gpu: GpuProps,
-  pub network: NetworkProps,
+pub struct DogkyConfig {
+  pub weather: WeatherConfig,
+  pub cpu_memory: CpuMemoryConfig,
+  pub disk: DiskConfig,
+  pub gpu: GpuConfig,
+  pub network: NetworkConfig,
 }
 
-pub fn load_config() -> Result<ConfigProps, Box<dyn Error>> {
+pub fn load_config() -> Result<DogkyConfig, Box<dyn Error>> {
   let config_path = get_xdg_dirs().place_config_file("dogky.yaml")?;
   let config_file = File::open(config_path)?;
-  let config_props: ConfigProps = serde_yml::from_reader(config_file)?;
-  Ok(config_props)
+  let config: DogkyConfig = serde_yml::from_reader(config_file)?;
+  Ok(config)
 }

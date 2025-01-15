@@ -1,39 +1,92 @@
-use iced::widget::{text, Row};
-use iced::{widget::Text, Color};
+use freya::prelude::Gaps;
 
-#[macro_export]
-macro_rules! expand_right {
-  ($child:expr) => {
-    $child.width(Length::Fill).align_x(Horizontal::Right)
-  };
-}
+pub fn parse_padding(value: &str) -> Result<Gaps, &str> {
+  let mut paddings = Gaps::default();
 
-pub(crate) use expand_right;
-
-pub struct WithSpacing {
-  pub spacing: f32,
-}
-
-impl WithSpacing {
-  pub fn new(spacing: f32) -> Self {
-    Self { spacing }
+  if value == "none" {
+    return Ok(paddings);
   }
 
-  pub fn row<'a, T>(&self, row: Row<'a, T>) -> Row<'a, T> {
-    row.spacing(self.spacing)
-  }
-}
+  let mut values = value.split_ascii_whitespace();
+  let parse_error = "Parse error";
 
-pub struct WithColor {
-  pub color: Color,
-}
+  match values.clone().count() {
+    // Same in each directions
+    1 => {
+      paddings.fill_all(
+        values
+          .next()
+          .ok_or(parse_error)?
+          .parse::<f32>()
+          .map_err(|_| parse_error)?,
+      );
+    }
+    // By vertical and horizontal
+    2 => {
+      // Vertical
+      paddings.fill_vertical(
+        values
+          .next()
+          .ok_or(parse_error)?
+          .parse::<f32>()
+          .map_err(|_| parse_error)?,
+      );
 
-impl WithColor {
-  pub fn new(color: Color) -> Self {
-    Self { color }
+      // Horizontal
+      paddings.fill_horizontal(
+        values
+          .next()
+          .ok_or(parse_error)?
+          .parse::<f32>()
+          .map_err(|_| parse_error)?,
+      )
+    }
+    // Individual vertical but same horizontal
+    3 => {
+      let top = values
+        .next()
+        .ok_or(parse_error)?
+        .parse::<f32>()
+        .map_err(|_| parse_error)?;
+      let left_and_right = values
+        .next()
+        .ok_or(parse_error)?
+        .parse::<f32>()
+        .map_err(|_| parse_error)?;
+      let bottom = values
+        .next()
+        .ok_or(parse_error)?
+        .parse::<f32>()
+        .map_err(|_| parse_error)?;
+      paddings = Gaps::new(top, left_and_right, bottom, left_and_right);
+    }
+    // Each directions
+    4 => {
+      paddings = Gaps::new(
+        values
+          .next()
+          .ok_or(parse_error)?
+          .parse::<f32>()
+          .map_err(|_| parse_error)?,
+        values
+          .next()
+          .ok_or(parse_error)?
+          .parse::<f32>()
+          .map_err(|_| parse_error)?,
+        values
+          .next()
+          .ok_or(parse_error)?
+          .parse::<f32>()
+          .map_err(|_| parse_error)?,
+        values
+          .next()
+          .ok_or(parse_error)?
+          .parse::<f32>()
+          .map_err(|_| parse_error)?,
+      );
+    }
+    _ => {}
   }
 
-  pub fn text<'a>(&self, s: impl text::IntoFragment<'a>) -> Text<'a> {
-    text(s).color(self.color)
-  }
+  Ok(paddings)
 }
