@@ -5,11 +5,13 @@ use winit::raw_window_handle::{HasWindowHandle, RawWindowHandle};
 use winit::window::WindowLevel;
 use xcb::{x, Xid, XidNew};
 
-use components::WeatherComponent;
+use components::{MachineInfoComponent, WeatherComponent};
+use custom_components::Separator;
 
 mod api;
 mod components;
 mod config;
+mod custom_components;
 mod path;
 mod serde_structs;
 mod styles_config;
@@ -71,6 +73,8 @@ fn app() -> Element {
     padding: styles.padding.to_string(),
     direction: "vertical",
     WeatherComponent { config: config.weather, styles: styles.weather },
+    Separator {},
+    MachineInfoComponent { styles: styles.machine_info },
   })
 }
 

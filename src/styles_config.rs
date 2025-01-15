@@ -15,7 +15,7 @@ pub struct WeatherStyles {
   pub wind_arrow_margin: String,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, PartialEq, Clone)]
 pub struct MachineInfoStyles {
   pub user_color: String,
   pub at_color: String,
