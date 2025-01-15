@@ -155,8 +155,8 @@ pub fn WeatherComponent(config: WeatherConfig, styles: WeatherStyles) -> Element
             label {
               margin: styles.wind_arrow_margin.to_string(),
               color: styles.value_color.to_string(),
-              // The data is offset by -180°. The wind degrees character used is `⮕`, which is at 90°.
-              rotate: (wind_deg() + 180. - 90.).to_string() + "deg",
+              // The wind degrees character used is `⮕`, which is at 90°.
+              rotate: (wind_deg() - 90.).to_string() + "deg",
               "⮕",
             }
           }
