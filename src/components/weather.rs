@@ -67,34 +67,19 @@ pub fn WeatherComponent(config: WeatherConfig, styles: WeatherStyles) -> Element
   let mut error_str = use_signal(|| "".into());
 
   let city_id = config.openweather_city_id;
+  let mut data = use_signal(WeatherData::default);
   let mut cond_icon = use_signal(|| "");
-  let mut conditions = use_signal(|| "".into());
-  let mut temperature = use_signal(|| "".into());
-  let mut humidity = use_signal(|| "".into());
-  let mut wind_speed = use_signal(|| "".into());
-  let mut wind_deg = use_signal(|| 0f32);
-  let mut sunrise_text = use_signal(|| "".into());
-  let mut sunset_text = use_signal(|| "".into());
 
   use_hook(move || {
     spawn(async move {
       loop {
         let timeout = match update_data(&config, &cache_path) {
-          Ok(data) => {
+          Ok(data_) => {
+            data.set(data_);
             has_err.set(false);
 
-            let cond_icon_key: String = data.weather[0].icon.chars().take(2).collect();
-            cond_icon.set(*ICON_MAP.get(cond_icon_key.as_str()).unwrap());
-
-            conditions.set(data.weather[0].description.to_title_case());
-            temperature.set(format!("{:.0}°C", data.main.temp));
-            humidity.set(format!("{}%", data.main.humidity));
-            wind_speed.set(format!("{:.1} m/s", data.wind.speed));
-            wind_deg.set(data.wind.deg);
-
-            let timezone = FixedOffset::east_opt(data.timezone).unwrap();
-            sunrise_text.set(format_sun_timestamp(data.sys.sunrise, timezone));
-            sunset_text.set(format_sun_timestamp(data.sys.sunset, timezone));
+            let cond_icon_key = data().weather[0].icon.chars().take(2).collect::<String>();
+            cond_icon.set(ICON_MAP.get(cond_icon_key.as_str()).unwrap());
 
             config.update_interval
           }
@@ -109,6 +94,7 @@ pub fn WeatherComponent(config: WeatherConfig, styles: WeatherStyles) -> Element
     })
   });
 
+  let timezone = FixedOffset::east_opt(data().timezone).unwrap();
   rsx!(
     CursorArea {
       icon: CursorIcon::Pointer,
@@ -121,7 +107,7 @@ pub fn WeatherComponent(config: WeatherConfig, styles: WeatherStyles) -> Element
           open::that(format!("https://openweathermap.org/city/{0}#weather-widget", city_id))
           .unwrap();
         },
-        if has_err() {
+        if has_err() || data().weather.is_empty() {
           rect {
             width: "100%",
             direction: "horizontal",
@@ -142,21 +128,21 @@ pub fn WeatherComponent(config: WeatherConfig, styles: WeatherStyles) -> Element
               font_size: styles.cond_icon_size.to_string(),
               "{cond_icon}",
             }
-            label { "{conditions}" }
-            label { color: styles.value_color.to_string(), "{temperature}" }
+            label { "{data().weather[0].description.to_title_case()}" }
+            label { color: styles.value_color.to_string(), "{data().main.temp:.0}°C" }
           }
           rect {
             width: "100%",
             direction: "horizontal",
             main_align: "center",
             spacing: global_styles.h_gap.to_string(),
-            label { "Humidity" }, label { color: styles.value_color.to_string(), "{humidity}" }
-            label { "Wind" }, label { color: styles.value_color.to_string(), "{wind_speed}" }
+            label { "Humidity" }, label { color: styles.value_color.to_string(), "{data().main.humidity}%" }
+            label { "Wind" }, label { color: styles.value_color.to_string(), "{data().wind.speed:.1} m/s" }
             label {
               margin: styles.wind_arrow_margin.to_string(),
               color: styles.value_color.to_string(),
               // The wind degrees character used is `⮕`, which is at 90°.
-              rotate: (wind_deg() - 90.).to_string() + "deg",
+              rotate: (data().wind.deg - 90.).to_string() + "deg",
               "⮕",
             }
           }
@@ -166,9 +152,9 @@ pub fn WeatherComponent(config: WeatherConfig, styles: WeatherStyles) -> Element
             main_align: "center",
             spacing: global_styles.h_gap.to_string(),
             label { font_family: "Noto Color Emoji", "☀️" }
-            label { color: styles.value_color.to_string(), "{sunrise_text}" }
+            label { color: styles.value_color.to_string(), "{format_sun_timestamp(data().sys.sunrise, timezone)}" }
             label { font_family: "Noto Color Emoji", "🌙" }
-            label { color: styles.value_color.to_string(), "{sunset_text}" }
+            label { color: styles.value_color.to_string(), "{format_sun_timestamp(data().sys.sunset, timezone)}" }
           }
         }
       }
