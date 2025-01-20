@@ -30,7 +30,7 @@ pub fn MachineInfoComponent(styles: MachineInfoStyles) -> Element {
         icon: CursorIcon::Copy,
         label {
           color: styles.kernel_version_color,
-          onclick: move |_| { let _ = ctx.set_contents(kernel_version.to_string()); },
+          onclick: move |_| { let _ = ctx.set_contents(kernel_version.clone()); },
           "{kernel_version}"
         }
       }

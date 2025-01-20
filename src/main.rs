@@ -56,7 +56,7 @@ fn app() -> Element {
   let padding_parsed = ui_utils::parse_padding(&styles.padding).unwrap();
   let global_styles = GlobalStyles {
     container_width: styles.width as f32 - padding_parsed.left() - padding_parsed.right(),
-    padding: styles.padding.to_string(),
+    padding: styles.padding.clone(),
     h_gap: styles.h_gap,
     border_width: styles.border_width,
   };
@@ -70,7 +70,7 @@ fn app() -> Element {
     background: styles.background_color,
     color: styles.text_color,
     font_size: styles.text_size.to_string(),
-    padding: styles.padding.to_string(),
+    padding: styles.padding.clone(),
     direction: "vertical",
     WeatherComponent { config: config.weather, styles: styles.weather },
     Separator {},

@@ -123,24 +123,20 @@ pub fn WeatherComponent(config: WeatherConfig, styles: WeatherStyles) -> Element
             main_align: "center",
             cross_align: "center",
             spacing: global_styles.h_gap.to_string(),
-            label {
-              font_family: "Noto Color Emoji",
-              font_size: styles.cond_icon_size.to_string(),
-              "{cond_icon}",
-            }
+            label { font_family: "Noto Color Emoji", font_size: styles.cond_icon_size.to_string(), "{cond_icon}" }
             label { "{data().weather[0].description.to_title_case()}" }
-            label { color: styles.value_color.to_string(), "{data().main.temp:.0}°C" }
+            label { color: styles.value_color.clone(), "{data().main.temp:.0}°C" }
           }
           rect {
             width: "100%",
             direction: "horizontal",
             main_align: "center",
             spacing: global_styles.h_gap.to_string(),
-            label { "Humidity" }, label { color: styles.value_color.to_string(), "{data().main.humidity}%" }
-            label { "Wind" }, label { color: styles.value_color.to_string(), "{data().wind.speed:.1} m/s" }
+            label { "Humidity" }, label { color: styles.value_color.clone(), "{data().main.humidity}%" }
+            label { "Wind" }, label { color: styles.value_color.clone(), "{data().wind.speed:.1} m/s" }
             label {
-              margin: styles.wind_arrow_margin.to_string(),
-              color: styles.value_color.to_string(),
+              margin: styles.wind_arrow_margin.clone(),
+              color: styles.value_color.clone(),
               // The wind degrees character used is `⮕`, which is at 90°.
               rotate: (data().wind.deg - 90.).to_string() + "deg",
               "⮕",
@@ -152,9 +148,9 @@ pub fn WeatherComponent(config: WeatherConfig, styles: WeatherStyles) -> Element
             main_align: "center",
             spacing: global_styles.h_gap.to_string(),
             label { font_family: "Noto Color Emoji", "☀️" }
-            label { color: styles.value_color.to_string(), "{format_sun_timestamp(data().sys.sunrise, timezone)}" }
+            label { color: styles.value_color.clone(), "{format_sun_timestamp(data().sys.sunrise, timezone)}" }
             label { font_family: "Noto Color Emoji", "🌙" }
-            label { color: styles.value_color.to_string(), "{format_sun_timestamp(data().sys.sunset, timezone)}" }
+            label { color: styles.value_color.clone(), "{format_sun_timestamp(data().sys.sunset, timezone)}" }
           }
         }
       }
