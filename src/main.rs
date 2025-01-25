@@ -62,8 +62,13 @@ fn app() -> Element {
     h_gap: styles.h_gap,
   };
   use_context_provider(|| global_styles);
+  use_context_provider(|| styles.weather);
+  use_context_provider(|| styles.machine_info);
+  use_context_provider(|| styles.cpu_memory);
 
   let config = config::load_config().unwrap();
+  use_context_provider(|| config.weather);
+  use_context_provider(|| config.cpu_memory);
 
   rsx!(rect {
     width: "100%",
@@ -73,11 +78,11 @@ fn app() -> Element {
     color: styles.text_color,
     font_size: styles.text_size.to_string(),
     padding: styles.padding.clone(),
-    WeatherComponent { config: config.weather, styles: styles.weather },
+    WeatherComponent {},
     Separator {},
-    MachineInfoComponent { styles: styles.machine_info },
+    MachineInfoComponent {},
     Separator {},
-    CpuMemoryComponent { config: config.cpu_memory, styles: styles.cpu_memory  }
+    CpuMemoryComponent {}
   })
 }
 

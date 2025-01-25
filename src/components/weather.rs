@@ -59,7 +59,9 @@ fn update_data(config: &WeatherConfig, cache_path: &PathBuf) -> Result<WeatherDa
 
 #[allow(non_snake_case)]
 #[component]
-pub fn WeatherComponent(config: WeatherConfig, styles: WeatherStyles) -> Element {
+pub fn WeatherComponent() -> Element {
+  let config = use_context::<WeatherConfig>();
+  let styles = use_context::<WeatherStyles>();
   let global_styles = use_context::<GlobalStyles>();
   let cache_path = get_xdg_dirs().place_cache_file("weather.json").unwrap();
 

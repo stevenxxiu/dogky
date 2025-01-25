@@ -8,7 +8,7 @@ use serde_derive::Deserialize;
 use crate::path::get_xdg_dirs;
 use crate::serde_structs::SerdeColor;
 
-#[derive(Deserialize, PartialEq, Clone)]
+#[derive(Deserialize, Clone)]
 pub struct WeatherStyles {
   pub container_padding: String,
   pub cond_icon_size: f32,
@@ -16,7 +16,7 @@ pub struct WeatherStyles {
   pub wind_arrow_margin: String,
 }
 
-#[derive(Deserialize, PartialEq, Clone)]
+#[derive(Deserialize, Clone)]
 pub struct MachineInfoStyles {
   pub user_color: String,
   pub at_color: String,
@@ -26,7 +26,7 @@ pub struct MachineInfoStyles {
   pub kernel_version_color: String,
 }
 
-#[derive(Deserialize, PartialEq, Clone)]
+#[derive(Deserialize, Clone)]
 pub struct CpuMemoryStyles {
   pub value_color: String,
 

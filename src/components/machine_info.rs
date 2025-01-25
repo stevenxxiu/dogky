@@ -6,7 +6,8 @@ use crate::styles_config::{GlobalStyles, MachineInfoStyles};
 
 #[allow(non_snake_case)]
 #[component]
-pub fn MachineInfoComponent(styles: MachineInfoStyles) -> Element {
+pub fn MachineInfoComponent() -> Element {
+  let styles = use_context::<MachineInfoStyles>();
   let global_styles = use_context::<GlobalStyles>();
   let mut ctx = ClipboardContext::new().unwrap();
 

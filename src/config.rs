@@ -8,7 +8,7 @@ use serde_derive::Deserialize;
 use crate::path::get_xdg_dirs;
 use crate::serde_structs::{SerdeCommand, SerdeRegex};
 
-#[derive(Deserialize, PartialEq, Clone)]
+#[derive(Deserialize, Clone)]
 pub struct WeatherConfig {
   pub update_interval: u64,
   pub retry_timeout: u64,
@@ -16,13 +16,13 @@ pub struct WeatherConfig {
   pub openweather_city_id: u64,
 }
 
-#[derive(Deserialize, PartialEq, Clone)]
+#[derive(Deserialize, Clone)]
 pub struct CpuMemoryProcessListConfig {
   pub num_processes: usize,
   pub top_command: SerdeCommand,
 }
 
-#[derive(Deserialize, PartialEq, Clone)]
+#[derive(Deserialize, Clone)]
 pub struct CpuMemoryConfig {
   pub update_interval: u64,
   pub process_list: CpuMemoryProcessListConfig,

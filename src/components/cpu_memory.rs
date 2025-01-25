@@ -124,7 +124,8 @@ const MEMORY_DECIMAL_PLACES: usize = 1usize;
 
 #[allow(non_snake_case)]
 #[component]
-fn CpuBarsComponent(cpu_core_usage: Vec<f32>, styles: CpuMemoryStyles) -> Element {
+fn CpuBarsComponent(cpu_core_usage: Vec<f32>) -> Element {
+  let styles = use_context::<CpuMemoryStyles>();
   rsx!(
     rect {
       direction: "vertical",
@@ -155,11 +156,8 @@ fn CpuBarsComponent(cpu_core_usage: Vec<f32>, styles: CpuMemoryStyles) -> Elemen
 
 #[allow(non_snake_case)]
 #[component]
-fn CpuGraphsComponent(
-  cpu_hist: CircularQueue<f32>,
-  memory_swap_hist: [CircularQueue<f32>; 2],
-  styles: CpuMemoryStyles,
-) -> Element {
+fn CpuGraphsComponent(cpu_hist: CircularQueue<f32>, memory_swap_hist: [CircularQueue<f32>; 2]) -> Element {
+  let styles = use_context::<CpuMemoryStyles>();
   rsx!(
     rect {
       width: "100%",
@@ -190,15 +188,8 @@ fn CpuGraphsComponent(
 
 #[allow(non_snake_case)]
 #[component]
-fn ProcessTableRow(
-  cmd: String,
-  pid: String,
-  cpu: String,
-  mem: String,
-  color: String,
-  align: String,
-  styles: CpuMemoryStyles,
-) -> Element {
+fn ProcessTableRow(cmd: String, pid: String, cpu: String, mem: String, color: String, align: String) -> Element {
+  let styles = use_context::<CpuMemoryStyles>();
   rsx!(
     rect {
       direction: "horizontal",
@@ -219,8 +210,9 @@ fn ProcessTableComponent(
   num_processes: usize,
   num_cpus: usize,
   top_command: Vec<String>,
-  styles: CpuMemoryStyles,
 ) -> Element {
+  let styles = use_context::<CpuMemoryStyles>();
+
   let mut processes = process_data().processes.clone();
   processes.sort_by(|process_1, process_2| process_2.cpu_usage.partial_cmp(&process_1.cpu_usage).unwrap());
   let process_by_cpu = processes[..num_processes.min(processes.len())].to_vec();
@@ -249,26 +241,26 @@ fn ProcessTableComponent(
         },
         ProcessTableRow {
           cmd: "Command", pid: "PID", cpu: "CPU%", mem: "MEM",
-          color: styles.ps_header_color.clone(), align: "right", styles: styles.clone(),
+          color: styles.ps_header_color.clone(), align: "right",
         },
         ProcessTableRow {
           cmd: "", pid: "", cpu: "🞃", mem: "",
-          color: styles.ps_sort_cpu_color.clone(), align: "center", styles: styles.clone(),
+          color: styles.ps_sort_cpu_color.clone(), align: "center",
         },
         for process in process_by_cpu.iter() {
           ProcessTableRow {
             cmd: process.cmd.clone(), pid: process.pid.to_string(), cpu: format_cpu(process), mem: format_mem(process),
-            color: styles.ps_cpu_color.clone(), align: "right", styles: styles.clone(),
+            color: styles.ps_cpu_color.clone(), align: "right",
           }
         }
         ProcessTableRow {
           cmd: "", pid: "", cpu: "", mem: "🞃",
-          color: styles.ps_sort_memory_color.clone(), align: "center", styles: styles.clone(),
+          color: styles.ps_sort_memory_color.clone(), align: "center",
         },
         for process in process_by_memory.iter() {
           ProcessTableRow {
             cmd: process.cmd.clone(), pid: process.pid.to_string(), cpu: format_cpu(process), mem: format_mem(process),
-            color: styles.ps_memory_color.clone(), align: "right", styles: styles.clone(),
+            color: styles.ps_memory_color.clone(), align: "right",
           }
         }
       }
@@ -287,7 +279,9 @@ fn format_memory(used: u64, total: u64) -> String {
 
 #[allow(non_snake_case)]
 #[component]
-pub fn CpuMemoryComponent(config: CpuMemoryConfig, styles: CpuMemoryStyles) -> Element {
+pub fn CpuMemoryComponent() -> Element {
+  let config = use_context::<CpuMemoryConfig>();
+  let styles = use_context::<CpuMemoryStyles>();
   let global_styles = use_context::<GlobalStyles>();
   let mut ctx = ClipboardContext::new().unwrap();
 
@@ -406,7 +400,7 @@ pub fn CpuMemoryComponent(config: CpuMemoryConfig, styles: CpuMemoryStyles) -> E
         },
       }
     }
-    CpuBarsComponent { cpu_core_usage: cpu_data().core_usage, styles: styles.clone() }
+    CpuBarsComponent { cpu_core_usage: cpu_data().core_usage }
     rect {
       width: "100%",
       direction: "horizontal",
@@ -428,14 +422,12 @@ pub fn CpuMemoryComponent(config: CpuMemoryConfig, styles: CpuMemoryStyles) -> E
     CpuGraphsComponent {
       cpu_hist: cpu_hist(),
       memory_swap_hist: memory_swap_hist(),
-      styles: styles.clone(),
     }
     ProcessTableComponent {
       process_data: processes_data(),
       num_processes: config.process_list.num_processes,
       num_cpus: num_cpus,
       top_command: config.process_list.top_command.to_vec(),
-      styles: styles.clone(),
     }
   )
 }
