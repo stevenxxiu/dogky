@@ -6,6 +6,7 @@ use std::fs::File;
 use serde_derive::Deserialize;
 
 use crate::path::get_xdg_dirs;
+use crate::serde_structs::SerdeColor;
 
 #[derive(Deserialize, PartialEq, Clone)]
 pub struct WeatherStyles {
@@ -25,24 +26,28 @@ pub struct MachineInfoStyles {
   pub kernel_version_color: String,
 }
 
-#[derive(Deserialize, Clone)]
-pub struct CPUMemoryStyles {
+#[derive(Deserialize, PartialEq, Clone)]
+pub struct CpuMemoryStyles {
   pub value_color: String,
 
+  pub bars_per_row: usize,
   pub bars_v_gap: f32,
   pub bar_height: f32,
-  pub bar_border_color: String,
+  pub bar_border: String,
   pub bar_fill_color: String,
   pub bar_h_gap: f32,
 
   pub graph_h_gap: f32,
-  pub graph_height: f32,
-  pub graph_cpu_border_color: String,
-  pub graph_cpu_fill_color: String,
-  pub graph_memory_border_color: String,
-  pub graph_memory_fill_color: String,
-  pub graph_swap_fill_color: String,
+  pub graph_height: u32,
+  pub graph_cpu_border: String,
+  pub graph_cpu_fill_color: SerdeColor,
+  pub graph_memory_border: String,
+  pub graph_memory_fill_color: SerdeColor,
+  pub graph_swap_fill_color: SerdeColor,
 
+  pub ps_pid_width: f32,
+  pub ps_cpu_width: f32,
+  pub ps_memory_width: f32,
   pub ps_header_color: String,
   pub ps_sort_cpu_color: String,
   pub ps_sort_memory_color: String,
@@ -89,11 +94,10 @@ pub struct StylesConfig {
   pub padding: String,
   pub separator_padding: String,
   pub h_gap: f32,
-  pub border_width: f32,
 
   pub weather: WeatherStyles,
   pub machine_info: MachineInfoStyles,
-  pub cpu_memory: CPUMemoryStyles,
+  pub cpu_memory: CpuMemoryStyles,
   pub disk: DiskStyles,
   pub gpu: GPUStyles,
   pub network: NetworkStyles,
@@ -111,5 +115,4 @@ pub struct GlobalStyles {
   pub container_width: f32,
   pub padding: String,
   pub h_gap: f32,
-  pub border_width: f32,
 }

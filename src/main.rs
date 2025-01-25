@@ -5,17 +5,19 @@ use winit::raw_window_handle::{HasWindowHandle, RawWindowHandle};
 use winit::window::WindowLevel;
 use xcb::{x, Xid, XidNew};
 
-use components::{MachineInfoComponent, WeatherComponent};
+use components::{CpuMemoryComponent, MachineInfoComponent, WeatherComponent};
 use custom_components::Separator;
 
 mod api;
 mod components;
 mod config;
 mod custom_components;
+mod format_size;
 mod path;
 mod serde_structs;
 mod styles_config;
 mod ui_utils;
+mod utils;
 
 fn set_wm_states(window_id: u32) {
   let (conn, _screen_num) = xcb::Connection::connect(None).unwrap();
@@ -58,7 +60,6 @@ fn app() -> Element {
     container_width: styles.width as f32 - padding_parsed.left() - padding_parsed.right(),
     padding: styles.padding.clone(),
     h_gap: styles.h_gap,
-    border_width: styles.border_width,
   };
   use_context_provider(|| global_styles);
 
@@ -67,14 +68,16 @@ fn app() -> Element {
   rsx!(rect {
     width: "100%",
     height: "100%",
+    direction: "vertical",
     background: styles.background_color,
     color: styles.text_color,
     font_size: styles.text_size.to_string(),
     padding: styles.padding.clone(),
-    direction: "vertical",
     WeatherComponent { config: config.weather, styles: styles.weather },
     Separator {},
     MachineInfoComponent { styles: styles.machine_info },
+    Separator {},
+    CpuMemoryComponent { config: config.cpu_memory, styles: styles.cpu_memory  }
   })
 }
 

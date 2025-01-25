@@ -1,4 +1,5 @@
 use freya::prelude::Gaps;
+use skia_safe::Color;
 
 pub fn parse_padding(value: &str) -> Result<Gaps, &str> {
   let mut paddings = Gaps::default();
@@ -89,4 +90,15 @@ pub fn parse_padding(value: &str) -> Result<Gaps, &str> {
   }
 
   Ok(paddings)
+}
+
+pub fn parse_hex_skia_color(color: &str) -> Result<Color, &str> {
+  if color.len() == 7 {
+    let r = u8::from_str_radix(&color[1..3], 16).map_err(|_| "Parse Error")?;
+    let g = u8::from_str_radix(&color[3..5], 16).map_err(|_| "Parse Error")?;
+    let b = u8::from_str_radix(&color[5..7], 16).map_err(|_| "Parse Error")?;
+    Ok(Color::from_rgb(r, g, b))
+  } else {
+    Err("Parse error")
+  }
 }

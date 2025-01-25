@@ -16,25 +16,16 @@ pub struct WeatherConfig {
   pub openweather_city_id: u64,
 }
 
-#[derive(Deserialize)]
-pub struct CpuBarsProps {
-  pub num_per_row: usize,
-}
-
-#[derive(Deserialize)]
-pub struct CpuMemoryProcessListProps {
+#[derive(Deserialize, PartialEq, Clone)]
+pub struct CpuMemoryProcessListConfig {
   pub num_processes: usize,
-  pub pid_width: f32,
-  pub cpu_width: f32,
-  pub memory_width: f32,
   pub top_command: SerdeCommand,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, PartialEq, Clone)]
 pub struct CpuMemoryConfig {
   pub update_interval: u64,
-  pub cpu_bars: CpuBarsProps,
-  pub process_list: CpuMemoryProcessListProps,
+  pub process_list: CpuMemoryProcessListConfig,
 }
 
 #[derive(Deserialize)]

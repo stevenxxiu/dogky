@@ -1424,6 +1424,7 @@ dependencies = [
  "copypasta",
  "dioxus 0.6.1",
  "freya",
+ "freya-engine",
  "heck 0.5.0",
  "lazy_static",
  "local-ip-address",
@@ -1726,7 +1727,7 @@ dependencies = [
 [[package]]
 name = "freya"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git?branch=feat%2Fallow-fn-once-closures-in-window-hooks#45102318e839b464c27cf0ba8b0f62fa6adf528d"
+source = "git+https://github.com/marc2332/freya.git#621f10540ab7df1d79615704eed720e86f46ee0b"
 dependencies = [
  "dioxus 0.5.6",
  "dioxus-core 0.5.6",
@@ -1748,7 +1749,7 @@ dependencies = [
 [[package]]
 name = "freya-common"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git?branch=feat%2Fallow-fn-once-closures-in-window-hooks#45102318e839b464c27cf0ba8b0f62fa6adf528d"
+source = "git+https://github.com/marc2332/freya.git#621f10540ab7df1d79615704eed720e86f46ee0b"
 dependencies = [
  "accesskit",
  "dioxus-core 0.5.6",
@@ -1764,7 +1765,7 @@ dependencies = [
 [[package]]
 name = "freya-components"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git?branch=feat%2Fallow-fn-once-closures-in-window-hooks#45102318e839b464c27cf0ba8b0f62fa6adf528d"
+source = "git+https://github.com/marc2332/freya.git#621f10540ab7df1d79615704eed720e86f46ee0b"
 dependencies = [
  "bytes",
  "dioxus 0.5.6",
@@ -1787,7 +1788,7 @@ dependencies = [
 [[package]]
 name = "freya-core"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git?branch=feat%2Fallow-fn-once-closures-in-window-hooks#45102318e839b464c27cf0ba8b0f62fa6adf528d"
+source = "git+https://github.com/marc2332/freya.git#621f10540ab7df1d79615704eed720e86f46ee0b"
 dependencies = [
  "accesskit",
  "accesskit_winit",
@@ -1810,7 +1811,7 @@ dependencies = [
 [[package]]
 name = "freya-elements"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git?branch=feat%2Fallow-fn-once-closures-in-window-hooks#45102318e839b464c27cf0ba8b0f62fa6adf528d"
+source = "git+https://github.com/marc2332/freya.git#621f10540ab7df1d79615704eed720e86f46ee0b"
 dependencies = [
  "dioxus-core 0.5.6",
  "dioxus-rsx 0.5.6",
@@ -1822,7 +1823,7 @@ dependencies = [
 [[package]]
 name = "freya-engine"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git?branch=feat%2Fallow-fn-once-closures-in-window-hooks#45102318e839b464c27cf0ba8b0f62fa6adf528d"
+source = "git+https://github.com/marc2332/freya.git#621f10540ab7df1d79615704eed720e86f46ee0b"
 dependencies = [
  "bitflags 2.6.0",
  "glutin",
@@ -1832,7 +1833,7 @@ dependencies = [
 [[package]]
 name = "freya-hooks"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git?branch=feat%2Fallow-fn-once-closures-in-window-hooks#45102318e839b464c27cf0ba8b0f62fa6adf528d"
+source = "git+https://github.com/marc2332/freya.git#621f10540ab7df1d79615704eed720e86f46ee0b"
 dependencies = [
  "bitflags 2.6.0",
  "bytes",
@@ -1858,7 +1859,7 @@ dependencies = [
 [[package]]
 name = "freya-native-core"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git?branch=feat%2Fallow-fn-once-closures-in-window-hooks#45102318e839b464c27cf0ba8b0f62fa6adf528d"
+source = "git+https://github.com/marc2332/freya.git#621f10540ab7df1d79615704eed720e86f46ee0b"
 dependencies = [
  "dioxus-core 0.5.6",
  "parking_lot",
@@ -1870,7 +1871,7 @@ dependencies = [
 [[package]]
 name = "freya-native-core-macro"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git?branch=feat%2Fallow-fn-once-closures-in-window-hooks#45102318e839b464c27cf0ba8b0f62fa6adf528d"
+source = "git+https://github.com/marc2332/freya.git#621f10540ab7df1d79615704eed720e86f46ee0b"
 dependencies = [
  "quote",
  "syn 2.0.96",
@@ -1879,7 +1880,7 @@ dependencies = [
 [[package]]
 name = "freya-node-state"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git?branch=feat%2Fallow-fn-once-closures-in-window-hooks#45102318e839b464c27cf0ba8b0f62fa6adf528d"
+source = "git+https://github.com/marc2332/freya.git#621f10540ab7df1d79615704eed720e86f46ee0b"
 dependencies = [
  "accesskit",
  "bytes",
@@ -1901,7 +1902,7 @@ dependencies = [
 [[package]]
 name = "freya-renderer"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git?branch=feat%2Fallow-fn-once-closures-in-window-hooks#45102318e839b464c27cf0ba8b0f62fa6adf528d"
+source = "git+https://github.com/marc2332/freya.git#621f10540ab7df1d79615704eed720e86f46ee0b"
 dependencies = [
  "accesskit",
  "accesskit_winit",
@@ -4995,7 +4996,7 @@ dependencies = [
 [[package]]
 name = "torin"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git?branch=feat%2Fallow-fn-once-closures-in-window-hooks#45102318e839b464c27cf0ba8b0f62fa6adf528d"
+source = "git+https://github.com/marc2332/freya.git#621f10540ab7df1d79615704eed720e86f46ee0b"
 dependencies = [
  "euclid",
  "freya-native-core",
