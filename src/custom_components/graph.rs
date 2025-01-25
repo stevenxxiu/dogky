@@ -1,6 +1,6 @@
 use circular_queue::CircularQueue;
 use freya::prelude::*;
-use skia_safe::{self as sk};
+use skia_safe::{self as sk, Path, PathFillType};
 
 static BORDER_WIDTH: f32 = 1.;
 
@@ -26,37 +26,24 @@ pub fn Graph<const N: usize>(datasets: [CircularQueue<f32>; N], graph_colors: [s
       let height = max_y - min_y;
 
       for (i, (dataset, &color)) in datasets.iter().zip(graph_colors.iter()).enumerate() {
-        let mut x = max_x;
         if i == 0 {
-          paint.set_style(skia_safe::paint::Style::Fill);
+          paint.set_style(sk::paint::Style::Fill);
           paint.set_color(color);
         } else if i == 1 {
-          paint.set_style(skia_safe::paint::Style::Stroke);
+          paint.set_style(sk::paint::Style::Stroke);
           paint.set_color(color);
         }
-        let mut data_iter = dataset.iter();
-        let mut prev_point: sk::Point = sk::Point::new(0., 0.);
-        if i >= 1 {
-          if let Some(value) = data_iter.next() {
-            prev_point = sk::Point::new(x, max_y - value * height);
-            x -= 1.;
-          }
-        }
-        for value in data_iter {
-          if i == 0 {
-            ctx
-              .canvas
-              .draw_rect(sk::Rect::new(x - 1., max_y - height * value, x, max_y), &paint);
-          } else {
-            let point = sk::Point::new(x - 1., max_y - height * value);
-            ctx.canvas.draw_line(point, prev_point, &paint);
-            prev_point = point;
-          }
-          x -= 1.;
+        let mut points: Vec<sk::Point> = vec![sk::Point::new(max_x, max_y)];
+        for (j, value) in dataset.iter().enumerate() {
+          let x = max_x - j as f32;
           if x < min_x {
             break;
           }
+          points.push(sk::Point::new(x, max_y - height * value));
         }
+        points.push(sk::Point::new(points.last().unwrap().x, max_y));
+        let path = Path::polygon(&points, false, PathFillType::Winding, false);
+        ctx.canvas.draw_path(&path, &paint);
       }
     })
   });
