@@ -1,4 +1,5 @@
 use freya::prelude::*;
+use freya_node_state::Parse;
 use styles_config::{GlobalStyles, StylesConfig};
 use winit::dpi::{LogicalPosition, LogicalSize};
 use winit::raw_window_handle::{HasWindowHandle, RawWindowHandle};
@@ -16,7 +17,6 @@ mod format_size;
 mod path;
 mod serde_structs;
 mod styles_config;
-mod ui_utils;
 mod utils;
 
 fn set_wm_states(window_id: u32) {
@@ -55,7 +55,7 @@ fn set_wm_states(window_id: u32) {
 
 fn app() -> Element {
   let styles = consume_context::<StylesConfig>();
-  let padding_parsed = ui_utils::parse_padding(&styles.padding).unwrap();
+  let padding_parsed = Gaps::parse(&styles.padding).unwrap();
   let global_styles = GlobalStyles {
     container_width: styles.width as f32 - padding_parsed.left() - padding_parsed.right(),
     padding: styles.padding.clone(),

@@ -1321,6 +1321,8 @@ dependencies = [
  "copypasta",
  "dioxus",
  "freya",
+ "freya-engine",
+ "freya-node-state",
  "heck 0.5.0",
  "lazy_static",
  "local-ip-address",

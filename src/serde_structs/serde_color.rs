@@ -1,9 +1,8 @@
 use std::ops::Deref;
 
+use freya_engine::prelude::Color;
+use freya_node_state::Parse;
 use serde::{Deserialize, Deserializer};
-use skia_safe::Color;
-
-use crate::ui_utils;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct SerdeColor(Color);
@@ -22,7 +21,7 @@ impl<'de> Deserialize<'de> for SerdeColor {
     D: Deserializer<'de>,
   {
     let s: &str = Deserialize::deserialize(deserializer)?;
-    match ui_utils::parse_hex_skia_color(s) {
+    match Color::parse(s) {
       Ok(color) => Ok(SerdeColor(color)),
       Err(_) => Err(serde::de::Error::custom("parse_hex_skia_color()")),
     }
