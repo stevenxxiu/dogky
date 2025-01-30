@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 use std::process::Command;
 
+use arboard::Clipboard;
 use circular_queue::CircularQueue;
-use copypasta::{ClipboardContext, ClipboardProvider};
 use freya::prelude::*;
 use lazy_static::lazy_static;
 
@@ -283,7 +283,7 @@ pub fn CpuMemoryComponent() -> Element {
   let config = use_context::<CpuMemoryConfig>();
   let styles = use_context::<CpuMemoryStyles>();
   let global_styles = use_context::<GlobalStyles>();
-  let mut ctx = ClipboardContext::new().unwrap();
+  let mut clipboard = Clipboard::new().unwrap();
 
   let refresh_kind = RefreshKind::nothing()
     .with_cpu(CpuRefreshKind::nothing())
@@ -354,7 +354,7 @@ pub fn CpuMemoryComponent() -> Element {
         icon: CursorIcon::Copy,
         label {
           color: styles.value_color.clone(),
-          onclick: move |_| { let _ = ctx.set_contents(cpu_model.to_string()); },
+          onclick: move |_| { clipboard.set_text(cpu_model.clone()).unwrap(); },
           "{cpu_model}"
         },
       }

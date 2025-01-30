@@ -1,4 +1,4 @@
-use copypasta::{ClipboardContext, ClipboardProvider};
+use arboard::Clipboard;
 use freya::prelude::*;
 use sysinfo::System;
 
@@ -9,7 +9,7 @@ use crate::styles_config::{GlobalStyles, MachineInfoStyles};
 pub fn MachineInfoComponent() -> Element {
   let styles = use_context::<MachineInfoStyles>();
   let global_styles = use_context::<GlobalStyles>();
-  let mut ctx = ClipboardContext::new().unwrap();
+  let mut clipboard = Clipboard::new().unwrap();
 
   let kernel_version = System::kernel_version().unwrap();
   let uname_info = uname::uname().unwrap();
@@ -31,7 +31,7 @@ pub fn MachineInfoComponent() -> Element {
         icon: CursorIcon::Copy,
         label {
           color: styles.kernel_version_color,
-          onclick: move |_| { let _ = ctx.set_contents(kernel_version.clone()); },
+          onclick: move |_| { clipboard.set_text(kernel_version.clone()).unwrap(); },
           "{kernel_version}"
         }
       }

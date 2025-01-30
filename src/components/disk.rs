@@ -3,7 +3,7 @@ use std::io::{BufRead, BufReader};
 use std::path::Path;
 use std::process::Command;
 
-use copypasta::{ClipboardContext, ClipboardProvider};
+use arboard::Clipboard;
 use freya::prelude::*;
 use lazy_static::lazy_static;
 
@@ -76,7 +76,7 @@ pub fn DiskComponent() -> Element {
   let config = use_context::<DiskConfig>();
   let styles = use_context::<DiskStyles>();
   let global_styles = use_context::<GlobalStyles>();
-  let mut ctx = ClipboardContext::new().unwrap();
+  let mut clipboard = Clipboard::new().unwrap();
 
   let refresh_kind = DiskRefreshKind::nothing().with_storage();
   let mut disks = Disks::new_with_refreshed_list_specifics(refresh_kind);
@@ -113,7 +113,7 @@ pub fn DiskComponent() -> Element {
         icon: CursorIcon::Copy,
         label {
           color: styles.name_color.clone(),
-          onclick: move |_| { let _ = ctx.set_contents(model.clone()); },
+          onclick: move |_| { clipboard.set_text(model.clone()).unwrap() },
           "{model}"
         },
       }
