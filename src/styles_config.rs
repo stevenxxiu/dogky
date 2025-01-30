@@ -60,7 +60,7 @@ pub struct DiskStyles {
   pub name_color: String,
   pub value_color: String,
   pub bar_height: f32,
-  pub bar_border_color: String,
+  pub bar_border: String,
   pub bar_fill_color: String,
 }
 

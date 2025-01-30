@@ -28,7 +28,7 @@ pub struct CpuMemoryConfig {
   pub process_list: CpuMemoryProcessListConfig,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct DiskConfig {
   pub update_interval: u64,
   pub name: String,
