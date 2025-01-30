@@ -133,7 +133,7 @@ version = "0.7.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "891477e0c6a8957309ee5c45a6368af3ae14bb510732d2684ffa19af310920f9"
 dependencies = [
- "getrandom",
+ "getrandom 0.2.15",
  "once_cell",
  "version_check",
 ]
@@ -145,7 +145,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e89da841a80418a9b391ebaea17f5c112ffaaa96f621d2c285b5174da76b9011"
 dependencies = [
  "cfg-if",
- "getrandom",
+ "getrandom 0.2.15",
  "once_cell",
  "version_check",
  "zerocopy",
@@ -609,9 +609,9 @@ checksum = "c360505aed52b7ec96a3636c3f039d99103c37d1d9b4f7a8c743d3ea9ffcd03b"
 
 [[package]]
 name = "bumpalo"
-version = "3.16.0"
+version = "3.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "79296716171880943b8470b5f8d03aa55eb2e645a4874bdbb28adb49162e012c"
+checksum = "1628fb46dfa0b37568d12e5edd512553eccf6a22a78e8bde00bb4aed84d5bdbf"
 
 [[package]]
 name = "bytemuck"
@@ -1651,7 +1651,7 @@ dependencies = [
 [[package]]
 name = "freya"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#9f3439c97c6845dfe12417e59f827c31b80e2724"
+source = "git+https://github.com/marc2332/freya.git#5ed0d5b11f43fa8daa929d32c28faf2cd4bec550"
 dependencies = [
  "dioxus",
  "dioxus-core",
@@ -1673,10 +1673,9 @@ dependencies = [
 [[package]]
 name = "freya-common"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#9f3439c97c6845dfe12417e59f827c31b80e2724"
+source = "git+https://github.com/marc2332/freya.git#5ed0d5b11f43fa8daa929d32c28faf2cd4bec550"
 dependencies = [
  "accesskit",
- "dioxus-core",
  "freya-engine",
  "freya-native-core",
  "itertools 0.13.0",
@@ -1689,7 +1688,7 @@ dependencies = [
 [[package]]
 name = "freya-components"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#9f3439c97c6845dfe12417e59f827c31b80e2724"
+source = "git+https://github.com/marc2332/freya.git#5ed0d5b11f43fa8daa929d32c28faf2cd4bec550"
 dependencies = [
  "bytes",
  "dioxus",
@@ -1712,7 +1711,7 @@ dependencies = [
 [[package]]
 name = "freya-core"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#9f3439c97c6845dfe12417e59f827c31b80e2724"
+source = "git+https://github.com/marc2332/freya.git#5ed0d5b11f43fa8daa929d32c28faf2cd4bec550"
 dependencies = [
  "accesskit",
  "accesskit_winit",
@@ -1735,7 +1734,7 @@ dependencies = [
 [[package]]
 name = "freya-elements"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#9f3439c97c6845dfe12417e59f827c31b80e2724"
+source = "git+https://github.com/marc2332/freya.git#5ed0d5b11f43fa8daa929d32c28faf2cd4bec550"
 dependencies = [
  "dioxus-core",
  "dioxus-rsx",
@@ -1748,7 +1747,7 @@ dependencies = [
 [[package]]
 name = "freya-engine"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#9f3439c97c6845dfe12417e59f827c31b80e2724"
+source = "git+https://github.com/marc2332/freya.git#5ed0d5b11f43fa8daa929d32c28faf2cd4bec550"
 dependencies = [
  "bitflags 2.8.0",
  "glutin",
@@ -1758,7 +1757,7 @@ dependencies = [
 [[package]]
 name = "freya-hooks"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#9f3439c97c6845dfe12417e59f827c31b80e2724"
+source = "git+https://github.com/marc2332/freya.git#5ed0d5b11f43fa8daa929d32c28faf2cd4bec550"
 dependencies = [
  "bitflags 2.8.0",
  "bytes",
@@ -1784,7 +1783,7 @@ dependencies = [
 [[package]]
 name = "freya-native-core"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#9f3439c97c6845dfe12417e59f827c31b80e2724"
+source = "git+https://github.com/marc2332/freya.git#5ed0d5b11f43fa8daa929d32c28faf2cd4bec550"
 dependencies = [
  "dioxus-core",
  "parking_lot",
@@ -1796,7 +1795,7 @@ dependencies = [
 [[package]]
 name = "freya-native-core-macro"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#9f3439c97c6845dfe12417e59f827c31b80e2724"
+source = "git+https://github.com/marc2332/freya.git#5ed0d5b11f43fa8daa929d32c28faf2cd4bec550"
 dependencies = [
  "quote",
  "syn 2.0.96",
@@ -1805,7 +1804,7 @@ dependencies = [
 [[package]]
 name = "freya-node-state"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#9f3439c97c6845dfe12417e59f827c31b80e2724"
+source = "git+https://github.com/marc2332/freya.git#5ed0d5b11f43fa8daa929d32c28faf2cd4bec550"
 dependencies = [
  "accesskit",
  "bytes",
@@ -1827,7 +1826,7 @@ dependencies = [
 [[package]]
 name = "freya-renderer"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#9f3439c97c6845dfe12417e59f827c31b80e2724"
+source = "git+https://github.com/marc2332/freya.git#5ed0d5b11f43fa8daa929d32c28faf2cd4bec550"
 dependencies = [
  "accesskit",
  "accesskit_winit",
@@ -1995,7 +1994,19 @@ checksum = "c4567c8db10ae91089c99af84c68c38da3ec2f087c3f82960bcdbf3656b6f4d7"
 dependencies = [
  "cfg-if",
  "libc",
- "wasi",
+ "wasi 0.11.0+wasi-snapshot-preview1",
+]
+
+[[package]]
+name = "getrandom"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "43a49c392881ce6d5c3b8cb70f98717b7c07aabbdff06687b9030dbfbe2725f8"
+dependencies = [
+ "cfg-if",
+ "libc",
+ "wasi 0.13.3+wasi-0.2.2",
+ "windows-targets 0.52.6",
 ]
 
 [[package]]
@@ -2232,9 +2243,9 @@ dependencies = [
 
 [[package]]
 name = "httparse"
-version = "1.9.5"
+version = "1.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d71d3574edd2771538b901e6549113b4006ece66150fb69c0fb6d9a2adae946"
+checksum = "f2d708df4e7140240a16cd6ab0ab65c972d7433ab77819ea693fde9c43811e2a"
 
 [[package]]
 name = "httpdate"
@@ -2267,9 +2278,9 @@ dependencies = [
 
 [[package]]
 name = "hyper"
-version = "1.5.2"
+version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "256fb8d4bd6413123cc9d91832d78325c48ff41677595be797d90f42969beae0"
+checksum = "cc2b571658e38e0c01b1fdca3bbbe93c00d3d71693ff2770043f8c29bc7d6f80"
 dependencies = [
  "bytes",
  "futures-channel",
@@ -2293,7 +2304,7 @@ checksum = "2d191583f3da1305256f22463b9bb0471acad48a4e534a5218b9963e9c1f59b2"
 dependencies = [
  "futures-util",
  "http 1.2.0",
- "hyper 1.5.2",
+ "hyper 1.6.0",
  "hyper-util",
  "rustls",
  "rustls-pki-types",
@@ -2324,7 +2335,7 @@ checksum = "70206fc6890eaca9fde8a0bf71caa2ddfc9fe045ac9e5c70df101a7dbde866e0"
 dependencies = [
  "bytes",
  "http-body-util",
- "hyper 1.5.2",
+ "hyper 1.6.0",
  "hyper-util",
  "native-tls",
  "tokio",
@@ -2343,7 +2354,7 @@ dependencies = [
  "futures-util",
  "http 1.2.0",
  "http-body 1.0.1",
- "hyper 1.5.2",
+ "hyper 1.6.0",
  "pin-project-lite",
  "socket2 0.5.8",
  "tokio",
@@ -2744,9 +2755,9 @@ checksum = "b5aba8db14291edd000dfcc4d620c7ebfb122c613afb886ca8803fa4e128a20a"
 
 [[package]]
 name = "libfuzzer-sys"
-version = "0.4.8"
+version = "0.4.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b9569d2f74e257076d8c6bfa73fb505b46b851e51ddaecc825944aa3bed17fa"
+checksum = "cf78f52d400cf2d84a3a973a78a592b4adc535739e0a5597a0da6f0c357adc75"
 dependencies = [
  "arbitrary",
  "cc",
@@ -2916,15 +2927,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2886843bf800fba2e3377cff24abf6379b4c4d5c6681eaf9ea5b0d15090450bd"
 dependencies = [
  "libc",
- "wasi",
+ "wasi 0.11.0+wasi-snapshot-preview1",
  "windows-sys 0.52.0",
 ]
 
 [[package]]
 name = "native-tls"
-version = "0.2.12"
+version = "0.2.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a8614eb2c83d59d1c8cc974dd3f920198647674a0a035e1af1fa58707e317466"
+checksum = "0dab59f8e050d5df8e4dd87d9206fb6f65a483e20ac9fda365ade4fab353196c"
 dependencies = [
  "libc",
  "log",
@@ -3405,9 +3416,9 @@ dependencies = [
 
 [[package]]
 name = "openssl"
-version = "0.10.68"
+version = "0.10.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6174bc48f102d208783c2c84bf931bb75927a617866870de8a4ea85597f871f5"
+checksum = "f5e534d133a060a3c19daec1eb3e98ec6f4685978834f2dbadfe2ec215bab64e"
 dependencies = [
  "bitflags 2.8.0",
  "cfg-if",
@@ -3816,7 +3827,7 @@ version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
- "getrandom",
+ "getrandom 0.2.15",
 ]
 
 [[package]]
@@ -3958,7 +3969,7 @@ dependencies = [
  "http 1.2.0",
  "http-body 1.0.1",
  "http-body-util",
- "hyper 1.5.2",
+ "hyper 1.6.0",
  "hyper-rustls",
  "hyper-tls",
  "hyper-util",
@@ -4001,7 +4012,7 @@ checksum = "c17fa4cb658e3583423e915b9f3acc01cceaee1860e33d59ebae66adc3a2dc0d"
 dependencies = [
  "cc",
  "cfg-if",
- "getrandom",
+ "getrandom 0.2.15",
  "libc",
  "spin",
  "untrusted",
@@ -4073,9 +4084,9 @@ dependencies = [
 
 [[package]]
 name = "rustls-pki-types"
-version = "1.10.1"
+version = "1.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d2bf47e6ff922db3825eb750c4e2ff784c6ff8fb9e13046ef6a1d1c5401b0b37"
+checksum = "917ce264624a4b4db1c364dcc35bfca9ded014d0a958cd47ad3e960e988ea51c"
 
 [[package]]
 name = "rustls-webpki"
@@ -4096,9 +4107,9 @@ checksum = "f7c45b9784283f1b2e7fb61b42047c2fd678ef0960d4f6f1eba131594cc369d4"
 
 [[package]]
 name = "ryu"
-version = "1.0.18"
+version = "1.0.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f3cb5ba0dc43242ce17de99c180e96db90b235b8a9fdc9543c96d2209116bd9f"
+checksum = "6ea1a2d0a644769cc99faa24c3ad26b379b786fe7c36fd3c546254801650e6dd"
 
 [[package]]
 name = "same-file"
@@ -4188,9 +4199,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.137"
+version = "1.0.138"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "930cfb6e6abf99298aaad7d29abbef7a9999a9a8806a40088f55f0dcec03146b"
+checksum = "d434192e7da787e94a6ea7e9670b26a036d0ca41e0b7efb2676dd32bae872949"
 dependencies = [
  "itoa",
  "memchr",
@@ -4604,13 +4615,13 @@ checksum = "61c41af27dd6d1e27b1b16b489db798443478cef1f06a660c96db617ba5de3b1"
 
 [[package]]
 name = "tempfile"
-version = "3.15.0"
+version = "3.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9a8a559c81686f576e8cd0290cd2a24a2a9ad80c98b3478856500fcbd7acd704"
+checksum = "38c246215d7d24f48ae091a2902398798e05d978b24315d6efbc00ede9a8bb91"
 dependencies = [
  "cfg-if",
  "fastrand",
- "getrandom",
+ "getrandom 0.3.1",
  "once_cell",
  "rustix",
  "windows-sys 0.59.0",
@@ -4813,7 +4824,7 @@ dependencies = [
 [[package]]
 name = "torin"
 version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#9f3439c97c6845dfe12417e59f827c31b80e2724"
+source = "git+https://github.com/marc2332/freya.git#5ed0d5b11f43fa8daa929d32c28faf2cd4bec550"
 dependencies = [
  "euclid",
  "freya-native-core",
@@ -4982,9 +4993,9 @@ checksum = "5c1cb5db39152898a79168971543b1cb5020dff7fe43c8dc468b0885f5e29df5"
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.15"
+version = "1.0.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "11cd88e12b17c6494200a9c1b683a04fcac9573ed74cd1b62aeb2727c5592243"
+checksum = "a210d160f08b701c8721ba1c726c11662f877ea6b7094007e1ca9a1041945034"
 
 [[package]]
 name = "unicode-normalization"
@@ -5048,7 +5059,7 @@ version = "1.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b3758f5e68192bb96cc8f9b7e2c2cfdabb435499a28499a42f8f984092adad4b"
 dependencies = [
- "getrandom",
+ "getrandom 0.2.15",
 ]
 
 [[package]]
@@ -5126,6 +5137,15 @@ name = "wasi"
 version = "0.11.0+wasi-snapshot-preview1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
+
+[[package]]
+name = "wasi"
+version = "0.13.3+wasi-0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "26816d2e1a4a36a2940b96c5296ce403917633dff8f3440e9b236ed6f6bacad2"
+dependencies = [
+ "wit-bindgen-rt",
+]
 
 [[package]]
 name = "wasite"
@@ -5786,11 +5806,20 @@ dependencies = [
 
 [[package]]
 name = "winnow"
-version = "0.6.24"
+version = "0.6.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c8d71a593cc5c42ad7876e2c1fda56f314f3754c084128833e64f1345ff8a03a"
+checksum = "ad699df48212c6cc6eb4435f35500ac6fd3b9913324f938aea302022ce19d310"
 dependencies = [
  "memchr",
+]
+
+[[package]]
+name = "wit-bindgen-rt"
+version = "0.33.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3268f3d866458b787f390cf61f4bbb563b922d091359f9608842999eaee3943c"
+dependencies = [
+ "bitflags 2.8.0",
 ]
 
 [[package]]

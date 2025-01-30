@@ -11,6 +11,7 @@ use regex::Regex;
 use sysinfo::{Disk, DiskRefreshKind, Disks};
 
 use crate::config::DiskConfig;
+use crate::custom_components::LabelRight;
 use crate::format_size::format_size;
 use crate::styles_config::{DiskStyles, GlobalStyles};
 
@@ -117,15 +118,14 @@ pub fn DiskComponent() -> Element {
           "{model}"
         },
       }
-      label { text_align: "right", color: styles.value_color.clone(), "{data().temperature:.0}°C" },
+      LabelRight { color: styles.value_color.clone(), "{data().temperature:.0}°C" },
     }
     rect {
       width: "100%",
       direction: "horizontal",
       spacing: global_styles.h_gap.to_string(),
       label { color: styles.name_color.clone(), "{file_system_name}" },
-      label {
-        text_align: "right",
+      LabelRight {
         color: styles.value_color.clone(),
         "{format_size(used_space(), DISK_DECIMAL_PLACES): >8}"
         " + {format_size(data().available_space, DISK_DECIMAL_PLACES): >8}"

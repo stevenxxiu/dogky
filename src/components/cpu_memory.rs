@@ -13,7 +13,7 @@ use sysinfo::{
 };
 
 use crate::config::CpuMemoryConfig;
-use crate::custom_components::Graph;
+use crate::custom_components::{Graph, LabelRight};
 use crate::format_size::format_size;
 use crate::styles_config::{CpuMemoryStyles, GlobalStyles};
 use crate::utils;
@@ -348,6 +348,7 @@ pub fn CpuMemoryComponent() -> Element {
     rect {
       width: "100%",
       direction: "horizontal",
+      content: "flex",
       spacing: global_styles.h_gap.to_string(),
       label { "CPU" },
       CursorArea {
@@ -358,7 +359,7 @@ pub fn CpuMemoryComponent() -> Element {
           "{cpu_model}"
         },
       }
-      label { text_align: "right", color: styles.value_color.clone(), "{cpu_data().temperature}°C" },
+      LabelRight { color: styles.value_color.clone(), "{cpu_data().temperature}°C" },
     }
     rect {
       width: "100%",
@@ -369,13 +370,13 @@ pub fn CpuMemoryComponent() -> Element {
         width: "flex(1)",
         direction: "horizontal",
         label { "Frequency" },
-        label { text_align: "right", color: styles.value_color.clone(), "{cpu_data().frequency:.2} GHz" },
+        LabelRight { color: styles.value_color.clone(), "{cpu_data().frequency:.2} GHz" },
       }
       rect {
         width: "flex(1)",
         direction: "horizontal",
         label { "Usage" },
-        label { text_align: "right", color: styles.value_color.clone(), "{cpu_data().usage:.1}%" },
+        LabelRight { color: styles.value_color.clone(), "{cpu_data().usage:.1}%" },
       }
     }
     rect {
@@ -387,14 +388,13 @@ pub fn CpuMemoryComponent() -> Element {
         width: "flex(1)",
         direction: "horizontal",
         label { "Uptime" },
-        label { text_align: "right", color: styles.value_color.clone(), "{utils::format_duration(uptime())}" },
+        LabelRight { color: styles.value_color.clone(), "{utils::format_duration(uptime())}" },
       }
       rect {
         width: "flex(1)",
         direction: "horizontal",
         label { "Processes" },
-        label {
-          text_align: "right",
+        LabelRight {
           color: styles.value_color.clone(),
           "{processes_data().num_running} / {processes_data().processes.len(): >4}",
         },
@@ -413,11 +413,7 @@ pub fn CpuMemoryComponent() -> Element {
       width: "100%",
       direction: "horizontal",
       label { "Swap" },
-      label {
-        text_align: "right",
-        color: styles.value_color.clone(),
-        "{format_memory(memory_data().swap_usage, swap_total)}"
-      },
+      LabelRight { color: styles.value_color.clone(), "{format_memory(memory_data().swap_usage, swap_total)}" },
     }
     CpuGraphsComponent {
       cpu_hist: cpu_hist(),
