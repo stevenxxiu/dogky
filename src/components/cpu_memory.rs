@@ -304,12 +304,8 @@ pub fn CpuMemoryComponent() -> Element {
 
   let hist_size = ((global_styles.container_width - styles.graph_h_gap) / 2.) as usize;
   let mut cpu_hist = use_signal(|| CircularQueue::with_capacity(hist_size));
-  let mut memory_swap_hist = use_signal(|| {
-    [
-      CircularQueue::with_capacity(hist_size),
-      CircularQueue::with_capacity(hist_size),
-    ]
-  });
+  let mut memory_hist = use_signal(|| CircularQueue::with_capacity(hist_size));
+  let mut swap_hist = use_signal(|| CircularQueue::with_capacity(hist_size));
 
   let mut uptime = use_signal(|| 0u64);
 
@@ -319,14 +315,11 @@ pub fn CpuMemoryComponent() -> Element {
         cpu_data.set(get_cpu_data(&mut system, &mut components));
         memory_data.set(get_memory_data(&mut system));
 
-        let mut cpu_hist_val = cpu_hist();
-        cpu_hist_val.push(cpu_data().usage / 100.0);
-        cpu_hist.set(cpu_hist_val);
-
-        let [mut mem_hist, mut swap_hist] = memory_swap_hist();
-        mem_hist.push(memory_data().memory_usage as f32 / memory_total as f32);
-        swap_hist.push(memory_data().swap_usage as f32 / swap_total as f32);
-        memory_swap_hist.set([mem_hist, swap_hist]);
+        cpu_hist.write().push(cpu_data().usage / 100.0);
+        let memory_ratio = memory_data().memory_usage as f32 / memory_total as f32;
+        memory_hist.write().push(memory_ratio);
+        let swap_ratio = memory_data().swap_usage as f32 / memory_total as f32;
+        swap_hist.write().push(swap_ratio);
 
         uptime.set(System::uptime());
         processes_data.set(get_process_data(&mut system));
@@ -409,7 +402,7 @@ pub fn CpuMemoryComponent() -> Element {
     }
     CpuGraphsComponent {
       cpu_hist: cpu_hist(),
-      memory_swap_hist: memory_swap_hist(),
+      memory_swap_hist: [memory_hist(), swap_hist()],
     }
     ProcessTableComponent {
       process_data: processes_data(),
