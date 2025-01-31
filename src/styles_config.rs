@@ -113,6 +113,5 @@ pub fn load_config() -> Result<StylesConfig, Box<dyn Error>> {
 #[derive(Clone)]
 pub struct GlobalStyles {
   pub container_width: f32,
-  pub padding: String,
   pub h_gap: f32,
 }

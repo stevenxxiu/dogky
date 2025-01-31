@@ -60,7 +60,6 @@ fn app() -> Element {
   let padding_parsed = Gaps::parse(&styles.padding).unwrap();
   let global_styles = GlobalStyles {
     container_width: styles.width as f32 - padding_parsed.left() - padding_parsed.right(),
-    padding: styles.padding.clone(),
     h_gap: styles.h_gap,
   };
   use_context_provider(|| global_styles);
