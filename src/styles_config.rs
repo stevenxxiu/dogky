@@ -92,7 +92,7 @@ pub struct StylesConfig {
   pub text_size: f32,
   pub text_color: String,
   pub padding: String,
-  pub separator_padding: String,
+  pub separator_height: String,
   pub h_gap: f32,
 
   pub weather: WeatherStyles,

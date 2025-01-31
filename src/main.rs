@@ -87,15 +87,15 @@ fn app() -> Element {
     font_size: styles.text_size.to_string(),
     padding: styles.padding.clone(),
     WeatherComponent {}
-    Separator {}
+    Separator { height: styles.separator_height.clone() }
     MachineInfoComponent {}
-    Separator {}
+    Separator { height: styles.separator_height.clone() }
     CpuMemoryComponent {}
-    Separator {}
+    Separator { height: styles.separator_height.clone() }
     DiskComponent {}
-    Separator {}
+    Separator { height: styles.separator_height.clone() }
     GpuComponent {}
-    Separator {}
+    Separator { height: styles.separator_height.clone() }
     NetworkComponent {}
   })
 }
