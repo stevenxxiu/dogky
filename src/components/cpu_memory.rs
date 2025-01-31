@@ -16,7 +16,7 @@ use crate::config::CpuMemoryConfig;
 use crate::custom_components::{Graph, LabelRight};
 use crate::format_size::format_size;
 use crate::styles_config::{CpuMemoryStyles, GlobalStyles};
-use crate::utils;
+use crate::utils::{self, format_used, MEMORY_DECIMAL_PLACES};
 
 #[derive(Default, Clone, Debug)]
 struct CpuData {
@@ -120,7 +120,6 @@ fn get_process_data(system: &mut System) -> ProcessData {
 }
 
 const CPU_MODEL_REMOVE: &[&str] = &["(R)", "(TM)", "!"];
-const MEMORY_DECIMAL_PLACES: usize = 1usize;
 
 #[allow(non_snake_case)]
 #[component]
@@ -188,7 +187,7 @@ fn CpuGraphsComponent(cpu_hist: CircularQueue<f32>, memory_swap_hist: [CircularQ
 
 #[allow(non_snake_case)]
 #[component]
-fn ProcessTableRow(cmd: String, pid: String, cpu: String, mem: String, color: String, align: String) -> Element {
+fn ProcessTableRow(cmd: String, pid: String, cpu: String, memory: String, color: String, align: String) -> Element {
   let styles = use_context::<CpuMemoryStyles>();
   rsx!(
     rect {
@@ -198,7 +197,7 @@ fn ProcessTableRow(cmd: String, pid: String, cpu: String, mem: String, color: St
       label { width: "flex(1)", text_overflow: "…", "{cmd}" },
       label { width: styles.ps_pid_width.to_string(), text_align: align.clone(), "{pid}" },
       label { width: styles.ps_cpu_width.to_string(), text_align: align.clone(), "{cpu}" },
-      label { width: styles.ps_memory_width.to_string(), text_align: align.clone(), "{mem}" },
+      label { width: styles.ps_memory_width.to_string(), text_align: align.clone(), "{memory}" },
     }
   )
 }
@@ -220,7 +219,7 @@ fn ProcessTableComponent(
   let process_by_memory = processes[..num_processes.min(processes.len())].to_vec();
 
   let format_cpu = |process: &ProcessProps| format!("{:.2}", process.cpu_usage / num_cpus as f32);
-  let format_mem = |process: &ProcessProps| format_size(process.memory_usage, MEMORY_DECIMAL_PLACES);
+  let format_memory = |process: &ProcessProps| format_size(process.memory_usage, MEMORY_DECIMAL_PLACES);
 
   rsx!(
     CursorArea {
@@ -240,40 +239,33 @@ fn ProcessTableComponent(
           Command::new(&binary[0]).args(args).status().unwrap();
         },
         ProcessTableRow {
-          cmd: "Command", pid: "PID", cpu: "CPU%", mem: "MEM",
+          cmd: "Command", pid: "PID", cpu: "CPU%", memory: "MEM",
           color: styles.ps_header_color.clone(), align: "right",
         },
         ProcessTableRow {
-          cmd: "", pid: "", cpu: "🞃", mem: "",
+          cmd: "", pid: "", cpu: "🞃", memory: "",
           color: styles.ps_sort_cpu_color.clone(), align: "center",
         },
         for process in process_by_cpu.iter() {
           ProcessTableRow {
-            cmd: process.cmd.clone(), pid: process.pid.to_string(), cpu: format_cpu(process), mem: format_mem(process),
+            cmd: process.cmd.clone(), pid: process.pid.to_string(),
+            cpu: format_cpu(process), memory: format_memory(process),
             color: styles.ps_cpu_color.clone(), align: "right",
           }
         }
         ProcessTableRow {
-          cmd: "", pid: "", cpu: "", mem: "🞃",
+          cmd: "", pid: "", cpu: "", memory: "🞃",
           color: styles.ps_sort_memory_color.clone(), align: "center",
         },
         for process in process_by_memory.iter() {
           ProcessTableRow {
-            cmd: process.cmd.clone(), pid: process.pid.to_string(), cpu: format_cpu(process), mem: format_mem(process),
+            cmd: process.cmd.clone(), pid: process.pid.to_string(),
+            cpu: format_cpu(process), memory: format_memory(process),
             color: styles.ps_memory_color.clone(), align: "right",
           }
         }
       }
     }
-  )
-}
-
-fn format_memory(used: u64, total: u64) -> String {
-  format!(
-    "{: >10}/{: >10} = {: >3.0}%",
-    format_size(used, MEMORY_DECIMAL_PLACES),
-    format_size(total, MEMORY_DECIMAL_PLACES),
-    (used as f32) / (total as f32) * 100.0
   )
 }
 
@@ -407,13 +399,13 @@ pub fn CpuMemoryComponent() -> Element {
       main_align: "space-between",
       label { "Memory" },
       label { color: styles.value_color.clone(), "{memory_frequency: >8}" },
-      label { color: styles.value_color.clone(), "{format_memory(memory_data().memory_usage, memory_total): >28}" },
+      label { color: styles.value_color.clone(), "{format_used(memory_data().memory_usage, memory_total): >28}" },
     }
     rect {
       width: "100%",
       direction: "horizontal",
       label { "Swap" },
-      LabelRight { color: styles.value_color.clone(), "{format_memory(memory_data().swap_usage, swap_total)}" },
+      LabelRight { color: styles.value_color.clone(), "{format_used(memory_data().swap_usage, swap_total)}" },
     }
     CpuGraphsComponent {
       cpu_hist: cpu_hist(),

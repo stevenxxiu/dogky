@@ -36,7 +36,7 @@ pub struct DiskConfig {
   pub mount_point: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct GpuConfig {
   pub update_interval: u64,
 }

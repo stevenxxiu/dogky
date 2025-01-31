@@ -1,6 +1,8 @@
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
 
+use crate::format_size::format_size;
+
 pub fn div_rem(a: u64, b: u64) -> (u64, u64) {
   (a / b, a % b)
 }
@@ -19,6 +21,17 @@ pub fn format_duration(total_seconds: u64) -> String {
     return format!("{}h {:0>2}m {:0>2}s", hours, minutes, seconds);
   }
   format!("{}d {:0>2}h {:0>2}m {:0>2}s", days, hours, minutes, seconds)
+}
+
+pub const MEMORY_DECIMAL_PLACES: usize = 1usize;
+
+pub fn format_used(used: u64, total: u64) -> String {
+  format!(
+    "{: >10}/{: >10} = {: >3.0}%",
+    format_size(used, MEMORY_DECIMAL_PLACES),
+    format_size(total, MEMORY_DECIMAL_PLACES),
+    (used as f32) / (total as f32) * 100.0
+  )
 }
 
 pub fn join_str_iter<'a, I>(str_iter: I, seperator: &str) -> String

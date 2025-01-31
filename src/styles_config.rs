@@ -65,7 +65,7 @@ pub struct DiskStyles {
 }
 
 #[derive(Deserialize, Clone)]
-pub struct GPUStyles {
+pub struct GpuStyles {
   pub name_color: String,
   pub usage_name_color: String,
   pub value_color: String,
@@ -99,7 +99,7 @@ pub struct StylesConfig {
   pub machine_info: MachineInfoStyles,
   pub cpu_memory: CpuMemoryStyles,
   pub disk: DiskStyles,
-  pub gpu: GPUStyles,
+  pub gpu: GpuStyles,
   pub network: NetworkStyles,
 }
 
