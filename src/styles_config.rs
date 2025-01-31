@@ -78,10 +78,10 @@ pub struct NetworkStyles {
 
   pub graph_h_gap: f32,
   pub graph_height: f32,
-  pub graph_download_border_color: String,
-  pub graph_download_fill_color: String,
-  pub graph_upload_border_color: String,
-  pub graph_upload_fill_color: String,
+  pub graph_download_border: String,
+  pub graph_download_fill_color: SerdeColor,
+  pub graph_upload_border: String,
+  pub graph_upload_fill_color: SerdeColor,
 }
 
 #[derive(Deserialize, Clone)]

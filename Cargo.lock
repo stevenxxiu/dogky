@@ -1351,6 +1351,7 @@ dependencies = [
  "freya-engine",
  "freya-node-state",
  "heck 0.5.0",
+ "join-string",
  "lazy_static",
  "local-ip-address",
  "nvml-wrapper",
@@ -2689,6 +2690,12 @@ checksum = "48d1dbcbbeb6a7fec7e059840aa538bd62aaccf972c7346c4d9d2059312853d0"
 dependencies = [
  "libc",
 ]
+
+[[package]]
+name = "join-string"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c256ea1b86607a462e2b82a3d3f429897f1695dbbe2a3805dcdd029f734fc12"
 
 [[package]]
 name = "jpeg-decoder"

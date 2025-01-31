@@ -34,18 +34,6 @@ pub fn format_used(used: u64, total: u64) -> String {
   )
 }
 
-pub fn join_str_iter<'a, I>(str_iter: I, seperator: &str) -> String
-where
-  I: Iterator<Item = String>,
-{
-  str_iter.fold(String::new(), |res, cur| {
-    if res.is_empty() {
-      return cur.to_string();
-    }
-    res + seperator + &cur.to_string()
-  })
-}
-
 pub fn substitute_env_vars(command: &str) -> String {
   lazy_static! {
     static ref RE_VAR: Regex = Regex::new(r"\$([a-zA-Z_]+[a-zA-Z\d_]*)|\$\{([a-zA-Z_]+[a-zA-Z\d_]*)}").unwrap();

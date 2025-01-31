@@ -41,18 +41,18 @@ pub struct GpuConfig {
   pub update_interval: u64,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct NetworkGraphProps {
   pub maximum_bytes_per_sec: u64,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct NetworkGraphContainerProps {
   pub upload: NetworkGraphProps,
   pub download: NetworkGraphProps,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct NetworkConfig {
   pub update_interval: u64,
   pub public_ip_retry_timeout: Option<u64>,
@@ -60,7 +60,7 @@ pub struct NetworkConfig {
   pub graphs: NetworkGraphContainerProps,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct DogkyConfig {
   pub weather: WeatherConfig,
   pub cpu_memory: CpuMemoryConfig,

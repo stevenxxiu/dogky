@@ -6,7 +6,9 @@ use winit::raw_window_handle::{HasWindowHandle, RawWindowHandle};
 use winit::window::WindowLevel;
 use xcb::{x, Xid, XidNew};
 
-use components::{CpuMemoryComponent, DiskComponent, GpuComponent, MachineInfoComponent, WeatherComponent};
+use components::{
+  CpuMemoryComponent, DiskComponent, GpuComponent, MachineInfoComponent, NetworkComponent, WeatherComponent,
+};
 use custom_components::Separator;
 
 mod api;
@@ -67,12 +69,14 @@ fn app() -> Element {
   use_context_provider(|| styles.cpu_memory);
   use_context_provider(|| styles.disk);
   use_context_provider(|| styles.gpu);
+  use_context_provider(|| styles.network);
 
   let config = config::load_config().unwrap();
   use_context_provider(|| config.weather);
   use_context_provider(|| config.cpu_memory);
   use_context_provider(|| config.disk);
   use_context_provider(|| config.gpu);
+  use_context_provider(|| config.network);
 
   rsx!(rect {
     width: "100%",
@@ -82,15 +86,17 @@ fn app() -> Element {
     color: styles.text_color,
     font_size: styles.text_size.to_string(),
     padding: styles.padding.clone(),
-    WeatherComponent {},
-    Separator {},
-    MachineInfoComponent {},
-    Separator {},
+    WeatherComponent {}
+    Separator {}
+    MachineInfoComponent {}
+    Separator {}
     CpuMemoryComponent {}
-    Separator {},
+    Separator {}
     DiskComponent {}
-    Separator {},
+    Separator {}
     GpuComponent {}
+    Separator {}
+    NetworkComponent {}
   })
 }
 
