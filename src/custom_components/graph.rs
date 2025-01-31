@@ -33,7 +33,10 @@ pub fn Graph<const N: usize>(datasets: [CircularQueue<f32>; N], graph_colors: [s
           paint.set_style(sk::paint::Style::Stroke);
           paint.set_color(color);
         }
-        let mut points: Vec<sk::Point> = vec![sk::Point::new(max_x, max_y)];
+        let mut points: Vec<sk::Point> = vec![];
+        if i == 0 {
+          points.push(sk::Point::new(max_x, max_y));
+        }
         for (j, value) in dataset.iter().enumerate() {
           let x = max_x - j as f32;
           if x < min_x {
@@ -41,7 +44,9 @@ pub fn Graph<const N: usize>(datasets: [CircularQueue<f32>; N], graph_colors: [s
           }
           points.push(sk::Point::new(x, max_y - height * value));
         }
-        points.push(sk::Point::new(points.last().unwrap().x, max_y));
+        if i == 0 {
+          points.push(sk::Point::new(points.last().unwrap().x, max_y));
+        }
         let path = Path::polygon(&points, false, PathFillType::Winding, false);
         ctx.canvas.draw_path(&path, &paint);
       }
