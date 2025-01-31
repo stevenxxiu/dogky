@@ -318,7 +318,7 @@ pub fn CpuMemoryComponent() -> Element {
         cpu_hist.write().push(cpu_data().usage / 100.0);
         let memory_ratio = memory_data().memory_usage as f32 / memory_total as f32;
         memory_hist.write().push(memory_ratio);
-        let swap_ratio = memory_data().swap_usage as f32 / memory_total as f32;
+        let swap_ratio = memory_data().swap_usage as f32 / swap_total as f32;
         swap_hist.write().push(swap_ratio);
 
         uptime.set(System::uptime());
