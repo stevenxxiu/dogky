@@ -38,14 +38,14 @@ fn get_gpu_data(nvml: &Nvml) -> GpuData {
 
 #[allow(non_snake_case)]
 #[component]
-pub fn GpuComponent() -> Element {
+pub fn GpuComponent(nvml_signal: Signal<Nvml>) -> Element {
   let config = use_context::<GpuConfig>();
   let styles = use_context::<GpuStyles>();
   let global_styles = use_context::<GlobalStyles>();
+
   let mut clipboard = Clipboard::new().unwrap();
 
-  let nvml = Nvml::init().unwrap();
-
+  let nvml = nvml_signal.peek();
   let gpu = get_gpu(&nvml);
   let model = gpu.name().unwrap();
   let temperature_threshold = gpu.temperature_threshold(TemperatureThreshold::Shutdown).unwrap();
@@ -57,7 +57,7 @@ pub fn GpuComponent() -> Element {
   use_hook(move || {
     spawn(async move {
       loop {
-        data.set(get_gpu_data(&nvml));
+        data.set(get_gpu_data(&nvml_signal.peek()));
         tokio::time::sleep(std::time::Duration::from_secs(config.update_interval)).await;
       }
     })

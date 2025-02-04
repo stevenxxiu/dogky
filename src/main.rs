@@ -1,5 +1,6 @@
 use freya::prelude::*;
 use freya_node_state::Parse;
+use nvml_wrapper::Nvml;
 use styles_config::{GlobalStyles, StylesConfig};
 use winit::dpi::{LogicalPosition, LogicalSize};
 use winit::raw_window_handle::{HasWindowHandle, RawWindowHandle};
@@ -77,6 +78,8 @@ fn app() -> Element {
   use_context_provider(|| config.gpu);
   use_context_provider(|| config.network);
 
+  let nvml_res = Nvml::init();
+
   rsx!(rect {
     width: "100%",
     height: "100%",
@@ -92,8 +95,10 @@ fn app() -> Element {
     CpuMemoryComponent {}
     Separator { height: styles.separator_height.clone() }
     DiskComponent {}
-    Separator { height: styles.separator_height.clone() }
-    GpuComponent {}
+    if let Ok(nvml) = nvml_res {
+      Separator { height: styles.separator_height.clone() }
+      GpuComponent { nvml_signal: use_signal(|| nvml) }
+    }
     Separator { height: styles.separator_height.clone() }
     NetworkComponent {}
   })
