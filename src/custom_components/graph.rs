@@ -16,6 +16,7 @@ pub fn Graph<const N: usize>(datasets: [CircularQueue<f32>; N], graph_colors: [s
 
     Box::new(move |ctx| {
       let mut paint = sk::Paint::default();
+      paint.set_anti_alias(true);
 
       let (min_x, max_x, min_y, max_y) = (
         ctx.area.min_x() + BORDER_WIDTH,
