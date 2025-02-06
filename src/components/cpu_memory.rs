@@ -405,7 +405,7 @@ pub fn CpuMemoryComponent() -> Element {
       memory_swap_hist: [memory_hist(), swap_hist()],
     }
     ProcessTableComponent {
-      process_data: processes_data(),
+      process_data: processes_data,
       num_processes: config.process_list.num_processes,
       num_cpus: num_cpus,
       top_command: config.process_list.top_command.to_vec(),
