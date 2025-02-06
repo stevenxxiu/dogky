@@ -38,7 +38,7 @@ fn get_gpu_data(nvml: &Nvml) -> GpuData {
 
 #[allow(non_snake_case)]
 #[component]
-pub fn GpuComponent(nvml_signal: Signal<Nvml>) -> Element {
+pub fn GpuComponent(nvml_signal: ReadOnlySignal<Nvml>) -> Element {
   let config = use_context::<GpuConfig>();
   let styles = use_context::<GpuStyles>();
   let global_styles = use_context::<GlobalStyles>();

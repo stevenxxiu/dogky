@@ -97,7 +97,7 @@ fn app() -> Element {
     DiskComponent {}
     if let Ok(nvml) = nvml_res {
       Separator { height: styles.separator_height.clone() }
-      GpuComponent { nvml_signal: use_signal(|| nvml) }
+      GpuComponent { nvml_signal: nvml }
     }
     Separator { height: styles.separator_height.clone() }
     NetworkComponent {}
