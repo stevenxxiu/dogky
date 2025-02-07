@@ -56,7 +56,10 @@ fn get_network_data(networks: &mut Networks, interface_regex: Regex, update_inte
 
 #[allow(non_snake_case)]
 #[component]
-fn NetworkGraphsComponent(download_hist: CircularQueue<f32>, upload_hist: CircularQueue<f32>) -> Element {
+fn NetworkGraphsComponent(
+  download_hist: ReadOnlySignal<CircularQueue<f32>>,
+  upload_hist: ReadOnlySignal<CircularQueue<f32>>,
+) -> Element {
   let styles = use_context::<NetworkStyles>();
   rsx!(
     rect {
@@ -69,7 +72,7 @@ fn NetworkGraphsComponent(download_hist: CircularQueue<f32>, upload_hist: Circul
         height: styles.graph_height.to_string(),
         border: styles.graph_download_border,
         Graph {
-          datasets: [download_hist],
+          datasets: [download_hist()],
           graph_colors: [*styles.graph_download_fill_color],
         }
       }
@@ -78,7 +81,7 @@ fn NetworkGraphsComponent(download_hist: CircularQueue<f32>, upload_hist: Circul
         height: styles.graph_height.to_string(),
         border: styles.graph_upload_border,
         Graph {
-          datasets: [upload_hist],
+          datasets: [upload_hist()],
           graph_colors: [*styles.graph_upload_fill_color],
         }
       }

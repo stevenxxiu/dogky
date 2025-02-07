@@ -2,11 +2,11 @@ use freya::prelude::*;
 
 #[allow(non_snake_case)]
 #[component]
-pub fn Separator(height: String) -> Element {
+pub fn Separator(height: ReadOnlySignal<String>) -> Element {
   rsx!(
     rect {
       width: "100%",
-      height: height,
+      height: height(),
       main_align: "center",
       rect {
         width: "100%",

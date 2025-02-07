@@ -124,25 +124,25 @@ const CPU_MODEL_REMOVE: &[&str] = &["(R)", "(TM)", "!"];
 
 #[allow(non_snake_case)]
 #[component]
-fn CpuBarsComponent(cpu_core_usage: Vec<f32>) -> Element {
+fn CpuBarsComponent(cpu_core_usage: ReadOnlySignal<Vec<f32>>) -> Element {
   let styles = use_context::<CpuMemoryStyles>();
   rsx!(
     rect {
       direction: "vertical",
       spacing: styles.bars_v_gap.to_string(),
-      for i in 0..cpu_core_usage.len().div_ceil(styles.bars_per_row) {
+      for i in 0..cpu_core_usage().len().div_ceil(styles.bars_per_row) {
         rect {
           width: "100%",
           direction: "horizontal",
           content: "flex",
           spacing: styles.bar_h_gap.to_string(),
-          for j in 0..(cpu_core_usage.len() - i * styles.bars_per_row).min(styles.bars_per_row) {
+          for j in 0..(cpu_core_usage().len() - i * styles.bars_per_row).min(styles.bars_per_row) {
             rect {
               width: "flex(1)",
               height: styles.bar_height.to_string(),
               border: styles.bar_border.clone(),
               rect {
-                width: "{cpu_core_usage[i * styles.bars_per_row + j]}%",
+                width: "{cpu_core_usage()[i * styles.bars_per_row + j]}%",
                 height: "100%",
                 background: styles.bar_fill_color.clone(),
               }
@@ -156,7 +156,10 @@ fn CpuBarsComponent(cpu_core_usage: Vec<f32>) -> Element {
 
 #[allow(non_snake_case)]
 #[component]
-fn CpuGraphsComponent(cpu_hist: CircularQueue<f32>, memory_swap_hist: [CircularQueue<f32>; 2]) -> Element {
+fn CpuGraphsComponent(
+  cpu_hist: ReadOnlySignal<CircularQueue<f32>>,
+  memory_swap_hist: ReadOnlySignal<[CircularQueue<f32>; 2]>,
+) -> Element {
   let styles = use_context::<CpuMemoryStyles>();
   rsx!(
     rect {
@@ -169,7 +172,7 @@ fn CpuGraphsComponent(cpu_hist: CircularQueue<f32>, memory_swap_hist: [CircularQ
         height: styles.graph_height.to_string(),
         border: styles.graph_cpu_border,
         Graph {
-          datasets: [cpu_hist],
+          datasets: [cpu_hist()],
           graph_colors: [*styles.graph_cpu_fill_color],
         }
       }
@@ -178,7 +181,7 @@ fn CpuGraphsComponent(cpu_hist: CircularQueue<f32>, memory_swap_hist: [CircularQ
         height: styles.graph_height.to_string(),
         border: styles.graph_memory_border,
         Graph {
-          datasets: memory_swap_hist,
+          datasets: memory_swap_hist(),
           graph_colors: [*styles.graph_memory_fill_color, *styles.graph_swap_fill_color],
         }
       }
@@ -188,17 +191,24 @@ fn CpuGraphsComponent(cpu_hist: CircularQueue<f32>, memory_swap_hist: [CircularQ
 
 #[allow(non_snake_case)]
 #[component]
-fn ProcessTableRow(cmd: String, pid: String, cpu: String, memory: String, color: String, align: String) -> Element {
+fn ProcessTableRow(
+  cmd: ReadOnlySignal<String>,
+  pid: ReadOnlySignal<String>,
+  cpu: ReadOnlySignal<String>,
+  memory: ReadOnlySignal<String>,
+  color: ReadOnlySignal<String>,
+  align: String,
+) -> Element {
   let styles = use_context::<CpuMemoryStyles>();
   rsx!(
     rect {
       direction: "horizontal",
       content: "flex",
       color,
-      label { width: "flex(1)", text_overflow: "…", "{cmd}" },
-      label { width: styles.ps_pid_width.to_string(), text_align: align.clone(), "{pid}" },
-      label { width: styles.ps_cpu_width.to_string(), text_align: align.clone(), "{cpu}" },
-      label { width: styles.ps_memory_width.to_string(), text_align: align.clone(), "{memory}" },
+      label { width: "flex(1)", text_overflow: "…", "{cmd()}" },
+      label { width: styles.ps_pid_width.to_string(), text_align: align.clone(), "{pid()}" },
+      label { width: styles.ps_cpu_width.to_string(), text_align: align.clone(), "{cpu()}" },
+      label { width: styles.ps_memory_width.to_string(), text_align: align.clone(), "{memory()}" },
     }
   )
 }
