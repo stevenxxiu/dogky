@@ -15,6 +15,7 @@ use sysinfo::{
 use crate::config::CpuMemoryConfig;
 use crate::custom_components::{Graph, LabelRight};
 use crate::format_size::format_size;
+use crate::serde_structs::SerdeCommand;
 use crate::styles_config::{CpuMemoryStyles, GlobalStyles};
 use crate::utils::{self, format_used, MEMORY_DECIMAL_PLACES};
 
@@ -208,7 +209,7 @@ fn ProcessTableComponent(
   process_data: ReadOnlySignal<ProcessData>,
   num_processes: usize,
   num_cpus: usize,
-  top_command: Vec<String>,
+  top_command: SerdeCommand,
 ) -> Element {
   let styles = use_context::<CpuMemoryStyles>();
 
@@ -408,7 +409,7 @@ pub fn CpuMemoryComponent() -> Element {
       process_data: processes_data,
       num_processes: config.process_list.num_processes,
       num_cpus: num_cpus,
-      top_command: config.process_list.top_command.to_vec(),
+      top_command: config.process_list.top_command,
     }
   )
 }
