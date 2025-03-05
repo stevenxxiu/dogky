@@ -77,9 +77,6 @@ fn get_memory_data(system: &mut System) -> MemoryData {
 
 fn get_process_data(system: &mut System) -> ProcessData {
   let mut res = ProcessData::default();
-  // Create another `System` from scratch every time, or we end up with more processes than there should be
-  let mut system_new = System::new_with_specifics(RefreshKind::nothing());
-  system_new.refresh_processes_specifics(ProcessesToUpdate::All, true, ProcessRefreshKind::nothing());
   system.refresh_processes_specifics(
     ProcessesToUpdate::All,
     true,
@@ -88,7 +85,7 @@ fn get_process_data(system: &mut System) -> ProcessData {
       .with_cpu()
       .with_cmd(UpdateKind::Always),
   );
-  let pid_to_process = system_new.processes();
+  let pid_to_process = system.processes();
   let mut task_pids: HashSet<Pid> = HashSet::new();
   for process in pid_to_process.values() {
     if let Some(tasks) = process.tasks() {
