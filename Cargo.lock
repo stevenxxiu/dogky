@@ -1074,9 +1074,9 @@ dependencies = [
 
 [[package]]
 name = "dioxus"
-version = "0.6.2"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e7d69c4bd197db4739654af0a37c426417b45d5f495df8d10fafeb5da846dca"
+checksum = "60a247114500f1a78e87022defa8173de847accfada8e8809dfae23a118a580c"
 dependencies = [
  "dioxus-core",
  "dioxus-core-macro",
@@ -1112,9 +1112,9 @@ dependencies = [
 
 [[package]]
 name = "dioxus-core"
-version = "0.6.2"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "23f0eb105e433754659d8e2dd8ac4590aae92f4f2e13770b49700fdc08e87d2c"
+checksum = "9c03f451a119e47433c16e2d8eb5b15bf7d6e6734eb1a4c47574e6711dadff8d"
 dependencies = [
  "const_format",
  "dioxus-core-types",
@@ -1132,9 +1132,9 @@ dependencies = [
 
 [[package]]
 name = "dioxus-core-macro"
-version = "0.6.2"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a798c5538481e6bc831514a5dd10ee53e3df12fd13a88d64e787e0268443adcd"
+checksum = "105c954caaaedf8cd10f3d1ba576b01e18aa8d33ad435182125eefe488cf0064"
 dependencies = [
  "convert_case",
  "dioxus-rsx",
@@ -1252,9 +1252,9 @@ dependencies = [
 
 [[package]]
 name = "dioxus-router"
-version = "0.6.2"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc284034f3fffb198a189eaaa8be854520770160d79bdc85b8ad64a8e8170433"
+checksum = "7266a76fc9e4a91f56499d1d1aecfff7168952b6627a6008b4e9748d6bf863e4"
 dependencies = [
  "dioxus-cli-config",
  "dioxus-history",
@@ -1292,9 +1292,9 @@ dependencies = [
 
 [[package]]
 name = "dioxus-signals"
-version = "0.6.2"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e8f8811f32274228aff06e01c891d0828f5461d33b4fa9465dc69b995fc12c1"
+checksum = "10e032dbb3a2c0386ec8b8ee59bc20b5aeb67038147c855801237b45b13d72ac"
 dependencies = [
  "dioxus-core",
  "futures-channel",
@@ -1354,8 +1354,8 @@ dependencies = [
  "circular-queue",
  "dioxus",
  "freya",
+ "freya-core",
  "freya-engine",
- "freya-node-state",
  "heck 0.5.0",
  "join-string",
  "lazy_static",
@@ -1669,80 +1669,63 @@ dependencies = [
 
 [[package]]
 name = "freya"
-version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#df905994a6e5e60578f2035802d9558d1cd5ca70"
+version = "0.3.0-rc.2"
+source = "git+https://github.com/marc2332/freya.git#00b19bc20cd76d5ce4bd5b4affc1162ce6087a51"
 dependencies = [
  "dioxus",
  "dioxus-core",
  "dioxus-core-macro",
  "dioxus-hooks",
  "dioxus-signals",
- "freya-common",
  "freya-components",
  "freya-core",
  "freya-elements",
  "freya-engine",
  "freya-hooks",
- "freya-node-state",
- "freya-renderer",
+ "freya-winit",
  "tokio",
  "torin",
 ]
 
 [[package]]
-name = "freya-common"
-version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#df905994a6e5e60578f2035802d9558d1cd5ca70"
-dependencies = [
- "accesskit",
- "freya-engine",
- "freya-native-core",
- "itertools 0.13.0",
- "rustc-hash 2.1.0",
- "torin",
- "uuid",
- "winit",
-]
-
-[[package]]
 name = "freya-components"
-version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#df905994a6e5e60578f2035802d9558d1cd5ca70"
+version = "0.3.0-rc.2"
+source = "git+https://github.com/marc2332/freya.git#00b19bc20cd76d5ce4bd5b4affc1162ce6087a51"
 dependencies = [
  "bytes",
  "dioxus",
  "dioxus-router",
  "embed-doc-image",
- "freya-common",
  "freya-core",
  "freya-elements",
  "freya-engine",
  "freya-hooks",
- "freya-node-state",
  "futures-util",
  "open",
  "reqwest",
  "tokio",
  "torin",
  "tracing",
- "winit",
 ]
 
 [[package]]
 name = "freya-core"
-version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#df905994a6e5e60578f2035802d9558d1cd5ca70"
+version = "0.3.0-rc.2"
+source = "git+https://github.com/marc2332/freya.git#00b19bc20cd76d5ce4bd5b4affc1162ce6087a51"
 dependencies = [
  "accesskit",
  "accesskit_winit",
+ "bytes",
  "dioxus-core",
- "freya-common",
  "freya-elements",
  "freya-engine",
  "freya-native-core",
- "freya-node-state",
+ "freya-native-core-macro",
  "itertools 0.13.0",
+ "keyboard-types",
+ "nom",
  "rustc-hash 2.1.0",
+ "shipyard",
  "smallvec",
  "tokio",
  "torin",
@@ -1753,8 +1736,8 @@ dependencies = [
 
 [[package]]
 name = "freya-elements"
-version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#df905994a6e5e60578f2035802d9558d1cd5ca70"
+version = "0.3.0-rc.2"
+source = "git+https://github.com/marc2332/freya.git#00b19bc20cd76d5ce4bd5b4affc1162ce6087a51"
 dependencies = [
  "dioxus-core",
  "dioxus-rsx",
@@ -1766,8 +1749,8 @@ dependencies = [
 
 [[package]]
 name = "freya-engine"
-version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#df905994a6e5e60578f2035802d9558d1cd5ca70"
+version = "0.3.0-rc.2"
+source = "git+https://github.com/marc2332/freya.git#00b19bc20cd76d5ce4bd5b4affc1162ce6087a51"
 dependencies = [
  "bitflags 2.8.0",
  "glutin",
@@ -1776,8 +1759,8 @@ dependencies = [
 
 [[package]]
 name = "freya-hooks"
-version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#df905994a6e5e60578f2035802d9558d1cd5ca70"
+version = "0.3.0-rc.2"
+source = "git+https://github.com/marc2332/freya.git#00b19bc20cd76d5ce4bd5b4affc1162ce6087a51"
 dependencies = [
  "bitflags 2.8.0",
  "bytes",
@@ -1786,24 +1769,21 @@ dependencies = [
  "dioxus-hooks",
  "dioxus-signals",
  "easer",
- "freya-common",
  "freya-core",
  "freya-elements",
  "freya-engine",
- "freya-node-state",
  "paste",
  "ropey",
  "tokio",
  "torin",
  "tracing",
  "uuid",
- "winit",
 ]
 
 [[package]]
 name = "freya-native-core"
-version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#df905994a6e5e60578f2035802d9558d1cd5ca70"
+version = "0.3.0-rc.2"
+source = "git+https://github.com/marc2332/freya.git#00b19bc20cd76d5ce4bd5b4affc1162ce6087a51"
 dependencies = [
  "dioxus-core",
  "parking_lot",
@@ -1814,50 +1794,26 @@ dependencies = [
 
 [[package]]
 name = "freya-native-core-macro"
-version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#df905994a6e5e60578f2035802d9558d1cd5ca70"
+version = "0.3.0-rc.2"
+source = "git+https://github.com/marc2332/freya.git#00b19bc20cd76d5ce4bd5b4affc1162ce6087a51"
 dependencies = [
  "quote",
  "syn 2.0.98",
 ]
 
 [[package]]
-name = "freya-node-state"
-version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#df905994a6e5e60578f2035802d9558d1cd5ca70"
-dependencies = [
- "accesskit",
- "bytes",
- "dioxus-core",
- "freya-common",
- "freya-engine",
- "freya-native-core",
- "freya-native-core-macro",
- "nom",
- "rustc-hash 2.1.0",
- "serde_json",
- "shipyard",
- "tokio",
- "torin",
- "tracing",
- "uuid",
-]
-
-[[package]]
-name = "freya-renderer"
-version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#df905994a6e5e60578f2035802d9558d1cd5ca70"
+name = "freya-winit"
+version = "0.3.0-rc.2"
+source = "git+https://github.com/marc2332/freya.git#00b19bc20cd76d5ce4bd5b4affc1162ce6087a51"
 dependencies = [
  "accesskit",
  "accesskit_winit",
  "dioxus-core",
- "freya-common",
  "freya-core",
  "freya-elements",
  "freya-engine",
  "freya-hooks",
  "freya-native-core",
- "freya-node-state",
  "futures-task",
  "futures-util",
  "gl",
@@ -1865,6 +1821,7 @@ dependencies = [
  "glutin-winit",
  "image",
  "itertools 0.13.0",
+ "keyboard-types",
  "pin-utils",
  "raw-window-handle",
  "tokio",
@@ -2289,7 +2246,7 @@ dependencies = [
  "httpdate",
  "itoa",
  "pin-project-lite",
- "socket2 0.5.8",
+ "socket2 0.4.10",
  "tokio",
  "tower-service",
  "tracing",
@@ -2796,7 +2753,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc2f4eb4bc735547cfed7c0a4922cbd04a4655978c09b54f1f7b228750664c34"
 dependencies = [
  "cfg-if",
- "windows-targets 0.48.5",
+ "windows-targets 0.52.6",
 ]
 
 [[package]]
@@ -4857,8 +4814,8 @@ dependencies = [
 
 [[package]]
 name = "torin"
-version = "0.3.0-rc.0"
-source = "git+https://github.com/marc2332/freya.git#df905994a6e5e60578f2035802d9558d1cd5ca70"
+version = "0.3.0-rc.2"
+source = "git+https://github.com/marc2332/freya.git#00b19bc20cd76d5ce4bd5b4affc1162ce6087a51"
 dependencies = [
  "euclid",
  "freya-native-core",
@@ -5426,7 +5383,7 @@ version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf221c93e13a30d793f7645a0e7762c55d169dbb0a49671918a2319d289b10bb"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]

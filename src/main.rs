@@ -1,5 +1,5 @@
 use freya::prelude::*;
-use freya_node_state::Parse;
+use freya_core::parsing::Parse;
 use nvml_wrapper::Nvml;
 use styles_config::{GlobalStyles, StylesConfig};
 use winit::dpi::{LogicalPosition, LogicalSize};

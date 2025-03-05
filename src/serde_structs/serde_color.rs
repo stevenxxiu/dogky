@@ -1,7 +1,7 @@
 use std::ops::Deref;
 
+use freya_core::parsing::Parse;
 use freya_engine::prelude::Color;
-use freya_node_state::Parse;
 use serde::{Deserialize, Deserializer};
 
 #[derive(Clone, Debug, PartialEq)]
