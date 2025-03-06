@@ -2,6 +2,7 @@ use std::collections::HashSet;
 use std::process::Command;
 
 use arboard::Clipboard;
+use binary_heap_plus::BinaryHeap;
 use circular_queue::CircularQueue;
 use freya::prelude::*;
 use lazy_static::lazy_static;
@@ -35,7 +36,9 @@ struct MemoryData {
 
 #[derive(Default, Clone)]
 struct ProcessesData {
-  processes: Vec<ProcessProps>,
+  top_cpu: Vec<ProcessProps>,
+  top_memory: Vec<ProcessProps>,
+  num_total: usize,
   num_running: usize,
 }
 
@@ -75,7 +78,7 @@ fn get_memory_data(system: &mut System) -> MemoryData {
   res
 }
 
-fn get_process_data(system: &mut System) -> ProcessesData {
+fn get_process_data(system: &mut System, num_top_processes: usize) -> ProcessesData {
   let mut res = ProcessesData::default();
   system.refresh_processes_specifics(
     ProcessesToUpdate::All,
@@ -92,7 +95,13 @@ fn get_process_data(system: &mut System) -> ProcessesData {
       task_pids.extend(tasks)
     }
   }
-  res.num_running = 0;
+  let capacity = num_top_processes + 1;
+  let mut top_cpu = BinaryHeap::with_capacity_by(capacity, |p1: &ProcessProps, p2: &ProcessProps| {
+    p2.cpu_usage.partial_cmp(&p1.cpu_usage).unwrap()
+  });
+  let mut top_memory = BinaryHeap::with_capacity_by(capacity, |p1: &ProcessProps, p2: &ProcessProps| {
+    p2.memory_usage.partial_cmp(&p1.memory_usage).unwrap()
+  });
   for (pid, process) in pid_to_process {
     if task_pids.contains(pid) {
       continue;
@@ -101,19 +110,28 @@ fn get_process_data(system: &mut System) -> ProcessesData {
       res.num_running += 1;
     }
     if let Some(live_process) = system.process(*pid) {
+      res.num_total += 1;
       let args = live_process
         .cmd()
         .iter()
         .skip(1)
         .fold(String::new(), |res, cur| res + cur.to_str().unwrap() + " ");
-      res.processes.push(ProcessProps {
+      let process = ProcessProps {
         cmd: format!("{} {}", live_process.name().to_str().unwrap(), args),
         pid: *pid,
         cpu_usage: live_process.cpu_usage(),
         memory_usage: live_process.memory(),
-      });
+      };
+      top_cpu.push(process.clone());
+      top_memory.push(process.clone());
+      if top_cpu.len() > num_top_processes {
+        top_cpu.pop();
+        top_memory.pop();
+      }
     }
   }
+  res.top_cpu = top_cpu.into_sorted_vec();
+  res.top_memory = top_memory.into_sorted_vec();
   res
 }
 
@@ -214,17 +232,12 @@ fn ProcessTableRow(
 #[component]
 fn ProcessTableComponent(
   processes_data: ReadOnlySignal<ProcessesData>,
-  num_processes: usize,
   num_cpus: usize,
   top_command: SerdeCommand,
 ) -> Element {
   let styles = use_context::<CpuMemoryStyles>();
 
-  let mut processes = processes_data().processes.clone();
-  processes.sort_by(|process_1, process_2| process_2.cpu_usage.partial_cmp(&process_1.cpu_usage).unwrap());
-  let process_by_cpu = processes[..num_processes.min(processes.len())].to_vec();
-  processes.sort_by(|process_1, process_2| process_2.memory_usage.partial_cmp(&process_1.memory_usage).unwrap());
-  let process_by_memory = processes[..num_processes.min(processes.len())].to_vec();
+  let processes = processes_data();
 
   let format_cpu = |process: &ProcessProps| format!("{:.2}", process.cpu_usage / num_cpus as f32);
   let format_memory = |process: &ProcessProps| format_size(process.memory_usage, MEMORY_DECIMAL_PLACES);
@@ -254,7 +267,7 @@ fn ProcessTableComponent(
           cmd: "", pid: "", cpu: "🞃", memory: "",
           color: styles.ps_sort_cpu_color.clone(), align: "center",
         },
-        for process in process_by_cpu.iter() {
+        for process in processes.top_cpu.iter() {
           ProcessTableRow {
             cmd: process.cmd.clone(), pid: process.pid.to_string(),
             cpu: format_cpu(process), memory: format_memory(process),
@@ -265,7 +278,7 @@ fn ProcessTableComponent(
           cmd: "", pid: "", cpu: "", memory: "🞃",
           color: styles.ps_sort_memory_color.clone(), align: "center",
         },
-        for process in process_by_memory.iter() {
+        for process in processes.top_memory.iter() {
           ProcessTableRow {
             cmd: process.cmd.clone(), pid: process.pid.to_string(),
             cpu: format_cpu(process), memory: format_memory(process),
@@ -330,7 +343,7 @@ pub fn CpuMemoryComponent() -> Element {
         swap_hist.write().push(swap_ratio);
 
         uptime.set(System::uptime());
-        processes_data.set(get_process_data(&mut system));
+        processes_data.set(get_process_data(&mut system, config.process_list.num_processes));
 
         tokio::time::sleep(std::time::Duration::from_secs(config.update_interval)).await;
       }
@@ -389,7 +402,7 @@ pub fn CpuMemoryComponent() -> Element {
         label { "Processes" },
         LabelRight {
           color: styles.value_color.clone(),
-          "{processes_data().num_running} / {processes_data().processes.len(): >4}",
+          "{processes_data().num_running} / {processes_data().num_total: >4}",
         },
       }
     }
@@ -414,7 +427,6 @@ pub fn CpuMemoryComponent() -> Element {
     }
     ProcessTableComponent {
       processes_data,
-      num_processes: config.process_list.num_processes,
       num_cpus: num_cpus,
       top_command: config.process_list.top_command,
     }
