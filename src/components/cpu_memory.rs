@@ -34,7 +34,7 @@ struct MemoryData {
 }
 
 #[derive(Default, Clone)]
-struct ProcessData {
+struct ProcessesData {
   processes: Vec<ProcessProps>,
   num_running: usize,
 }
@@ -75,8 +75,8 @@ fn get_memory_data(system: &mut System) -> MemoryData {
   res
 }
 
-fn get_process_data(system: &mut System) -> ProcessData {
-  let mut res = ProcessData::default();
+fn get_process_data(system: &mut System) -> ProcessesData {
+  let mut res = ProcessesData::default();
   system.refresh_processes_specifics(
     ProcessesToUpdate::All,
     true,
@@ -213,14 +213,14 @@ fn ProcessTableRow(
 #[allow(non_snake_case)]
 #[component]
 fn ProcessTableComponent(
-  process_data: ReadOnlySignal<ProcessData>,
+  processes_data: ReadOnlySignal<ProcessesData>,
   num_processes: usize,
   num_cpus: usize,
   top_command: SerdeCommand,
 ) -> Element {
   let styles = use_context::<CpuMemoryStyles>();
 
-  let mut processes = process_data().processes.clone();
+  let mut processes = processes_data().processes.clone();
   processes.sort_by(|process_1, process_2| process_2.cpu_usage.partial_cmp(&process_1.cpu_usage).unwrap());
   let process_by_cpu = processes[..num_processes.min(processes.len())].to_vec();
   processes.sort_by(|process_1, process_2| process_2.memory_usage.partial_cmp(&process_1.memory_usage).unwrap());
@@ -308,7 +308,7 @@ pub fn CpuMemoryComponent() -> Element {
 
   let mut cpu_data = use_signal(CpuData::default);
   let mut memory_data = use_signal(MemoryData::default);
-  let mut processes_data = use_signal(ProcessData::default);
+  let mut processes_data = use_signal(ProcessesData::default);
 
   let hist_size = ((global_styles.container_width - styles.graph_h_gap) / 2.) as usize;
   let mut cpu_hist = use_signal(|| CircularQueue::with_capacity(hist_size));
@@ -413,7 +413,7 @@ pub fn CpuMemoryComponent() -> Element {
       memory_swap_hist: [memory_hist(), swap_hist()],
     }
     ProcessTableComponent {
-      process_data: processes_data,
+      processes_data,
       num_processes: config.process_list.num_processes,
       num_cpus: num_cpus,
       top_command: config.process_list.top_command,
