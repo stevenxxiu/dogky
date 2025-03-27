@@ -117,8 +117,10 @@ pub fn main() {
     }
     .on_setup(move |window| {
       let monitor = window.current_monitor().unwrap();
-      window.set_outer_position(LogicalPosition::new(monitor.size().width - width, 0));
-      let _ = window.request_inner_size(LogicalSize::new(width, monitor.size().height));
+      let logical_width = (f64::from(monitor.size().width) / monitor.scale_factor()) as u32;
+      let logical_height = (f64::from(monitor.size().width) / monitor.scale_factor()) as u32;
+      window.set_outer_position(LogicalPosition::new(logical_width - width, 0));
+      let _ = window.request_inner_size(LogicalSize::new(width, logical_height));
       match window.window_handle().unwrap().as_raw() {
         RawWindowHandle::Xlib(window) => set_wm_states(window.window as u32),
         _ => panic!("Not on X11"),
