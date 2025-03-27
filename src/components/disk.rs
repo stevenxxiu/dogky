@@ -1,6 +1,5 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::path::Path;
 use std::process::Command;
 
 use arboard::Clipboard;
@@ -40,13 +39,8 @@ fn get_disk_model(device_path: &str) -> Result<String, String> {
   Err(format!("Specified device path {} does not exist", device_path))
 }
 
-fn get_disk_temperature(device_path: &str) -> f32 {
-  lazy_static! {
-    static ref RE_TEMPERATURE: Regex = Regex::new(r"^(\d+)\d{3}$").unwrap();
-  }
-  let device_name = Path::new(device_path).file_name().unwrap().to_str().unwrap();
-  let path = format!("/sys/class/block/{}/device/hwmon/hwmon1/temp1_input", device_name);
-  let file = File::open(path).unwrap();
+fn get_disk_temperature(temperature_path: &str) -> f32 {
+  let file = File::open(temperature_path).unwrap();
   let line = BufReader::new(file).lines().next().unwrap().unwrap();
   line.parse::<i32>().unwrap() as f32 / 1000.0
 }
@@ -58,13 +52,13 @@ fn get_disk<'a>(disks: &'a Disks, mount_point: &'a str) -> &'a Disk {
     .unwrap()
 }
 
-fn get_disk_data(disks: &mut Disks, device_path: &str, mount_point: &str) -> DiskData {
+fn get_disk_data(disks: &mut Disks, temperature_path: &str, mount_point: &str) -> DiskData {
   let mut res = DiskData::default();
   disks.refresh_specifics(true, DiskRefreshKind::nothing().with_storage());
 
   let disk = get_disk(disks, mount_point);
 
-  res.temperature = get_disk_temperature(device_path);
+  res.temperature = get_disk_temperature(temperature_path);
   res.available_space = disk.available_space();
   res
 }
@@ -97,7 +91,7 @@ pub fn DiskComponent() -> Element {
   use_hook(move || {
     spawn(async move {
       loop {
-        data.set(get_disk_data(&mut disks, &config.device_path, &config.mount_point));
+        data.set(get_disk_data(&mut disks, &config.temperature_path, &config.mount_point));
         used_space.set(total_space - data().available_space);
         tokio::time::sleep(std::time::Duration::from_secs(config.update_interval)).await;
       }

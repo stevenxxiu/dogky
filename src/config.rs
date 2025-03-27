@@ -33,6 +33,7 @@ pub struct DiskConfig {
   pub update_interval: u64,
   pub name: String,
   pub device_path: String,
+  pub temperature_path: String,
   pub mount_point: String,
 }
 
