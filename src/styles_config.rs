@@ -35,6 +35,8 @@ pub struct CpuMemoryStyles {
   pub bar_height: f32,
   pub bar_border: String,
   pub bar_fill_color: String,
+  pub bar_efficient_border: String,
+  pub bar_efficient_fill_color: String,
   pub bar_h_gap: f32,
 
   pub graph_h_gap: f32,

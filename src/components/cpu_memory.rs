@@ -139,7 +139,7 @@ const CPU_MODEL_REMOVE: &[&str] = &["(R)", "(TM)", "!"];
 
 #[allow(non_snake_case)]
 #[component]
-fn CpuBarsComponent(cpu_core_usage: ReadOnlySignal<Vec<f32>>) -> Element {
+fn CpuBarsComponent(is_performant: Vec<bool>, cpu_core_usage: ReadOnlySignal<Vec<f32>>) -> Element {
   let styles = use_context::<CpuMemoryStyles>();
   rsx!(
     rect {
@@ -155,11 +155,19 @@ fn CpuBarsComponent(cpu_core_usage: ReadOnlySignal<Vec<f32>>) -> Element {
             rect {
               width: "flex(1)",
               height: styles.bar_height.to_string(),
-              border: styles.bar_border.clone(),
+              border: if is_performant[i * styles.bars_per_row + j] {
+                styles.bar_border.clone()
+              } else {
+                styles.bar_efficient_border.clone()
+              },
               rect {
                 width: "{cpu_core_usage()[i * styles.bars_per_row + j]}%",
                 height: "100%",
-                background: styles.bar_fill_color.clone(),
+                background: if is_performant[i * styles.bars_per_row + j] {
+                  styles.bar_fill_color.clone()
+                } else {
+                  styles.bar_efficient_fill_color.clone()
+                },
               }
             }
           }
@@ -312,6 +320,17 @@ pub fn CpuMemoryComponent() -> Element {
   let num_cpus = cpus.len();
 
   lazy_static! {
+    static ref RE_CPU_RANGE: Regex = Regex::new(r"(\d+)-(\d+)").unwrap();
+  }
+  let mut cpu_is_performant: Vec<bool> = std::iter::repeat_n(true, num_cpus).collect();
+  if let Ok(contents) = std::fs::read_to_string("/sys/devices/cpu_atom/cpus") {
+    let groups = RE_CPU_RANGE.captures(&contents).unwrap();
+    let start: usize = groups[1].parse().unwrap();
+    let end: usize = groups[2].parse().unwrap();
+    cpu_is_performant[start..=end].fill(false);
+  }
+
+  lazy_static! {
     static ref RE_FREQUENCY: Regex = Regex::new(r"\d+ MHz").unwrap();
   }
   let lshw_output = std::fs::read_to_string("/run/lshw-memory.txt").unwrap();
@@ -406,7 +425,7 @@ pub fn CpuMemoryComponent() -> Element {
         },
       }
     }
-    CpuBarsComponent { cpu_core_usage: cpu_data().core_usage }
+    CpuBarsComponent { is_performant: cpu_is_performant, cpu_core_usage: cpu_data().core_usage }
     rect {
       width: "100%",
       direction: "horizontal",
