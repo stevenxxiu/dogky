@@ -1,5 +1,6 @@
 use circular_queue::CircularQueue;
 use freya::prelude::*;
+use freya_core::custom_attributes::CanvasRunnerContext;
 use skia_safe::{self as sk, Path, PathFillType};
 
 static BORDER_WIDTH: f32 = 1.;
@@ -14,7 +15,7 @@ pub fn Graph<const N: usize>(datasets: [CircularQueue<f32>; N], graph_colors: [s
     platform.invalidate_drawing_area(size.peek().area);
     platform.request_animation_frame();
 
-    Box::new(move |ctx| {
+    Box::new(move |ctx: &mut CanvasRunnerContext| {
       let mut paint = sk::Paint::default();
       paint.set_anti_alias(true);
 
