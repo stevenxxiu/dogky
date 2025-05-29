@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::ops::Range;
 use std::process::Command;
 
 use arboard::Clipboard;
@@ -139,7 +140,7 @@ const CPU_MODEL_REMOVE: &[&str] = &["(R)", "(TM)", "!"];
 
 #[allow(non_snake_case)]
 #[component]
-fn CpuBarsComponent(is_performant: Vec<bool>, cpu_core_usage: ReadOnlySignal<Vec<f32>>) -> Element {
+fn CpuBarsComponent(performant_range: Range<usize>, cpu_core_usage: ReadOnlySignal<Vec<f32>>) -> Element {
   let styles = use_context::<CpuMemoryStyles>();
   let global_styles = use_context::<GlobalStyles>();
   let bar_width =
@@ -159,7 +160,7 @@ fn CpuBarsComponent(is_performant: Vec<bool>, cpu_core_usage: ReadOnlySignal<Vec
             rect {
               width: bar_width.to_string(),
               height: styles.bar_height.to_string(),
-              border: if is_performant[i * styles.bars_per_row + j] {
+              border: if performant_range.contains(&(i * styles.bars_per_row + j)) {
                 styles.bar_border.clone()
               } else {
                 styles.bar_efficient_border.clone()
@@ -167,7 +168,7 @@ fn CpuBarsComponent(is_performant: Vec<bool>, cpu_core_usage: ReadOnlySignal<Vec
               rect {
                 width: "{cpu_core_usage()[i * styles.bars_per_row + j]}%",
                 height: "100%",
-                background: if is_performant[i * styles.bars_per_row + j] {
+                background: if performant_range.contains(&(i * styles.bars_per_row + j)) {
                   styles.bar_fill_color.clone()
                 } else {
                   styles.bar_efficient_fill_color.clone()
@@ -326,12 +327,10 @@ pub fn CpuMemoryComponent() -> Element {
   lazy_static! {
     static ref RE_CPU_RANGE: Regex = Regex::new(r"(\d+)-(\d+)").unwrap();
   }
-  let mut cpu_is_performant: Vec<bool> = std::iter::repeat_n(true, num_cpus).collect();
-  if let Ok(contents) = std::fs::read_to_string("/sys/devices/cpu_atom/cpus") {
+  let mut cpu_performant_range: Range<usize> = 0..num_cpus;
+  if let Ok(contents) = std::fs::read_to_string("/sys/devices/cpu_core/cpus") {
     let groups = RE_CPU_RANGE.captures(&contents).unwrap();
-    let start: usize = groups[1].parse().unwrap();
-    let end: usize = groups[2].parse().unwrap();
-    cpu_is_performant[start..=end].fill(false);
+    cpu_performant_range = groups[1].parse().unwrap()..groups[2].parse::<usize>().unwrap() + 1;
   }
 
   lazy_static! {
@@ -429,7 +428,7 @@ pub fn CpuMemoryComponent() -> Element {
         },
       }
     }
-    CpuBarsComponent { is_performant: cpu_is_performant, cpu_core_usage: cpu_data().core_usage }
+    CpuBarsComponent { performant_range: cpu_performant_range, cpu_core_usage: cpu_data().core_usage }
     rect {
       width: "100%",
       direction: "horizontal",
