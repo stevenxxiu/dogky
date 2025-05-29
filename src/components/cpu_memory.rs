@@ -154,7 +154,6 @@ fn CpuBarsComponent(performant_range: Range<usize>, cpu_core_usage: ReadOnlySign
           width: "100%",
           direction: "horizontal",
           content: "flex",
-          main_align: "center",
           spacing: styles.bar_h_gap.to_string(),
           for j in 0..(cpu_core_usage().len() - i * styles.bars_per_row).min(styles.bars_per_row) {
             rect {
