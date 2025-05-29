@@ -16,7 +16,7 @@ heck = "0.5.0"
 join-string = "0.3.0"
 lazy_static = "1.5.0"
 local-ip-address = "0.6.3"
-nvml-wrapper = "0.10.0"
+nvml-wrapper = "0.11.0"
 open = "5.3.1"
 phf = { version = "0.11", features = ["macros"] }
 public-ip = "0.2.2"
