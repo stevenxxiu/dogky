@@ -141,6 +141,9 @@ const CPU_MODEL_REMOVE: &[&str] = &["(R)", "(TM)", "!"];
 #[component]
 fn CpuBarsComponent(is_performant: Vec<bool>, cpu_core_usage: ReadOnlySignal<Vec<f32>>) -> Element {
   let styles = use_context::<CpuMemoryStyles>();
+  let global_styles = use_context::<GlobalStyles>();
+  let bar_width =
+    (global_styles.container_width - (styles.bars_per_row - 1) as f32 * styles.bar_h_gap) / styles.bars_per_row as f32;
   rsx!(
     rect {
       direction: "vertical",
@@ -150,10 +153,11 @@ fn CpuBarsComponent(is_performant: Vec<bool>, cpu_core_usage: ReadOnlySignal<Vec
           width: "100%",
           direction: "horizontal",
           content: "flex",
+          main_align: "center",
           spacing: styles.bar_h_gap.to_string(),
           for j in 0..(cpu_core_usage().len() - i * styles.bars_per_row).min(styles.bars_per_row) {
             rect {
-              width: "flex(1)",
+              width: bar_width.to_string(),
               height: styles.bar_height.to_string(),
               border: if is_performant[i * styles.bars_per_row + j] {
                 styles.bar_border.clone()
