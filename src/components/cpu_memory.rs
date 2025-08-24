@@ -61,7 +61,7 @@ fn get_cpu_data(system: &mut System, components: &mut Components) -> CpuData {
   components.refresh(true);
   res.temperature = components
     .into_iter()
-    .find(|component| component.label().eq("Package id 0"))
+    .find(|component| component.label().eq("coretemp Package id 0"))
     .unwrap()
     .temperature()
     .unwrap();
