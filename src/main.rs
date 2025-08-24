@@ -4,6 +4,7 @@ use freya::prelude::*;
 use freya_core::parsing::Parse;
 use nvml_wrapper::Nvml;
 use styles_config::{GlobalStyles, StylesConfig};
+use winit::platform::wayland::WindowAttributesExtWayland as _;
 use winit::window::WindowLevel;
 
 use components::{
@@ -94,6 +95,7 @@ pub fn main() {
     .with_background("transparent")
     .with_window_attributes(|attributes| {
       attributes
+        .with_name("dogky", "")
         .with_resizable(false)
         .with_decorations(false)
         .with_transparent(true)

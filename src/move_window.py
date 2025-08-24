@@ -39,7 +39,7 @@ class Output:
 
 
 WAYBAR_HEIGHT = 34
-WINDOW_CRITERIA = '[title="Freya App"]'
+WINDOW_CRITERIA = '[app_id="dogky"]'
 
 def main() -> None:
     arg_parser = argparse.ArgumentParser(description='Move the *Dogky* window in position.')
