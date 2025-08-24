@@ -38,7 +38,7 @@ class Output:
         )
 
 
-WAYBAR_HEIGHT = 34
+WAYBAR_HEIGHT = 10
 WINDOW_CRITERIA = '[app_id="dogky"]'
 
 def main() -> None:
