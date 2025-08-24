@@ -18,7 +18,7 @@ struct GpuData {
   memory_used: u64,
 }
 
-fn get_gpu(nvml: &Nvml) -> Device {
+fn get_gpu(nvml: &Nvml) -> Device<'_> {
   nvml.device_by_index(0).unwrap()
 }
 

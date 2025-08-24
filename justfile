@@ -4,6 +4,7 @@ clean:
     find target/release/ \
         -mindepth 1 -maxdepth 1 \
         -not \( -name dogky -prune \) \
+        -not \( -name move_window.py -prune \) \
         -exec rm -rf {} +
 
 build-debug:
