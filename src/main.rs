@@ -96,6 +96,7 @@ pub fn main() {
     .with_window_attributes(|attributes| {
       attributes
         .with_name("dogky", "")
+        .with_title("Dogky")
         .with_resizable(false)
         .with_decorations(false)
         .with_transparent(true)
