@@ -63,8 +63,7 @@ def main() -> None:
     pos_y = waybar_height
 
     _ = subprocess.check_call(['swaymsg', ';'.join([
-        f'for_window {WINDOW_CRITERIA} resize set {args.window_width}',
-        f'for_window {WINDOW_CRITERIA} resize set height {height}',
+        f'for_window {WINDOW_CRITERIA} resize set {args.window_width} {height}',
         f'for_window {WINDOW_CRITERIA} move absolute position {pos_x} {pos_y}',
     ])])
 
