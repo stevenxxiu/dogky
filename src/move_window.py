@@ -50,17 +50,15 @@ def main() -> None:
     outputs = [Output.from_dict(obj) for obj in json.loads(outputs_str)] # pyright: ignore[reportAny]
 
     width, height = 0, 0
-    waybar_height = WAYBAR_HEIGHT
     for output in outputs:
         if output.focused:
             width, height = output.current_mode.width, output.current_mode.height
             width = round(width / output.scale)
             height = round(height / output.scale)
-            waybar_height = round(waybar_height / output.scale)
 
-    height -= waybar_height
+    height -= WAYBAR_HEIGHT
     pos_x = width - args.window_width
-    pos_y = waybar_height
+    pos_y = WAYBAR_HEIGHT
 
     _ = subprocess.check_call(['swaymsg', ';'.join([
         f'for_window {WINDOW_CRITERIA} resize set {args.window_width} {height}',
