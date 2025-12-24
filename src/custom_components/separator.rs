@@ -1,18 +1,25 @@
 use freya::prelude::*;
 
-#[allow(non_snake_case)]
-#[component]
-pub fn Separator(height: ReadOnlySignal<String>) -> Element {
-  rsx!(
-    rect {
-      width: "100%",
-      height: height(),
-      main_align: "center",
-      rect {
-        width: "100%",
-        height: "1",
-        background: "rgb(203, 203, 203)",
-      }
-    },
-  )
+#[derive(Clone, PartialEq, Default)]
+pub struct Separator {
+  height: f32,
+}
+
+pub fn create_separator(height: f32) -> Separator {
+  Separator { height }
+}
+
+impl Render for Separator {
+  fn render(&self) -> impl IntoElement {
+    rect()
+      .width(Size::percent(100.))
+      .height(Size::px(self.height))
+      .main_align(Alignment::Center)
+      .child(
+        rect()
+          .width(Size::percent(100.))
+          .height(Size::px(1.))
+          .background(Color::from_rgb(203, 203, 203)),
+      )
+  }
 }

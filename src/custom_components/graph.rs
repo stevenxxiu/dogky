@@ -1,64 +1,104 @@
+use std::rc::Rc;
+use std::{any::Any, borrow::Cow};
+
 use circular_queue::CircularQueue;
+use freya::engine::prelude::{Paint, PaintStyle, Path, PathFillType, Point};
 use freya::prelude::*;
-use freya_core::custom_attributes::CanvasRunnerContext;
-use skia_safe::{self as sk, Path, PathFillType};
+use freya_core::{element::ElementExt, tree::DiffModifies};
 
 static BORDER_WIDTH: f32 = 1.;
 
-#[allow(non_snake_case)]
-#[component]
-pub fn Graph<const N: usize>(datasets: [CircularQueue<f32>; N], graph_colors: [sk::Color; N]) -> Element {
-  let platform = use_platform();
-  let (reference, size) = use_node_signal();
+#[derive(PartialEq)]
+pub struct Graph<const N: usize> {
+  layout_data: LayoutData,
+  datasets: [CircularQueue<f32>; N],
+  colors: [Color; N],
+}
 
-  let graph = use_canvas_with_deps(&datasets, move |datasets| {
-    platform.invalidate_drawing_area(size.peek().area);
-    platform.request_animation_frame();
+impl<const N: usize> ElementExt for Graph<N> {
+  fn diff(&self, other: &std::rc::Rc<dyn ElementExt>) -> DiffModifies {
+    let Some(element) = (other.as_ref() as &dyn Any).downcast_ref::<Graph<N>>() else {
+      return DiffModifies::all();
+    };
+    let mut diff = DiffModifies::empty();
+    if self.colors != element.colors || self.datasets != element.datasets {
+      diff.insert(DiffModifies::STYLE);
+    }
+    if self.layout_data != element.layout_data {
+      diff.insert(DiffModifies::LAYOUT);
+    }
+    diff
+  }
 
-    Box::new(move |ctx: &mut CanvasRunnerContext| {
-      let mut paint = sk::Paint::default();
-      paint.set_anti_alias(true);
+  fn layout(&'_ self) -> std::borrow::Cow<'_, LayoutData> {
+    Cow::Borrowed(&self.layout_data)
+  }
 
-      let (min_x, max_x, min_y, max_y) = (
-        ctx.area.min_x() + BORDER_WIDTH,
-        ctx.area.max_x() - BORDER_WIDTH,
-        ctx.area.min_y() + BORDER_WIDTH,
-        ctx.area.max_y() - BORDER_WIDTH,
-      );
-      let height = max_y - min_y;
+  fn render(&self, context: RenderContext) {
+    let area = context.layout_node.visible_area();
+    let mut paint = Paint::default();
+    paint.set_anti_alias(true);
 
-      for (i, (dataset, &color)) in datasets.iter().zip(graph_colors.iter()).enumerate() {
-        if i == 0 {
-          paint.set_style(sk::paint::Style::Fill);
-          paint.set_color(color);
-        } else if i == 1 {
-          paint.set_style(sk::paint::Style::Stroke);
-          paint.set_color(color);
-        }
-        let mut points: Vec<sk::Point> = vec![];
-        if i == 0 {
-          points.push(sk::Point::new(max_x, max_y));
-        }
-        for (j, value) in dataset.iter().enumerate() {
-          let x = max_x - j as f32;
-          if x < min_x {
-            break;
-          }
-          points.push(sk::Point::new(x, max_y - height * value));
-        }
-        if i == 0 {
-          points.push(sk::Point::new(points.last().unwrap().x, max_y));
-        }
-        let path = Path::polygon(&points, false, PathFillType::Winding, false);
-        ctx.canvas.draw_path(&path, &paint);
+    let (min_x, max_x, min_y, max_y) = (
+      area.min_x() + BORDER_WIDTH,
+      area.max_x() - BORDER_WIDTH,
+      area.min_y() + BORDER_WIDTH,
+      area.max_y() - BORDER_WIDTH,
+    );
+    let height = max_y - min_y;
+
+    for (i, (dataset, &color)) in self.datasets.iter().zip(self.colors.iter()).enumerate() {
+      if i == 0 {
+        paint.set_style(PaintStyle::Fill);
+        paint.set_color(color);
+      } else if i == 1 {
+        paint.set_style(PaintStyle::Stroke);
+        paint.set_color(color);
       }
-    })
-  });
+      let mut points: Vec<Point> = vec![];
+      if i == 0 {
+        points.push(Point::new(max_x, max_y));
+      }
+      for (j, value) in dataset.iter().enumerate() {
+        let x = max_x - j as f32;
+        if x < min_x {
+          break;
+        }
+        points.push(Point::new(x, max_y - height * value));
+      }
+      if i == 0 {
+        points.push(Point::new(points.last().unwrap().x, max_y));
+      }
+      let path = Path::polygon(&points, false, PathFillType::Winding, false);
+      context.canvas.draw_path(&path, &paint);
+    }
+  }
+}
 
-  rsx!(rect {
-    width: "100%",
-    height: "100%",
-    canvas_reference: graph.attribute(),
-    reference,
-  })
+impl<const N: usize> LayoutExt for Graph<N> {
+  fn get_layout(&mut self) -> &mut LayoutData {
+    &mut self.layout_data
+  }
+}
+
+impl<const N: usize> ContainerExt for Graph<N> {}
+
+impl<const N: usize> From<Graph<N>> for Element {
+  fn from(value: Graph<N>) -> Self {
+    Element::Element {
+      key: DiffKey::None,
+      element: Rc::new(value),
+      elements: Vec::new(),
+    }
+  }
+}
+
+pub fn create_graph<const N: usize>(datasets: [CircularQueue<f32>; N], colors: [Color; N]) -> Graph<N> {
+  Graph {
+    layout_data: LayoutData::default(),
+    datasets,
+    colors,
+  }
+  .width(Size::flex(1.))
+  .height(Size::flex(1.))
 }

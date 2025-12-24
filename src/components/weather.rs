@@ -2,14 +2,17 @@ use std::fs::File;
 use std::path::PathBuf;
 use std::time::{Duration, SystemTime};
 
+use async_io::Timer;
 use chrono::{DateTime, FixedOffset};
 use freya::prelude::*;
+use futures_lite::stream::StreamExt;
 use heck::ToTitleCase;
 
 use phf::phf_map;
 
 use crate::api::{get_weather, WeatherData};
 use crate::config::WeatherConfig;
+use crate::freya_utils::{center_cont_factory, color_label, cursor_area, emoji_label, value_label_factory};
 use crate::path::get_xdg_dirs;
 use crate::styles_config::{GlobalStyles, WeatherStyles};
 
@@ -36,7 +39,7 @@ fn load_cache(path: PathBuf) -> WeatherData {
   serde_json::from_reader(data_file).unwrap()
 }
 
-fn update_data(config: &WeatherConfig, cache_path: &PathBuf) -> Result<WeatherData, String> {
+async fn update_data(config: &WeatherConfig, cache_path: &PathBuf) -> Result<WeatherData, String> {
   // No need to fetch data from server if cache time is close enough
   if let Ok(metadata) = std::fs::metadata(cache_path) {
     let cache_time = metadata.modified().unwrap();
@@ -47,7 +50,7 @@ fn update_data(config: &WeatherConfig, cache_path: &PathBuf) -> Result<WeatherDa
   }
 
   // Update data from server
-  match get_weather(config.openweather_city_id, &config.openweather_api_key) {
+  match get_weather(config.openweather_city_id, &config.openweather_api_key).await {
     Ok(weather_data) => {
       let data_file = File::create(cache_path).unwrap();
       serde_json::to_writer(data_file, &weather_data).unwrap();
@@ -57,30 +60,28 @@ fn update_data(config: &WeatherConfig, cache_path: &PathBuf) -> Result<WeatherDa
   }
 }
 
-#[allow(non_snake_case)]
-#[component]
-pub fn WeatherComponent() -> Element {
-  let config = use_context::<WeatherConfig>();
-  let styles = use_context::<WeatherStyles>();
-  let global_styles = use_context::<GlobalStyles>();
+pub fn weather_component() -> CursorArea {
+  let config = use_consume::<WeatherConfig>();
+  let styles = use_consume::<WeatherStyles>();
+  let global_styles = use_consume::<GlobalStyles>();
   let cache_path = get_xdg_dirs().place_cache_file("weather.json").unwrap();
 
-  let mut has_err = use_signal(|| false);
-  let mut error_str = use_signal(|| "".into());
+  let mut has_err = use_state(|| false);
+  let mut error_str = use_state(|| "".into());
 
   let city_id = config.openweather_city_id;
-  let mut data = use_signal(WeatherData::default);
-  let mut cond_icon = use_signal(|| "");
+  let mut data = use_state(WeatherData::default);
+  let mut cond_icon = use_state(|| "");
 
-  use_hook(move || {
+  use_hook(|| {
     spawn(async move {
       loop {
-        let timeout = match update_data(&config, &cache_path) {
+        let timeout = match update_data(&config, &cache_path).await {
           Ok(data_) => {
             data.set(data_);
             has_err.set(false);
 
-            let cond_icon_key = data().weather[0].icon.chars().take(2).collect::<String>();
+            let cond_icon_key = data.read().weather[0].icon.chars().take(2).collect::<String>();
             cond_icon.set(ICON_MAP.get(cond_icon_key.as_str()).unwrap());
 
             config.update_interval
@@ -91,71 +92,62 @@ pub fn WeatherComponent() -> Element {
             config.retry_timeout
           }
         };
-        tokio::time::sleep(std::time::Duration::from_secs(timeout)).await;
+        Timer::interval(Duration::from_secs(timeout)).next().await;
       }
-    })
+    });
   });
 
-  let timezone = FixedOffset::east_opt(data().timezone).unwrap();
-  rsx!(
-    CursorArea {
-      icon: CursorIcon::Pointer,
-      rect {
-        width: "100%",
-        direction: "vertical",
-        padding: styles.container_padding,
-        onclick: move |_| {
-          // Open weather forecast link
-          open::that(format!("https://openweathermap.org/city/{0}#weather-widget", city_id))
-          .unwrap();
-        },
-        if has_err() || data().weather.is_empty() {
-          rect {
-            width: "100%",
-            direction: "horizontal",
-            spacing: global_styles.h_gap.to_string(),
-            main_align: "center",
-            label { "Weather:" },
-            label { "{error_str}" },
-          }
-        } else {
-          rect {
-            width: "100%",
-            direction: "horizontal",
-            main_align: "center",
-            cross_align: "center",
-            spacing: global_styles.h_gap.to_string(),
-            label { font_family: "Noto Color Emoji", font_size: styles.cond_icon_size.to_string(), "{cond_icon}" }
-            label { "{data().weather[0].description.to_title_case()}" }
-            label { color: styles.value_color.clone(), "{data().main.temp:.0}°C" }
-          }
-          rect {
-            width: "100%",
-            direction: "horizontal",
-            main_align: "center",
-            spacing: global_styles.h_gap.to_string(),
-            label { "Humidity" }, label { color: styles.value_color.clone(), "{data().main.humidity}%" }
-            label { "Wind" }, label { color: styles.value_color.clone(), "{data().wind.speed:.1} m/s" }
-            label {
-              margin: styles.wind_arrow_margin.clone(),
-              color: styles.value_color.clone(),
+  let timezone = FixedOffset::east_opt(data.read().timezone).unwrap();
+
+  let center_cont = center_cont_factory(global_styles.h_gap);
+  let value_label = value_label_factory((*styles.value_color).into());
+
+  cursor_area(CursorIcon::Pointer).child(
+    rect()
+      .width(Size::percent(100.))
+      .padding(*styles.container_padding)
+      .on_pointer_press(move |_| {
+        // Open weather forecast link
+        open::that(format!("https://openweathermap.org/city/{0}#weather-widget", city_id)).unwrap();
+      })
+      .children(if has_err() || data.read().weather.is_empty() {
+        vec![center_cont(vec![
+          label().text("Weather:").into(),
+          label().text(error_str.read().to_string()).into(),
+        ])
+        .into()]
+      } else {
+        vec![
+          center_cont(vec![
+            emoji_label(cond_icon.read().to_string())
+              .font_size(styles.cond_icon_size)
+              .into(),
+            label().text(data.read().weather[0].description.to_title_case()).into(),
+            value_label(format!("{:.0}°C", data.read().main.temp)).into(),
+          ])
+          .cross_align(Alignment::Center)
+          .into(),
+          center_cont(vec![
+            label().text("Humidity").into(),
+            value_label(format!("{}%", data.read().main.humidity)).into(),
+            label().text("Wind").into(),
+            value_label(format!("{:.1} m/s", data.read().wind.speed)).into(),
+            rect()
+              .margin(*styles.wind_arrow_margin)
+              .child(color_label(*styles.value_color, "⮕"))
               // The wind degrees character used is `⮕`, which is at 90°.
-              rotate: (data().wind.deg - 90.).to_string() + "deg",
-              "⮕",
-            }
-          }
-          rect {
-            width: "100%",
-            direction: "horizontal",
-            main_align: "center",
-            spacing: global_styles.h_gap.to_string(),
-            label { font_family: "Noto Color Emoji", "☀️" }
-            label { color: styles.value_color.clone(), "{format_sun_timestamp(data().sys.sunrise, timezone)}" }
-            label { font_family: "Noto Color Emoji", "🌙" }
-            label { color: styles.value_color.clone(), "{format_sun_timestamp(data().sys.sunset, timezone)}" }
-          }
-        }
-      }
-    }
+              .rotate(data.read().wind.deg - 90.)
+              .into(),
+          ])
+          .into(),
+          center_cont(vec![
+            emoji_label("☀️").into(),
+            value_label(format_sun_timestamp(data.read().sys.sunrise, timezone)).into(),
+            emoji_label("🌙").into(),
+            value_label(format_sun_timestamp(data.read().sys.sunset, timezone)).into(),
+          ])
+          .into(),
+        ]
+      }),
   )
 }
