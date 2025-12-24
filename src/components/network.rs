@@ -1,16 +1,22 @@
 use std::net::IpAddr;
+use std::time::Duration;
 
-use arboard::Clipboard;
+use async_io::Timer;
 use circular_queue::CircularQueue;
 use freya::prelude::*;
+use freya::text_edit::Clipboard;
+use futures_lite::stream::StreamExt;
 use join_string::Join;
 use public_ip::dns::GOOGLE_V6;
 use regex::Regex;
 use sysinfo::Networks;
 
 use crate::config::NetworkConfig;
-use crate::custom_components::{Graph, LabelRight};
+use crate::custom_components::create_graph;
 use crate::format_size::{format_size, format_speed};
+use crate::freya_utils::{
+  border_fill_width, color_label, cursor_area, flex_cont_factory, label_with_value_factory, right_value_label,
+};
 use crate::styles_config::{GlobalStyles, NetworkStyles};
 
 #[derive(Default, Clone, Debug)]
@@ -54,62 +60,57 @@ fn get_network_data(networks: &mut Networks, interface_regex: Regex, update_inte
   Some(res)
 }
 
-#[allow(non_snake_case)]
-#[component]
-fn NetworkGraphsComponent(
-  download_hist: ReadOnlySignal<CircularQueue<f32>>,
-  upload_hist: ReadOnlySignal<CircularQueue<f32>>,
+fn network_graphs_component(
+  download_hist: CircularQueue<f32>,
+  upload_hist: CircularQueue<f32>,
+  styles: NetworkStyles,
 ) -> Element {
-  let styles = use_context::<NetworkStyles>();
-  rsx!(
-    rect {
-      width: "100%",
-      direction: "horizontal",
-      content: "flex",
-      spacing: styles.graph_h_gap.to_string(),
-      rect {
-        width: "flex(1)",
-        height: styles.graph_height.to_string(),
-        border: styles.graph_download_border,
-        Graph {
-          datasets: [download_hist()],
-          graph_colors: [*styles.graph_download_fill_color],
-        }
-      }
-      rect {
-        width: "flex(1)",
-        height: styles.graph_height.to_string(),
-        border: styles.graph_upload_border,
-        Graph {
-          datasets: [upload_hist()],
-          graph_colors: [*styles.graph_upload_fill_color],
-        }
-      }
-    }
-  )
+  let flex_cont = flex_cont_factory(styles.graph_h_gap);
+  flex_cont(vec![
+    rect()
+      .width(Size::flex(1.))
+      .height(Size::px(styles.graph_height))
+      .border(border_fill_width(
+        *styles.graph_download_border_color,
+        styles.graph_download_border_width,
+      ))
+      .child(create_graph(
+        [download_hist],
+        [(*styles.graph_download_fill_color).into()],
+      ))
+      .into(),
+    rect()
+      .width(Size::flex(1.))
+      .height(Size::px(styles.graph_height))
+      .border(border_fill_width(
+        *styles.graph_upload_border_color,
+        styles.graph_upload_border_width,
+      ))
+      .child(create_graph([upload_hist], [(*styles.graph_upload_fill_color).into()]))
+      .into(),
+  ])
+  .into()
 }
 
 const NETWORK_DECIMAL_PLACES: usize = 2usize;
 
-#[allow(non_snake_case)]
-#[component]
-pub fn NetworkComponent() -> Element {
-  let config = use_context::<NetworkConfig>();
-  let styles = use_context::<NetworkStyles>();
-  let global_styles = use_context::<GlobalStyles>();
+pub fn network_component() -> Element {
+  let config = use_consume::<NetworkConfig>();
+  let styles = use_consume::<NetworkStyles>();
+  let global_styles = use_consume::<GlobalStyles>();
 
   let mut networks = Networks::new();
 
-  let mut data = use_signal(NetworkData::default);
+  let mut data = use_state(NetworkData::default);
 
   let hist_size = ((global_styles.container_width - styles.graph_h_gap) / 2.) as usize;
-  let mut download_hist = use_signal(|| CircularQueue::with_capacity(hist_size));
-  let mut upload_hist = use_signal(|| CircularQueue::with_capacity(hist_size));
+  let mut download_hist = use_state(|| CircularQueue::with_capacity(hist_size));
+  let mut upload_hist = use_state(|| CircularQueue::with_capacity(hist_size));
 
-  let mut public_ip_str = use_signal(|| "".to_string());
-  let mut local_ips_str = use_signal(|| "".to_string());
+  let mut public_ip_str = use_state(|| "".to_string());
+  let mut local_ips_str = use_state(|| "".to_string());
 
-  use_hook(move || {
+  use_hook(|| {
     spawn(async move {
       loop {
         if let Some(cur_data) =
@@ -133,7 +134,9 @@ pub fn NetworkComponent() -> Element {
 
           data.set(cur_data);
         }
-        tokio::time::sleep(std::time::Duration::from_secs(config.update_interval)).await;
+        Timer::interval(Duration::from_secs(config.update_interval))
+          .next()
+          .await;
       }
     });
     if let Some(interval) = config.public_ip_retry_timeout {
@@ -142,92 +145,58 @@ pub fn NetworkComponent() -> Element {
           if let Some(ip) = public_ip::addr_with(GOOGLE_V6, public_ip::Version::V6).await {
             public_ip_str.set(ip.to_string());
           }
-          tokio::time::sleep(std::time::Duration::from_secs(interval)).await;
+          Timer::interval(Duration::from_secs(interval)).next().await;
         }
       });
     }
   });
 
-  let value_color = styles.value_color;
-  rsx!(
-    if data().local_ips.is_empty() {
-      label { color: styles.name_color.clone(), "Disconnected" },
-    } else {
-      rect {
-        width: "100%",
-        direction: "horizontal",
-        content: "flex",
-        label { color: styles.name_color.clone(), "WAN IP" },
-        CursorArea {
-          icon: CursorIcon::Copy,
-          label {
-            width: "flex(1)",
-            text_align: "right",
-            color: value_color.clone(),
-            onclick: move |_| { Clipboard::new().unwrap().set_text(public_ip_str()).unwrap() },
-            "{public_ip_str()}"
-          },
-        }
-      }
-      rect {
-        width: "100%",
-        direction: "horizontal",
-        content: "flex",
-        label { color: styles.name_color.clone(), "{data().network_name} IP" },
-        CursorArea {
-          icon: CursorIcon::Copy,
-          label {
-            width: "flex(1)",
-            text_align: "right",
-            color: value_color.clone(),
-            onclick: move |_| {
-              let local_ips_str = data().local_ips.iter().map(|ip| ip.to_string()).join("\n").to_string();
-              Clipboard::new().unwrap().set_text(local_ips_str).unwrap();
-            },
-            "{local_ips_str()}"
-          },
-        }
-      }
-      rect {
-        width: "100%",
-        direction: "horizontal",
-        content: "flex",
-        spacing: global_styles.h_gap.to_string(),
-        rect {
-          width: "flex(1)",
-          direction: "horizontal",
-          label { color: styles.name_color.clone(), "Net Down" },
-          LabelRight { color: value_color.clone(), "{format_speed(data().download_speed, NETWORK_DECIMAL_PLACES)}" },
-        }
-        rect {
-          width: "flex(1)",
-          direction: "horizontal",
-          label { color: styles.name_color.clone(), "Net Up" },
-          LabelRight { color: value_color.clone(), "{format_speed(data().upload_speed, NETWORK_DECIMAL_PLACES)}" },
-        }
-      }
-      rect {
-        width: "100%",
-        direction: "horizontal",
-        content: "flex",
-        spacing: global_styles.h_gap.to_string(),
-        rect {
-          width: "flex(1)",
-          direction: "horizontal",
-          label { color: styles.name_color.clone(), "Total Down" },
-          LabelRight { color: value_color.clone(), "{format_size(data().total_received, NETWORK_DECIMAL_PLACES)}" },
-        }
-        rect {
-          width: "flex(1)",
-          direction: "horizontal",
-          label { color: styles.name_color.clone(), "Total Up" },
-          LabelRight { color: value_color.clone(), "{format_size(data().total_transmitted, NETWORK_DECIMAL_PLACES)}" },
-        }
-      }
-      NetworkGraphsComponent {
-        download_hist: download_hist(),
-        upload_hist: upload_hist(),
-      }
-    }
-  )
+  let value_color: Color = (*styles.value_color).into();
+  let flex_cont = flex_cont_factory(global_styles.h_gap);
+  let label_with_value = label_with_value_factory((*styles.name_color).into(), value_color);
+
+  if data.read().local_ips.is_empty() {
+    color_label(*styles.name_color, "Disconnected").into()
+  } else {
+    let data_ = data.read();
+    let [down_speed, up_speed] = [data_.download_speed, data_.upload_speed];
+    let [down_total, up_total] = [data_.total_received, data_.total_transmitted];
+    rect()
+      .children([
+        flex_cont(vec![
+          color_label(*styles.name_color, "WAN IP").into(),
+          cursor_area(CursorIcon::Copy)
+            .child(
+              right_value_label(value_color, public_ip_str.read().clone())
+                .on_mouse_down(move |_| Clipboard::set(public_ip_str.read().clone()).unwrap()),
+            )
+            .into(),
+        ])
+        .into(),
+        flex_cont(vec![
+          color_label(*styles.name_color, format!("{} IP", data.read().network_name)).into(),
+          cursor_area(CursorIcon::Copy)
+            .child(
+              right_value_label(value_color, local_ips_str.read().clone()).on_mouse_down(move |_| {
+                let local_ips = &data.read().local_ips;
+                Clipboard::set(local_ips.iter().map(|ip| ip.to_string()).join("\n").to_string()).unwrap();
+              }),
+            )
+            .into(),
+        ])
+        .into(),
+        flex_cont(vec![
+          label_with_value("Net Down", format_speed(down_speed, NETWORK_DECIMAL_PLACES)).into(),
+          label_with_value("Net Up", format_speed(up_speed, NETWORK_DECIMAL_PLACES)).into(),
+        ])
+        .into(),
+        flex_cont(vec![
+          label_with_value("Total Down", format_size(down_total, NETWORK_DECIMAL_PLACES)).into(),
+          label_with_value("Total Up", format_size(up_total, NETWORK_DECIMAL_PLACES)).into(),
+        ])
+        .into(),
+        network_graphs_component((*download_hist.read()).clone(), (*upload_hist.read()).clone(), styles),
+      ])
+      .into()
+  }
 }

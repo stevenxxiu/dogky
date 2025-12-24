@@ -1,17 +1,23 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::process::Command;
+use std::time::Duration;
 
-use arboard::Clipboard;
+use async_io::Timer;
 use freya::prelude::*;
+use freya::text_edit::Clipboard;
+use futures_lite::stream::StreamExt;
 use lazy_static::lazy_static;
 
 use regex::Regex;
 use sysinfo::{Disk, DiskRefreshKind, Disks};
 
 use crate::config::DiskConfig;
-use crate::custom_components::LabelRight;
 use crate::format_size::format_size;
+use crate::freya_utils::{
+  border_fill_width, color_label, cursor_area, flex_cont_factory, horizontal_cont_factory, right_value_label,
+  value_label_factory,
+};
 use crate::styles_config::{DiskStyles, GlobalStyles};
 
 #[derive(Default, Clone, Debug)]
@@ -65,13 +71,10 @@ fn get_disk_data(disks: &mut Disks, temperature_path: &str, mount_point: &str) -
 
 const DISK_DECIMAL_PLACES: usize = 2usize;
 
-#[allow(non_snake_case)]
-#[component]
-pub fn DiskComponent() -> Element {
-  let config = use_context::<DiskConfig>();
-  let styles = use_context::<DiskStyles>();
-  let global_styles = use_context::<GlobalStyles>();
-  let mut clipboard = Clipboard::new().unwrap();
+pub fn disk_component() -> Rect {
+  let config = use_consume::<DiskConfig>();
+  let styles = use_consume::<DiskStyles>();
+  let global_styles = use_consume::<GlobalStyles>();
 
   let refresh_kind = DiskRefreshKind::nothing().with_storage();
   let mut disks = Disks::new_with_refreshed_list_specifics(refresh_kind);
@@ -85,63 +88,64 @@ pub fn DiskComponent() -> Element {
 
   let total_space = disk.total_space();
 
-  let mut data = use_signal(DiskData::default);
-  let mut used_space = use_signal(|| 0u64);
+  let mut data = use_state(DiskData::default);
+  let mut used_space = use_state(|| 0u64);
 
-  use_hook(move || {
+  use_hook(|| {
     spawn(async move {
       loop {
         data.set(get_disk_data(&mut disks, &config.temperature_path, &config.mount_point));
-        used_space.set(total_space - data().available_space);
-        tokio::time::sleep(std::time::Duration::from_secs(config.update_interval)).await;
+        used_space.set(total_space - data.read().available_space);
+        Timer::interval(Duration::from_secs(config.update_interval))
+          .next()
+          .await;
       }
     })
   });
 
-  rsx!(
-    rect {
-      width: "100%",
-      direction: "horizontal",
-      spacing: global_styles.h_gap.to_string(),
-      label { "Disk" },
-      CursorArea {
-        icon: CursorIcon::Copy,
-        label {
-          color: styles.name_color.clone(),
-          onclick: move |_| { clipboard.set_text(model.clone()).unwrap() },
-          "{model}"
-        },
-      }
-      LabelRight { color: styles.value_color.clone(), "{data().temperature:.0}°C" },
-    }
-    rect {
-      width: "100%",
-      direction: "horizontal",
-      spacing: global_styles.h_gap.to_string(),
-      label { color: styles.name_color.clone(), "{file_system_name}" },
-      LabelRight {
-        color: styles.value_color.clone(),
-        "{format_size(used_space(), DISK_DECIMAL_PLACES): >8}"
-        " + {format_size(data().available_space, DISK_DECIMAL_PLACES): >8}"
-      },
-    }
-    rect {
-      width: "100%",
-      direction: "horizontal",
-      content: "flex",
-      spacing: global_styles.h_gap.to_string(),
-      cross_align: "center",
-      label { color: styles.value_color.clone(), "{format_size(total_space, DISK_DECIMAL_PLACES)}" },
-      rect {
-        width: "flex(1)",
-        height: styles.bar_height.to_string(),
-        border: styles.bar_border.clone(),
-        rect {
-          width: "{used_space() as f32 / total_space as f32 * 100.}%",
-          height: "100%",
-          background: styles.bar_fill_color.clone(),
-        }
-      }
-    }
-  )
+  let value_color: Color = (*styles.value_color).into();
+  let horizontal_cont = horizontal_cont_factory(global_styles.h_gap);
+  let flex_cont = flex_cont_factory(global_styles.h_gap);
+  let value_label = value_label_factory(value_color);
+
+  rect().children([
+    horizontal_cont(vec![
+      label().text("Disk").into(),
+      cursor_area(CursorIcon::Copy)
+        .child(
+          color_label(*styles.name_color, model.clone()).on_mouse_down(move |_| Clipboard::set(model.clone()).unwrap()),
+        )
+        .into(),
+      right_value_label(value_color, format!("{:.0}°C", data.read().temperature)).into(),
+    ])
+    .into(),
+    horizontal_cont(vec![
+      color_label(*styles.name_color, file_system_name).into(),
+      right_value_label(
+        value_color,
+        format!(
+          "{: >8} + {: >8}",
+          format_size(used_space(), DISK_DECIMAL_PLACES),
+          format_size(data.read().available_space, DISK_DECIMAL_PLACES)
+        ),
+      )
+      .into(),
+    ])
+    .into(),
+    flex_cont(vec![value_label(format_size(total_space, DISK_DECIMAL_PLACES)).into()])
+      .cross_align(Alignment::Center)
+      .child(
+        rect()
+          .width(Size::flex(1.))
+          .height(Size::px(styles.bar_height))
+          .border(border_fill_width(*styles.bar_border_color, styles.bar_border_width))
+          .child(
+            rect()
+              .width(Size::percent(used_space() as f32 / total_space as f32 * 100.))
+              .height(Size::percent(100.))
+              .background(*styles.bar_fill_color),
+          ),
+      )
+      .into(),
+  ])
 }

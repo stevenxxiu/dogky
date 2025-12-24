@@ -1,12 +1,16 @@
 use std::collections::HashSet;
 use std::ops::Range;
 use std::process::Command;
+use std::time::Duration;
 
-use arboard::Clipboard;
+use async_io::Timer;
 use binary_heap_plus::BinaryHeap;
 use circular_queue::CircularQueue;
 use freya::prelude::*;
+use freya::text_edit::Clipboard;
+use futures_lite::StreamExt;
 use lazy_static::lazy_static;
+use velcro::vec;
 
 use regex::Regex;
 use sysinfo::{
@@ -15,8 +19,11 @@ use sysinfo::{
 };
 
 use crate::config::CpuMemoryConfig;
-use crate::custom_components::{Graph, LabelRight};
+use crate::custom_components::create_graph;
 use crate::format_size::format_size;
+use crate::freya_utils::{
+  border_fill_width, cursor_area, flex_cont_factory, label_with_value_factory, right_value_label, value_label_factory,
+};
 use crate::serde_structs::SerdeCommand;
 use crate::styles_config::{CpuMemoryStyles, GlobalStyles};
 use crate::utils::{self, format_used, MEMORY_DECIMAL_PLACES};
@@ -138,177 +145,156 @@ fn get_process_data(system: &mut System, num_top_processes: usize) -> ProcessesD
 
 const CPU_MODEL_REMOVE: &[&str] = &["(R)", "(TM)", "!"];
 
-#[allow(non_snake_case)]
-#[component]
-fn CpuBarsComponent(performant_range: Range<usize>, cpu_core_usage: ReadOnlySignal<Vec<f32>>) -> Element {
-  let styles = use_context::<CpuMemoryStyles>();
-  let global_styles = use_context::<GlobalStyles>();
+fn cpu_bars_component(performant_range: Range<usize>, cpu_core_usage: &[f32]) -> Rect {
+  let styles = use_consume::<CpuMemoryStyles>();
+  let global_styles = use_consume::<GlobalStyles>();
+  let flex_cont = flex_cont_factory(styles.bar_h_gap);
   let bar_width =
     (global_styles.container_width - (styles.bars_per_row - 1) as f32 * styles.bar_h_gap) / styles.bars_per_row as f32;
-  rsx!(
-    rect {
-      direction: "vertical",
-      spacing: styles.bars_v_gap.to_string(),
-      for i in 0..cpu_core_usage().len().div_ceil(styles.bars_per_row) {
-        rect {
-          width: "100%",
-          direction: "horizontal",
-          content: "flex",
-          spacing: styles.bar_h_gap.to_string(),
-          for j in 0..(cpu_core_usage().len() - i * styles.bars_per_row).min(styles.bars_per_row) {
-            rect {
-              width: bar_width.to_string(),
-              height: styles.bar_height.to_string(),
-              border: if performant_range.contains(&(i * styles.bars_per_row + j)) {
-                styles.bar_border.clone()
-              } else {
-                styles.bar_efficient_border.clone()
-              },
-              rect {
-                width: "{cpu_core_usage()[i * styles.bars_per_row + j]}%",
-                height: "100%",
-                background: if performant_range.contains(&(i * styles.bars_per_row + j)) {
-                  styles.bar_fill_color.clone()
+  rect().spacing(styles.bars_v_gap).children(
+    (0..cpu_core_usage.len().div_ceil(styles.bars_per_row))
+      .map(|i| {
+        flex_cont(
+          (0..(cpu_core_usage.len() - i * styles.bars_per_row).min(styles.bars_per_row))
+            .map(|j| {
+              rect()
+                .width(Size::px(bar_width))
+                .height(Size::px(styles.bar_height))
+                .border(Some(if performant_range.contains(&(i * styles.bars_per_row + j)) {
+                  border_fill_width(*styles.bar_border_color, styles.bar_border_width)
                 } else {
-                  styles.bar_efficient_fill_color.clone()
-                },
-              }
-            }
-          }
-        }
-      }
-    }
+                  border_fill_width(*styles.bar_efficient_border_color, styles.bar_efficient_border_width)
+                }))
+                .child::<Rect>(
+                  rect()
+                    .width(Size::percent(cpu_core_usage[i * styles.bars_per_row + j]))
+                    .height(Size::percent(100.))
+                    .background(if performant_range.contains(&(i * styles.bars_per_row + j)) {
+                      *styles.bar_fill_color
+                    } else {
+                      *styles.bar_efficient_fill_color
+                    }),
+                )
+                .into()
+            })
+            .collect::<Vec<Element>>(),
+        )
+        .into()
+      })
+      .collect::<Vec<Element>>(),
   )
 }
 
-#[allow(non_snake_case)]
-#[component]
-fn CpuGraphsComponent(
-  cpu_hist: ReadOnlySignal<CircularQueue<f32>>,
-  memory_swap_hist: ReadOnlySignal<[CircularQueue<f32>; 2]>,
-) -> Element {
-  let styles = use_context::<CpuMemoryStyles>();
-  rsx!(
-    rect {
-      width: "100%",
-      direction: "horizontal",
-      content: "flex",
-      spacing: styles.graph_h_gap.to_string(),
-      rect {
-        width: "flex(1)",
-        height: styles.graph_height.to_string(),
-        border: styles.graph_cpu_border,
-        Graph {
-          datasets: [cpu_hist()],
-          graph_colors: [*styles.graph_cpu_fill_color],
-        }
-      }
-      rect {
-        width: "flex(1)",
-        height: styles.graph_height.to_string(),
-        border: styles.graph_memory_border,
-        Graph {
-          datasets: memory_swap_hist(),
-          graph_colors: [*styles.graph_memory_fill_color, *styles.graph_swap_fill_color],
-        }
-      }
-    }
-  )
+fn cpu_graphs_component(cpu_hist: CircularQueue<f32>, memory_swap_hist: [CircularQueue<f32>; 2]) -> Rect {
+  let styles = use_consume::<CpuMemoryStyles>();
+  let flex_cont = flex_cont_factory(styles.graph_h_gap);
+  flex_cont(vec![
+    rect()
+      .width(Size::flex(1.))
+      .height(Size::px(styles.graph_height))
+      .border(border_fill_width(
+        *styles.graph_cpu_border_color,
+        styles.graph_cpu_border_width,
+      ))
+      .child(create_graph([cpu_hist], [(*styles.graph_cpu_fill_color).into()]))
+      .into(),
+    rect()
+      .width(Size::flex(1.))
+      .height(Size::px(styles.graph_height))
+      .border(border_fill_width(
+        *styles.graph_memory_border_color,
+        styles.graph_memory_border_width,
+      ))
+      .child(create_graph(
+        memory_swap_hist,
+        [
+          (*styles.graph_memory_fill_color).into(),
+          (*styles.graph_swap_fill_color).into(),
+        ],
+      ))
+      .into(),
+  ])
 }
 
-#[allow(non_snake_case)]
-#[component]
-fn ProcessTableRow(
-  cmd: ReadOnlySignal<String>,
-  pid: ReadOnlySignal<String>,
-  cpu: ReadOnlySignal<String>,
-  memory: ReadOnlySignal<String>,
-  color: ReadOnlySignal<String>,
-  align: String,
-) -> Element {
-  let styles = use_context::<CpuMemoryStyles>();
-  rsx!(
-    rect {
-      direction: "horizontal",
-      content: "flex",
-      color,
-      label { width: "flex(1)", text_overflow: "…", "{cmd()}" },
-      label { width: styles.ps_pid_width.to_string(), text_align: align.clone(), "{pid()}" },
-      label { width: styles.ps_cpu_width.to_string(), text_align: align.clone(), "{cpu()}" },
-      label { width: styles.ps_memory_width.to_string(), text_align: align.clone(), "{memory()}" },
-    }
-  )
+fn process_table_row(
+  cmd: &str,
+  pid: &str,
+  cpu: &str,
+  memory: &str,
+  color: impl Into<Color>,
+  align: TextAlign,
+  widths: [f32; 3],
+) -> Rect {
+  let value_label = |width: f32, text: &str| label().width(Size::px(width)).text_align(align).text(text.to_string());
+  rect()
+    .direction(Direction::Horizontal)
+    .content(Content::Flex)
+    .color(color)
+    .children([
+      label()
+        .width(Size::flex(1.))
+        .text_overflow(TextOverflow::Custom("…".to_string()))
+        .text(cmd.to_string())
+        .into(),
+      value_label(widths[0], pid).into(),
+      value_label(widths[1], cpu).into(),
+      value_label(widths[2], memory).into(),
+    ])
 }
 
-#[allow(non_snake_case)]
-#[component]
-fn ProcessTableComponent(
-  processes_data: ReadOnlySignal<ProcessesData>,
-  num_cpus: usize,
-  top_command: SerdeCommand,
-) -> Element {
-  let styles = use_context::<CpuMemoryStyles>();
-
-  let processes = processes_data();
+fn process_table_component(processes: ProcessesData, num_cpus: usize, top_command: SerdeCommand) -> CursorArea {
+  let styles = use_consume::<CpuMemoryStyles>();
 
   let format_cpu = |process: &ProcessProps| format!("{:.2}", process.cpu_usage / num_cpus as f32);
   let format_memory = |process: &ProcessProps| format_size(process.memory_usage, MEMORY_DECIMAL_PLACES);
+  let header_color = styles.ps_header_color;
+  let sort_cpu_color = styles.ps_sort_cpu_color;
+  let sort_memory_color = styles.ps_sort_memory_color;
+  let widths = [styles.ps_pid_width, styles.ps_cpu_width, styles.ps_memory_width];
+  let create_data_row = |p: &ProcessProps, is_cpu: bool| {
+    process_table_row(
+      &p.cmd,
+      &p.pid.to_string(),
+      &format_cpu(p),
+      &format_memory(p),
+      if is_cpu {
+        *styles.ps_cpu_color
+      } else {
+        *styles.ps_memory_color
+      },
+      TextAlign::Right,
+      widths,
+    )
+  };
 
-  rsx!(
-    CursorArea {
-      icon: CursorIcon::Pointer,
-      rect {
-        width: "100%",
-        direction: "vertical",
-        onclick: move |_| {
-          if top_command.is_empty() {
-            return;
-          }
-          let top_command: Vec<String> = top_command
-            .iter()
-            .map(|part| utils::substitute_env_vars(part))
-            .collect();
-          let (binary, args) = top_command.split_at(1);
-          Command::new(&binary[0]).args(args).status().unwrap();
-        },
-        ProcessTableRow {
-          cmd: "Command", pid: "PID", cpu: "CPU%", memory: "MEM",
-          color: styles.ps_header_color.clone(), align: "right",
-        },
-        ProcessTableRow {
-          cmd: "", pid: "", cpu: "🞃", memory: "",
-          color: styles.ps_sort_cpu_color.clone(), align: "center",
-        },
-        for process in processes.top_cpu.iter() {
-          ProcessTableRow {
-            cmd: process.cmd.clone(), pid: process.pid.to_string(),
-            cpu: format_cpu(process), memory: format_memory(process),
-            color: styles.ps_cpu_color.clone(), align: "right",
-          }
+  cursor_area(CursorIcon::Pointer).child(
+    rect()
+      .width(Size::percent(100.))
+      .on_pointer_press(move |_| {
+        if top_command.is_empty() {
+          return;
         }
-        ProcessTableRow {
-          cmd: "", pid: "", cpu: "", memory: "🞃",
-          color: styles.ps_sort_memory_color.clone(), align: "center",
-        },
-        for process in processes.top_memory.iter() {
-          ProcessTableRow {
-            cmd: process.cmd.clone(), pid: process.pid.to_string(),
-            cpu: format_cpu(process), memory: format_memory(process),
-            color: styles.ps_memory_color.clone(), align: "right",
-          }
-        }
-      }
-    }
+        let top_command: Vec<String> = top_command
+          .iter()
+          .map(|part| utils::substitute_env_vars(part))
+          .collect();
+        let (binary, args) = top_command.split_at(1);
+        Command::new(&binary[0]).args(args).status().unwrap();
+      })
+      .children(vec![
+        process_table_row("Command", "PID", "CPU%", "MEM", *header_color, TextAlign::Right, widths).into(),
+        process_table_row("", "", "🞃", "", *sort_cpu_color, TextAlign::Right, widths).into(),
+        ..processes.top_cpu.iter().map(|p| create_data_row(p, true).into()),
+        process_table_row("", "", "", "🞃", *sort_memory_color, TextAlign::Right, widths).into(),
+        ..processes.top_memory.iter().map(|p| create_data_row(p, false).into()),
+      ]),
   )
 }
 
-#[allow(non_snake_case)]
-#[component]
-pub fn CpuMemoryComponent() -> Element {
-  let config = use_context::<CpuMemoryConfig>();
-  let styles = use_context::<CpuMemoryStyles>();
-  let global_styles = use_context::<GlobalStyles>();
-  let mut clipboard = Clipboard::new().unwrap();
+pub fn cpu_memory_component() -> Rect {
+  let config = use_consume::<CpuMemoryConfig>();
+  let styles = use_consume::<CpuMemoryStyles>();
+  let global_styles = use_consume::<GlobalStyles>();
 
   let refresh_kind = RefreshKind::nothing()
     .with_cpu(CpuRefreshKind::nothing())
@@ -340,116 +326,104 @@ pub fn CpuMemoryComponent() -> Element {
   let memory_total = system.total_memory();
   let swap_total = system.total_swap();
 
-  let mut cpu_data = use_signal(CpuData::default);
-  let mut memory_data = use_signal(MemoryData::default);
-  let mut processes_data = use_signal(ProcessesData::default);
+  let mut cpu_data = use_state(CpuData::default);
+  let mut memory_data = use_state(MemoryData::default);
+  let mut processes_data = use_state(ProcessesData::default);
 
   let hist_size = ((global_styles.container_width - styles.graph_h_gap) / 2.) as usize;
-  let mut cpu_hist = use_signal(|| CircularQueue::with_capacity(hist_size));
-  let mut memory_hist = use_signal(|| CircularQueue::with_capacity(hist_size));
-  let mut swap_hist = use_signal(|| CircularQueue::with_capacity(hist_size));
+  let mut cpu_hist = use_state(|| CircularQueue::with_capacity(hist_size));
+  let mut memory_hist = use_state(|| CircularQueue::with_capacity(hist_size));
+  let mut swap_hist = use_state(|| CircularQueue::with_capacity(hist_size));
 
-  let mut uptime = use_signal(|| 0u64);
+  let mut uptime = use_state(|| 0u64);
 
-  use_hook(move || {
+  use_hook(|| {
     spawn(async move {
       loop {
         cpu_data.set(get_cpu_data(&mut system, &mut components));
         memory_data.set(get_memory_data(&mut system));
 
-        cpu_hist.write().push(cpu_data().usage / 100.0);
-        let memory_ratio = memory_data().memory_usage as f32 / memory_total as f32;
+        cpu_hist.write().push(cpu_data.read().usage / 100.0);
+        let memory_ratio = memory_data.read().memory_usage as f32 / memory_total as f32;
         memory_hist.write().push(memory_ratio);
-        let swap_ratio = memory_data().swap_usage as f32 / swap_total as f32;
+        let swap_ratio = memory_data.read().swap_usage as f32 / swap_total as f32;
         swap_hist.write().push(swap_ratio);
 
         uptime.set(System::uptime());
         processes_data.set(get_process_data(&mut system, config.process_list.num_processes));
 
-        tokio::time::sleep(std::time::Duration::from_secs(config.update_interval)).await;
+        Timer::interval(Duration::from_secs(config.update_interval))
+          .next()
+          .await;
       }
     })
   });
 
-  rsx!(
-    rect {
-      width: "100%",
-      direction: "horizontal",
-      content: "flex",
-      spacing: global_styles.h_gap.to_string(),
-      label { "CPU" },
-      CursorArea {
-        icon: CursorIcon::Copy,
-        label {
-          color: styles.value_color.clone(),
-          onclick: move |_| { clipboard.set_text(cpu_model.clone()).unwrap(); },
-          "{cpu_model}"
-        },
-      }
-      LabelRight { color: styles.value_color.clone(), "{cpu_data().temperature}°C" },
-    }
-    rect {
-      width: "100%",
-      direction: "horizontal",
-      content: "flex",
-      spacing: global_styles.h_gap.to_string(),
-      rect {
-        width: "flex(1)",
-        direction: "horizontal",
-        label { "Frequency" },
-        LabelRight { color: styles.value_color.clone(), "{cpu_data().frequency:.2} GHz" },
-      }
-      rect {
-        width: "flex(1)",
-        direction: "horizontal",
-        label { "Usage" },
-        LabelRight { color: styles.value_color.clone(), "{cpu_data().usage:.1}%" },
-      }
-    }
-    rect {
-      width: "100%",
-      direction: "horizontal",
-      content: "flex",
-      spacing: global_styles.h_gap.to_string(),
-      rect {
-        width: "flex(1)",
-        direction: "horizontal",
-        label { "Uptime" },
-        LabelRight { color: styles.value_color.clone(), "{utils::format_duration(uptime())}" },
-      }
-      rect {
-        width: "flex(1)",
-        direction: "horizontal",
-        label { "Processes" },
-        LabelRight {
-          color: styles.value_color.clone(),
-          "{processes_data().num_running} / {processes_data().num_total: >4}",
-        },
-      }
-    }
-    CpuBarsComponent { performant_range: cpu_performant_range, cpu_core_usage: cpu_data().core_usage }
-    rect {
-      width: "100%",
-      direction: "horizontal",
-      main_align: "space-between",
-      label { "Memory" },
-      label { color: styles.value_color.clone(), "{memory_frequency: >8}" },
-      label { color: styles.value_color.clone(), "{format_used(memory_data().memory_usage, memory_total): >28}" },
-    }
-    rect {
-      width: "100%",
-      direction: "horizontal",
-      label { "Swap" },
-      LabelRight { color: styles.value_color.clone(), "{format_used(memory_data().swap_usage, swap_total)}" },
-    }
-    CpuGraphsComponent {
-      cpu_hist: cpu_hist(),
-      memory_swap_hist: [memory_hist(), swap_hist()],
-    }
-    ProcessTableComponent {
-      processes_data,
-      num_cpus: num_cpus,
-      top_command: config.process_list.top_command,
-    }
-  )
+  let value_color: Color = (*styles.value_color).into();
+  let flex_cont = flex_cont_factory(global_styles.h_gap);
+  let value_label = value_label_factory(value_color);
+  let label_with_value = label_with_value_factory(Color::default(), value_color);
+
+  rect().children([
+    flex_cont(vec![
+      label().text("CPU").into(),
+      cursor_area(CursorIcon::Copy)
+        .child(value_label(cpu_model.clone()).on_mouse_down(move |_| Clipboard::set(cpu_model.clone()).unwrap()))
+        .into(),
+      right_value_label(value_color, format!("{}°C", cpu_data.read().temperature)).into(),
+    ])
+    .into(),
+    flex_cont(vec![
+      label_with_value("Frequency", format!("{:.2} GHz", cpu_data.read().frequency)).into(),
+      label_with_value("Usage", format!("{:.1}%", cpu_data.read().usage)).into(),
+    ])
+    .into(),
+    flex_cont(vec![
+      label_with_value("Uptime", utils::format_duration(uptime())).into(),
+      label_with_value(
+        "Processes",
+        format!(
+          "{} / {: >4}",
+          processes_data.read().num_running,
+          processes_data.read().num_total
+        ),
+      )
+      .into(),
+    ])
+    .into(),
+    cpu_bars_component(cpu_performant_range, &cpu_data.read().core_usage).into(),
+    rect()
+      .width(Size::percent(100.))
+      .direction(Direction::Horizontal)
+      .main_align(Alignment::SpaceBetween)
+      .children([
+        label().text("Memory").into(),
+        value_label(format!("{: >8}", memory_frequency)).into(),
+        value_label(format!(
+          "{: >28}",
+          format_used(memory_data.read().memory_usage, memory_total)
+        ))
+        .into(),
+      ])
+      .into(),
+    rect()
+      .width(Size::percent(100.))
+      .direction(Direction::Horizontal)
+      .children([
+        label().text("Swap").into(),
+        right_value_label(value_color, format_used(memory_data.read().swap_usage, swap_total)).into(),
+      ])
+      .into(),
+    cpu_graphs_component(
+      (*cpu_hist.read()).clone(),
+      [(*memory_hist.read()).clone(), (*swap_hist.read()).clone()],
+    )
+    .into(),
+    process_table_component(
+      (*processes_data.read()).clone(),
+      num_cpus,
+      config.process_list.top_command,
+    )
+    .into(),
+  ])
 }

@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-use freya_core::parsing::Parse;
+use csscolorparser::Color as CssColor;
 use freya_engine::prelude::Color;
 use serde::{Deserialize, Deserializer};
 
@@ -21,9 +21,14 @@ impl<'de> Deserialize<'de> for SerdeColor {
     D: Deserializer<'de>,
   {
     let s: &str = Deserialize::deserialize(deserializer)?;
-    match Color::parse(s) {
-      Ok(color) => Ok(SerdeColor(color)),
-      Err(_) => Err(serde::de::Error::custom("parse_hex_skia_color()")),
+    match s.parse::<CssColor>() {
+      Ok(color) => Ok(SerdeColor(Color::from_argb(
+        (color.a * 255.) as u8,
+        (color.r * 255.) as u8,
+        (color.g * 255.) as u8,
+        (color.b * 255.) as u8,
+      ))),
+      Err(_) => Err(serde::de::Error::custom("Invalid color string")),
     }
   }
 }

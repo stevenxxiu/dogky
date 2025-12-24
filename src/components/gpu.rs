@@ -1,11 +1,19 @@
-use arboard::Clipboard;
+use std::sync::Arc;
+use std::time::Duration;
+
+use async_io::Timer;
 use freya::prelude::*;
 
+use freya::text_edit::Clipboard;
+use futures_lite::stream::StreamExt;
 use nvml_wrapper::enum_wrappers::device::{Clock, ClockId, TemperatureSensor, TemperatureThreshold};
 use nvml_wrapper::{Device, Nvml};
 
 use crate::config::GpuConfig;
-use crate::custom_components::LabelRight;
+use crate::freya_utils::{
+  color_label, cursor_area, flex_cont_factory, horizontal_cont_factory, label_with_value_factory, right_value_label,
+  value_label_factory,
+};
 use crate::styles_config::{GlobalStyles, GpuStyles};
 use crate::utils::format_used;
 
@@ -36,74 +44,76 @@ fn get_gpu_data(nvml: &Nvml) -> GpuData {
   res
 }
 
-#[allow(non_snake_case)]
-#[component]
-pub fn GpuComponent(nvml_signal: ReadOnlySignal<Nvml>) -> Element {
-  let config = use_context::<GpuConfig>();
-  let styles = use_context::<GpuStyles>();
-  let global_styles = use_context::<GlobalStyles>();
+pub struct GpuComponent {
+  pub nvml: Arc<Nvml>,
+}
 
-  let mut clipboard = Clipboard::new().unwrap();
+impl PartialEq for GpuComponent {
+  fn eq(&self, _other: &Self) -> bool {
+    true
+  }
+}
 
-  let nvml = nvml_signal.peek();
-  let gpu = get_gpu(&nvml);
-  let model = gpu.name().unwrap();
-  let temperature_threshold = gpu.temperature_threshold(TemperatureThreshold::Shutdown).unwrap();
-  let memory_info = gpu.memory_info().unwrap();
-  let memory_total = memory_info.total;
+impl Render for GpuComponent {
+  fn render(&self) -> impl IntoElement {
+    let config = use_consume::<GpuConfig>();
+    let styles = use_consume::<GpuStyles>();
+    let global_styles = use_consume::<GlobalStyles>();
 
-  let mut data = use_signal(GpuData::default);
+    let gpu = get_gpu(&self.nvml);
+    let model = gpu.name().unwrap();
+    let temperature_threshold = gpu.temperature_threshold(TemperatureThreshold::Shutdown).unwrap();
+    let memory_info = gpu.memory_info().unwrap();
+    let memory_total = memory_info.total;
 
-  use_hook(move || {
-    spawn(async move {
-      loop {
-        data.set(get_gpu_data(&nvml_signal.peek()));
-        tokio::time::sleep(std::time::Duration::from_secs(config.update_interval)).await;
-      }
-    })
-  });
+    let mut data = use_state(GpuData::default);
 
-  rsx!(
-    rect {
-      width: "100%",
-      direction: "horizontal",
-      spacing: global_styles.h_gap.to_string(),
-      label { "GPU" },
-      CursorArea {
-        icon: CursorIcon::Copy,
-        label {
-          color: styles.name_color.clone(),
-          onclick: move |_| { clipboard.set_text(model.clone()).unwrap() },
-          "{model}"
-        },
-      }
-      LabelRight { color: styles.value_color.clone(), "{data().temperature:.0}°C/{temperature_threshold:.0}°C" },
-    }
-    rect {
-      width: "100%",
-      direction: "horizontal",
-      content: "flex",
-      spacing: global_styles.h_gap.to_string(),
-      rect {
-        width: "flex(1)",
-        direction: "horizontal",
-        label { color: styles.usage_name_color.clone(), "Usage" },
-        LabelRight { color: styles.value_color.clone(), "{data().utilization_rates}%" },
-      }
-      rect {
-        width: "flex(1)",
-        direction: "horizontal",
-        label { color: styles.usage_name_color.clone(), "Frequency" },
-        LabelRight { color: styles.value_color.clone(), "{data().gpu_frequency} MHz" },
-      }
-    }
-    rect {
-      width: "100%",
-      direction: "horizontal",
-      main_align: "space-between",
-      label { color: styles.usage_name_color.clone(), "Memory" },
-      label { color: styles.value_color.clone(), "{data().memory_frequency: >4} MHz" },
-      label { color: styles.value_color.clone(), "{format_used(data().memory_used, memory_total)}" },
-    }
-  )
+    let nvml = Arc::clone(&self.nvml);
+    use_hook(|| {
+      spawn(async move {
+        loop {
+          data.set(get_gpu_data(&nvml));
+          Timer::interval(Duration::from_secs(config.update_interval))
+            .next()
+            .await;
+        }
+      })
+    });
+
+    let value_color: Color = (*styles.value_color).into();
+    let flex_cont = flex_cont_factory(global_styles.h_gap);
+    let horizontal_cont = horizontal_cont_factory(global_styles.h_gap);
+    let label_with_value = label_with_value_factory((*styles.usage_name_color).into(), value_color);
+    let value_label = value_label_factory(value_color);
+
+    rect().children([
+      horizontal_cont(vec![
+        label().text("GPU").into(),
+        cursor_area(CursorIcon::Copy)
+          .child(
+            color_label(*styles.name_color, model.clone())
+              .on_mouse_down(move |_| Clipboard::set(model.clone()).unwrap()),
+          )
+          .into(),
+        right_value_label(
+          value_color,
+          format!("{:.0}°C/{:.0}°C", data.read().temperature, temperature_threshold),
+        )
+        .into(),
+      ])
+      .into(),
+      flex_cont(vec![
+        label_with_value("Usage", format!("{}%", data.read().utilization_rates)).into(),
+        label_with_value("Frequency", format!("{} MHz", data.read().gpu_frequency)).into(),
+      ])
+      .into(),
+      horizontal_cont(vec![
+        color_label(*styles.usage_name_color, "Memory").into(),
+        value_label(format!("{: >4} MHz", data.read().memory_frequency)).into(),
+        value_label(format_used(data.read().memory_used, memory_total)).into(),
+      ])
+      .main_align(Alignment::SpaceBetween)
+      .into(),
+    ])
+  }
 }
