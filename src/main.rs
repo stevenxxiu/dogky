@@ -1,4 +1,4 @@
-use std::{process::Command, sync::Arc};
+use std::sync::Arc;
 
 use freya::prelude::*;
 use nvml_wrapper::Nvml;
@@ -18,6 +18,7 @@ mod config;
 mod custom_components;
 mod format_size;
 mod freya_utils;
+mod move_window;
 mod path;
 mod serde_structs;
 mod styles_config;
@@ -82,17 +83,7 @@ async fn main() {
   launch(
     LaunchConfig::new().with_default_font(font).with_window(
       WindowConfig::new(FpRender::from_render(App { styles }))
-        .with_window_handle(move |_window| {
-          let move_window_script_path = std::env::current_exe()
-            .unwrap()
-            .parent()
-            .unwrap()
-            .join("move_window.py");
-          Command::new(move_window_script_path)
-            .arg(width.to_string())
-            .output()
-            .unwrap();
-        })
+        .with_window_handle(move |_window| move_window::move_window(width).unwrap())
         .with_background(Color::TRANSPARENT)
         .with_window_attributes(|attributes| {
           attributes
