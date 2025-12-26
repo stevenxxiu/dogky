@@ -1,5 +1,5 @@
 # Dogky
-A custom *Conky*-like *Linux* system monitor written in *Rust*.
+A custom *Conky*-like *Linux* system monitor written in *Rust*. The window is positioned under *Sway*.
 
 ## Aim
 This project exists to replace my *Conky* configuration.
