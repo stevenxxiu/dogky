@@ -85,7 +85,7 @@ async fn main() {
       WindowConfig::new(FpRender::from_render(App { styles }))
         .with_window_handle(move |_window| move_window::move_window(width).unwrap())
         .with_background(Color::TRANSPARENT)
-        .with_window_attributes(|attributes| {
+        .with_window_attributes(|attributes, _| {
           attributes
             .with_name("dogky", "")
             .with_title("Dogky")
