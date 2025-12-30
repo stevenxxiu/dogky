@@ -2,9 +2,10 @@ use std::rc::Rc;
 use std::{any::Any, borrow::Cow};
 
 use circular_queue::CircularQueue;
-use freya::engine::prelude::{Paint, PaintStyle, Path, PathFillType, Point};
+use freya::engine::prelude::{Paint, PaintStyle, Point};
 use freya::prelude::*;
 use freya_core::{element::ElementExt, tree::DiffModifies};
+use freya_engine::prelude::PathBuilder;
 
 static BORDER_WIDTH: f32 = 1.;
 
@@ -17,7 +18,7 @@ pub struct Graph<const N: usize> {
 
 impl<const N: usize> ElementExt for Graph<N> {
   fn diff(&self, other: &std::rc::Rc<dyn ElementExt>) -> DiffModifies {
-    let Some(element) = (other.as_ref() as &dyn Any).downcast_ref::<Graph<N>>() else {
+    let Some(element) = (other.as_ref() as &dyn Any).downcast_ref::<Self>() else {
       return DiffModifies::all();
     };
     let mut diff = DiffModifies::empty();
@@ -55,21 +56,27 @@ impl<const N: usize> ElementExt for Graph<N> {
         paint.set_style(PaintStyle::Stroke);
         paint.set_color(color);
       }
-      let mut points: Vec<Point> = vec![];
+      let mut path = PathBuilder::new();
+      let mut x = 0f32;
       if i == 0 {
-        points.push(Point::new(max_x, max_y));
+        x = max_x;
+        path.move_to(Point::new(x, max_y));
       }
       for (j, value) in dataset.iter().enumerate() {
-        let x = max_x - j as f32;
+        x = max_x - j as f32;
         if x < min_x {
           break;
         }
-        points.push(Point::new(x, max_y - height * value));
+        if i == 1 && j == 0 {
+          path.move_to(Point::new(x, max_y - height * value));
+        } else {
+          path.line_to(Point::new(x, max_y - height * value));
+        }
       }
       if i == 0 {
-        points.push(Point::new(points.last().unwrap().x, max_y));
+        path.line_to(Point::new(x, max_y));
       }
-      let path = Path::polygon(&points, false, PathFillType::Winding, false);
+      let path = path.detach();
       context.canvas.draw_path(&path, &paint);
     }
   }
