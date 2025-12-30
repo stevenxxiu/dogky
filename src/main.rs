@@ -75,8 +75,7 @@ impl Render for App {
   }
 }
 
-#[tokio::main]
-async fn main() {
+fn main() {
   let styles = styles_config::load_config().unwrap();
   let font = styles.font.clone();
   let width = styles.width;
