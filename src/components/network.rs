@@ -142,12 +142,7 @@ pub fn network_component() -> Element {
     if let Some(interval) = config.public_ip_retry_timeout {
       spawn(async move {
         loop {
-          #[tokio::main] // Use a separate `main` to avoid *tokio* conflict with *Freya*
-          async fn get_public_ip() -> Option<IpAddr> {
-            public_ip::addr_with(GOOGLE_V6, public_ip::Version::V6).await
-          }
-
-          if let Some(ip) = get_public_ip() {
+          if let Some(ip) = public_ip::addr_with(GOOGLE_V6, public_ip::Version::V6).await {
             public_ip_str.set(ip.to_string());
           }
           Timer::interval(Duration::from_secs(interval)).next().await;

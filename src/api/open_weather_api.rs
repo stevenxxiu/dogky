@@ -79,13 +79,8 @@ pub async fn get_weather(city_id: u64, api_key: &str) -> Result<WeatherData, Box
     units = "metric",
     api_key = api_key
   );
-
-  #[tokio::main] // Use a separate `main` to avoid *tokio* conflict with *Freya*
-  async fn get_weather_inner(request_url: String) -> Result<WeatherData, Box<dyn Error>> {
-    let client = reqwest::Client::builder().timeout(REQUEST_TIMEOUT).build()?;
-    let response = client.get(&request_url).send().await?;
-    Ok(serde_json::from_str(&response.text().await?)?)
-  }
-
-  get_weather_inner(request_url)
+  let client = reqwest::Client::builder().timeout(REQUEST_TIMEOUT).build()?;
+  let response = client.get(&request_url).send().await?;
+  let res: WeatherData = serde_json::from_str(&response.text().await?)?;
+  Ok(res)
 }

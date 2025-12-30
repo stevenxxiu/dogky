@@ -79,6 +79,15 @@ fn main() {
   let styles = styles_config::load_config().unwrap();
   let font = styles.font.clone();
   let width = styles.width;
+
+  // Build a *Tokio* runtime manually, to not interfere with *Freya*. Otherwise it hangs eventually.
+  let rt = tokio::runtime::Builder::new_multi_thread()
+    .enable_time()
+    .enable_io()
+    .build()
+    .unwrap();
+  let _rt = rt.enter();
+
   launch(
     LaunchConfig::new().with_default_font(font).with_window(
       WindowConfig::new(FpRender::from_render(App { styles }))
