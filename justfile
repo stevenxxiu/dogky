@@ -1,5 +1,6 @@
 clean:
     find target/ -maxdepth 1 -type f -delete
+    rm -rf target/flycheck0/
     find target/debug/ -mindepth 1 -delete
     find target/release/ \
         -mindepth 1 -maxdepth 1 \
