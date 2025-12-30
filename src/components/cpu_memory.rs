@@ -104,11 +104,11 @@ fn get_process_data(system: &mut System, num_top_processes: usize) -> ProcessesD
     }
   }
   let capacity = num_top_processes + 1;
-  let mut top_cpu = BinaryHeap::with_capacity_by(capacity, |p1: &ProcessProps, p2: &ProcessProps| {
-    p2.cpu_usage.partial_cmp(&p1.cpu_usage).unwrap()
+  let mut top_cpu_id_usage = BinaryHeap::with_capacity_by(capacity, |p1: &(Pid, f32), p2: &(Pid, f32)| {
+    p2.1.partial_cmp(&p1.1).unwrap()
   });
-  let mut top_memory = BinaryHeap::with_capacity_by(capacity, |p1: &ProcessProps, p2: &ProcessProps| {
-    p2.memory_usage.partial_cmp(&p1.memory_usage).unwrap()
+  let mut top_memory_id_usage = BinaryHeap::with_capacity_by(capacity, |p1: &(Pid, u64), p2: &(Pid, u64)| {
+    p2.1.partial_cmp(&p1.1).unwrap()
   });
   for (pid, process) in pid_to_process {
     if task_pids.contains(pid) {
@@ -119,27 +119,32 @@ fn get_process_data(system: &mut System, num_top_processes: usize) -> ProcessesD
     }
     if let Some(live_process) = system.process(*pid) {
       res.num_total += 1;
-      let args = live_process
-        .cmd()
-        .iter()
-        .skip(1)
-        .fold(String::new(), |res, cur| res + cur.to_str().unwrap() + " ");
-      let process = ProcessProps {
-        cmd: format!("{} {}", live_process.name().to_str().unwrap(), args),
-        pid: *pid,
-        cpu_usage: live_process.cpu_usage(),
-        memory_usage: live_process.memory(),
-      };
-      top_cpu.push(process.clone());
-      top_memory.push(process.clone());
-      if top_cpu.len() > num_top_processes {
-        top_cpu.pop();
-        top_memory.pop();
+      top_cpu_id_usage.push((*pid, live_process.cpu_usage()));
+      top_memory_id_usage.push((*pid, live_process.memory()));
+      if top_cpu_id_usage.len() > num_top_processes {
+        top_cpu_id_usage.pop();
+        top_memory_id_usage.pop();
       }
     }
   }
-  res.top_cpu = top_cpu.into_sorted_vec();
-  res.top_memory = top_memory.into_sorted_vec();
+  let pid_to_props = |pid| {
+    let process = pid_to_process.get(pid).unwrap();
+    let args = process
+      .cmd()
+      .iter()
+      .skip(1)
+      .fold(String::new(), |res, cur| res + cur.to_str().unwrap() + " ");
+    ProcessProps {
+      cmd: format!("{} {}", process.name().to_str().unwrap(), args),
+      pid: *pid,
+      cpu_usage: process.cpu_usage(),
+      memory_usage: process.memory(),
+    }
+  };
+  let top_cpu_vec = top_cpu_id_usage.into_sorted_vec();
+  res.top_cpu = top_cpu_vec.iter().map(|(pid, _)| pid_to_props(pid)).collect();
+  let top_memory_vec = top_memory_id_usage.into_sorted_vec();
+  res.top_memory = top_memory_vec.iter().map(|(pid, _)| pid_to_props(pid)).collect();
   res
 }
 
