@@ -201,7 +201,7 @@ fn cpu_graphs_component(cpu_hist: CircularQueue<f32>, memory_swap_hist: [Circula
         *styles.graph_cpu_border_color,
         styles.graph_cpu_border_width,
       ))
-      .child(create_graph([cpu_hist], [(*styles.graph_cpu_fill_color).into()]))
+      .child(create_graph([cpu_hist], [*styles.graph_cpu_fill_color]))
       .into(),
     rect()
       .width(Size::flex(1.))
@@ -212,10 +212,7 @@ fn cpu_graphs_component(cpu_hist: CircularQueue<f32>, memory_swap_hist: [Circula
       ))
       .child(create_graph(
         memory_swap_hist,
-        [
-          (*styles.graph_memory_fill_color).into(),
-          (*styles.graph_swap_fill_color).into(),
-        ],
+        [*styles.graph_memory_fill_color, *styles.graph_swap_fill_color],
       ))
       .into(),
   ])
@@ -364,10 +361,10 @@ pub fn cpu_memory_component() -> Rect {
     })
   });
 
-  let value_color: Color = (*styles.value_color).into();
+  let value_color = styles.value_color;
   let flex_cont = flex_cont_factory(global_styles.h_gap);
-  let value_label = value_label_factory(value_color);
-  let label_with_value = label_with_value_factory(Color::default(), value_color);
+  let value_label = value_label_factory(*value_color);
+  let label_with_value = label_with_value_factory(Color::default(), *value_color);
 
   rect().children([
     flex_cont(vec![
@@ -375,7 +372,7 @@ pub fn cpu_memory_component() -> Rect {
       cursor_area(CursorIcon::Copy)
         .child(value_label(cpu_model.clone()).on_mouse_down(move |_| Clipboard::set(cpu_model.clone()).unwrap()))
         .into(),
-      right_value_label(value_color, format!("{}°C", cpu_data.read().temperature)).into(),
+      right_value_label(*value_color, format!("{}°C", cpu_data.read().temperature)).into(),
     ])
     .into(),
     flex_cont(vec![
@@ -416,7 +413,7 @@ pub fn cpu_memory_component() -> Rect {
       .direction(Direction::Horizontal)
       .children([
         label().text("Swap").into(),
-        right_value_label(value_color, format_used(memory_data.read().swap_usage, swap_total)).into(),
+        right_value_label(*value_color, format_used(memory_data.read().swap_usage, swap_total)).into(),
       ])
       .into(),
     cpu_graphs_component(

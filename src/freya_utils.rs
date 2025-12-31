@@ -34,14 +34,15 @@ where
   move |children: V| horizontal_cont(h_gap).content(Content::Flex).children(children)
 }
 
-pub fn value_label_factory<S>(color: Color) -> impl Fn(S) -> Label
+pub fn value_label_factory<C: Into<Color>, S>(color: C) -> impl Fn(S) -> Label
 where
   S: Into<Cow<'static, str>>,
 {
+  let color = color.into();
   move |text: S| label().color(color).text(text)
 }
 
-pub fn right_value_label(color: Color, text: impl Into<Cow<'static, str>>) -> Label {
+pub fn right_value_label<C: Into<Color>>(color: C, text: impl Into<Cow<'static, str>>) -> Label {
   label()
     .width(Size::flex(1.))
     .text_align(TextAlign::Right)
@@ -49,10 +50,14 @@ pub fn right_value_label(color: Color, text: impl Into<Cow<'static, str>>) -> La
     .text(text)
 }
 
-pub fn label_with_value_factory<S>(label_color: Color, value_color: Color) -> impl Fn(S, String) -> Rect
+pub fn label_with_value_factory<C1, C2, S>(label_color: C1, value_color: C2) -> impl Fn(S, String) -> Rect
 where
+  C1: Into<Color>,
+  C2: Into<Color>,
   S: Into<Cow<'static, str>>,
 {
+  let label_color = label_color.into();
+  let value_color = value_color.into();
   move |label_text: S, value: String| {
     rect().width(Size::flex(1.)).direction(Direction::Horizontal).children([
       label().color(label_color).text(label_text).into(),

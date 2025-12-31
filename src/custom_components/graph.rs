@@ -100,11 +100,11 @@ impl<const N: usize> From<Graph<N>> for Element {
   }
 }
 
-pub fn create_graph<const N: usize>(datasets: [CircularQueue<f32>; N], colors: [Color; N]) -> Graph<N> {
+pub fn create_graph<const N: usize, C: Into<Color>>(datasets: [CircularQueue<f32>; N], colors: [C; N]) -> Graph<N> {
   Graph {
     layout_data: LayoutData::default(),
     datasets,
-    colors,
+    colors: colors.map(|c| c.into()),
   }
   .width(Size::flex(1.))
   .height(Size::flex(1.))

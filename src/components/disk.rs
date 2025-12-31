@@ -103,10 +103,9 @@ pub fn disk_component() -> Rect {
     })
   });
 
-  let value_color: Color = (*styles.value_color).into();
   let horizontal_cont = horizontal_cont_factory(global_styles.h_gap);
   let flex_cont = flex_cont_factory(global_styles.h_gap);
-  let value_label = value_label_factory(value_color);
+  let value_label = value_label_factory(*styles.value_color);
 
   rect().children([
     horizontal_cont(vec![
@@ -116,13 +115,13 @@ pub fn disk_component() -> Rect {
           color_label(*styles.name_color, model.clone()).on_mouse_down(move |_| Clipboard::set(model.clone()).unwrap()),
         )
         .into(),
-      right_value_label(value_color, format!("{:.0}°C", data.read().temperature)).into(),
+      right_value_label(*styles.value_color, format!("{:.0}°C", data.read().temperature)).into(),
     ])
     .into(),
     horizontal_cont(vec![
       color_label(*styles.name_color, file_system_name).into(),
       right_value_label(
-        value_color,
+        *styles.value_color,
         format!(
           "{: >8} + {: >8}",
           format_size(used_space(), DISK_DECIMAL_PLACES),

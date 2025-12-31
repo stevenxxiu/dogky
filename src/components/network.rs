@@ -74,10 +74,7 @@ fn network_graphs_component(
         *styles.graph_download_border_color,
         styles.graph_download_border_width,
       ))
-      .child(create_graph(
-        [download_hist],
-        [(*styles.graph_download_fill_color).into()],
-      ))
+      .child(create_graph([download_hist], [*styles.graph_download_fill_color]))
       .into(),
     rect()
       .width(Size::flex(1.))
@@ -86,7 +83,7 @@ fn network_graphs_component(
         *styles.graph_upload_border_color,
         styles.graph_upload_border_width,
       ))
-      .child(create_graph([upload_hist], [(*styles.graph_upload_fill_color).into()]))
+      .child(create_graph([upload_hist], [*styles.graph_upload_fill_color]))
       .into(),
   ])
   .into()
@@ -151,9 +148,8 @@ pub fn network_component() -> Element {
     }
   });
 
-  let value_color: Color = (*styles.value_color).into();
   let flex_cont = flex_cont_factory(global_styles.h_gap);
-  let label_with_value = label_with_value_factory((*styles.name_color).into(), value_color);
+  let label_with_value = label_with_value_factory(*styles.name_color, *styles.value_color);
 
   if data.read().local_ips.is_empty() {
     color_label(*styles.name_color, "Disconnected").into()
@@ -167,7 +163,7 @@ pub fn network_component() -> Element {
           color_label(*styles.name_color, "WAN IP").into(),
           cursor_area(CursorIcon::Copy)
             .child(
-              right_value_label(value_color, public_ip_str.read().clone())
+              right_value_label(*styles.value_color, public_ip_str.read().clone())
                 .on_mouse_down(move |_| Clipboard::set(public_ip_str.read().clone()).unwrap()),
             )
             .into(),
@@ -177,7 +173,7 @@ pub fn network_component() -> Element {
           color_label(*styles.name_color, format!("{} IP", data.read().network_name)).into(),
           cursor_area(CursorIcon::Copy)
             .child(
-              right_value_label(value_color, local_ips_str.read().clone()).on_mouse_down(move |_| {
+              right_value_label(*styles.value_color, local_ips_str.read().clone()).on_mouse_down(move |_| {
                 let local_ips = &data.read().local_ips;
                 Clipboard::set(local_ips.iter().map(|ip| ip.to_string()).join("\n").to_string()).unwrap();
               }),

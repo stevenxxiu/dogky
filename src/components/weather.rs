@@ -100,7 +100,7 @@ pub fn weather_component() -> CursorArea {
   let timezone = FixedOffset::east_opt(data.read().timezone).unwrap();
 
   let center_cont = center_cont_factory(global_styles.h_gap);
-  let value_label = value_label_factory((*styles.value_color).into());
+  let value_label = value_label_factory(*styles.value_color);
 
   cursor_area(CursorIcon::Pointer).child(
     rect()
