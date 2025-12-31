@@ -1,4 +1,3 @@
-use std::net::IpAddr;
 use std::time::Duration;
 
 use async_io::Timer;
@@ -6,6 +5,7 @@ use circular_queue::CircularQueue;
 use freya::prelude::*;
 use freya::text_edit::Clipboard;
 use futures_lite::stream::StreamExt;
+use getifs::Ifv4Net;
 use join_string::Join;
 use public_ip::dns::GOOGLE_V6;
 use regex::Regex;
@@ -22,7 +22,7 @@ use crate::styles_config::{GlobalStyles, NetworkStyles};
 #[derive(Default, Clone, Debug)]
 struct NetworkData {
   network_name: String,
-  local_ips: Vec<IpAddr>,
+  local_ips: Vec<Ifv4Net>,
   total_received: u64,
   total_transmitted: u64,
   upload_speed: f32,
@@ -30,12 +30,12 @@ struct NetworkData {
 }
 
 /// Collect into a vector, so we can test if there's no IP, or to print them
-fn get_local_ips(network_name: &str) -> Vec<IpAddr> {
-  local_ip_address::list_afinet_netifas()
+fn get_local_ips(network_name: &str) -> Vec<Ifv4Net> {
+  getifs::interfaces()
     .unwrap()
     .into_iter()
-    .filter_map(|(name, ip)| (name == network_name).then_some(ip))
-    .collect()
+    .find_map(|interface| (interface.name() == network_name).then_some(interface.ipv4_addrs().unwrap().to_vec()))
+    .unwrap_or_default()
 }
 
 fn get_network_data(networks: &mut Networks, interface_regex: Regex, update_interval: u64) -> Option<NetworkData> {
@@ -127,7 +127,7 @@ pub fn network_component() -> Element {
             cur_data
               .local_ips
               .iter()
-              .filter_map(|ip| ip.is_ipv4().then_some(ip.to_string()))
+              .map(|ip| ip.addr().to_string())
               .join(" ")
               .to_string(),
           );
