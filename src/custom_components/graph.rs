@@ -2,10 +2,10 @@ use std::rc::Rc;
 use std::{any::Any, borrow::Cow};
 
 use circular_queue::CircularQueue;
-use freya::engine::prelude::{Paint, PaintStyle, Point};
 use freya::prelude::*;
 use freya_core::{element::ElementExt, tree::DiffModifies};
 use freya_engine::prelude::PathBuilder;
+use freya_engine::prelude::{Paint, PaintStyle, Point};
 
 static BORDER_WIDTH: f32 = 1.;
 

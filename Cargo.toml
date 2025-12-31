@@ -9,10 +9,10 @@ binary-heap-plus = "0.5.0"
 chrono = "0.4.41"
 circular-queue = "0.2.7"
 csscolorparser = "0.8.1"
-freya = { git = "https://github.com/marc2332/freya.git", features = ["engine"]  }
-freya-clipboard = { git = "https://github.com/marc2332/freya.git" }
-freya-core = { git = "https://github.com/marc2332/freya.git" }
-freya-engine = { git = "https://github.com/marc2332/freya.git" }
+freya = "0.4.0-alpha.8"
+freya-clipboard = "0.4.0-alpha.8"
+freya-core = "0.4.0-alpha.8"
+freya-engine = "0.4.0-alpha.8"
 futures-lite = "2.6.0"
 getifs = "0.4.0"
 heck = "0.5.0"
@@ -23,7 +23,7 @@ open = "5.3.2"
 phf = { version = "0.13.1", features = ["macros"] }
 public-ip = "0.2.2"
 regex = "1.11.1"
-reqwest = { version = "0.12.23", features = ["blocking"] }
+reqwest = { version = "0.13.1", features = ["blocking"] }
 serde = "1.0.219"
 serde_derive = "1.0.219"
 serde_json = { version = "1.0.143", features = ["float_roundtrip"] }
