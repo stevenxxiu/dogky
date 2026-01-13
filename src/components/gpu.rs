@@ -54,7 +54,7 @@ impl PartialEq for GpuComponent {
   }
 }
 
-impl Render for GpuComponent {
+impl Component for GpuComponent {
   fn render(&self) -> impl IntoElement {
     let config = use_consume::<GpuConfig>();
     let styles = use_consume::<GpuStyles>();

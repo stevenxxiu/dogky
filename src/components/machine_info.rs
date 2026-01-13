@@ -18,12 +18,12 @@ pub fn machine_info_component() -> Rect {
     rect()
       .direction(Direction::Horizontal)
       .children([
-        color_label(*styles.user_color, whoami::username()).into(),
+        color_label(*styles.user_color, whoami::username().unwrap()).into(),
         color_label(*styles.at_color, "@").into(),
-        color_label(*styles.host_color, whoami::fallible::hostname().unwrap()).into(),
+        color_label(*styles.host_color, whoami::hostname().unwrap()).into(),
       ])
       .into(),
-    color_label(*styles.distro_color, whoami::distro()).into(),
+    color_label(*styles.distro_color, whoami::distro().unwrap()).into(),
     cursor_area(CursorIcon::Copy)
       .child(
         color_label(*styles.kernel_version_color, kernel_version.clone())

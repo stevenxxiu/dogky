@@ -28,7 +28,7 @@ struct App {
   styles: StylesConfig,
 }
 
-impl Render for App {
+impl Component for App {
   fn render(&self) -> impl IntoElement {
     let global_styles = GlobalStyles {
       container_width: self.styles.width as f32 - self.styles.padding.left() - self.styles.padding.right(),
@@ -90,7 +90,7 @@ fn main() {
 
   launch(
     LaunchConfig::new().with_default_font(font).with_window(
-      WindowConfig::new(FpRender::from_render(App { styles }))
+      WindowConfig::new(AppComponent::new(App { styles }))
         .with_window_handle(move |_window| move_window::move_window(width).unwrap())
         .with_background(Color::TRANSPARENT)
         .with_window_attributes(|attributes, _| {

@@ -9,7 +9,7 @@ pub fn create_separator(height: f32) -> Separator {
   Separator { height }
 }
 
-impl Render for Separator {
+impl Component for Separator {
   fn render(&self) -> impl IntoElement {
     rect()
       .width(Size::percent(100.))
