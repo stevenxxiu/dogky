@@ -82,7 +82,7 @@ impl Render for GpuComponent {
 
     let flex_cont = flex_cont_factory(global_styles.h_gap);
     let horizontal_cont = horizontal_cont_factory(global_styles.h_gap);
-    let label_with_value = label_with_value_factory(*styles.usage_name_color, *styles.value_color);
+    let label_with_value = label_with_value_factory(Some(*styles.usage_name_color), *styles.value_color);
     let value_label = value_label_factory(*styles.value_color);
 
     rect().children([

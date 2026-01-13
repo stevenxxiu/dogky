@@ -364,7 +364,7 @@ pub fn cpu_memory_component() -> Rect {
   let value_color = styles.value_color;
   let flex_cont = flex_cont_factory(global_styles.h_gap);
   let value_label = value_label_factory(*value_color);
-  let label_with_value = label_with_value_factory(Color::default(), *value_color);
+  let label_with_value = label_with_value_factory(None::<Color>, *value_color);
 
   rect().children([
     flex_cont(vec![

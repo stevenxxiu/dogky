@@ -50,19 +50,23 @@ pub fn right_value_label<C: Into<Color>>(color: C, text: impl Into<Cow<'static, 
     .text(text)
 }
 
-pub fn label_with_value_factory<C1, C2, S>(label_color: C1, value_color: C2) -> impl Fn(S, String) -> Rect
+pub fn label_with_value_factory<C1, C2, S>(label_color: Option<C1>, value_color: C2) -> impl Fn(S, String) -> Rect
 where
   C1: Into<Color>,
+  C1: Copy,
   C2: Into<Color>,
   S: Into<Cow<'static, str>>,
 {
-  let label_color = label_color.into();
   let value_color = value_color.into();
   move |label_text: S, value: String| {
-    rect().width(Size::flex(1.)).direction(Direction::Horizontal).children([
-      label().color(label_color).text(label_text).into(),
-      right_value_label(value_color, value).into(),
-    ])
+    let mut left_label = label().text(label_text);
+    if let Some(label_color) = &label_color {
+      left_label = left_label.color((*label_color).into());
+    }
+    rect()
+      .width(Size::flex(1.))
+      .direction(Direction::Horizontal)
+      .children([left_label.into(), right_value_label(value_color, value).into()])
   }
 }
 

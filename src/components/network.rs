@@ -149,7 +149,7 @@ pub fn network_component() -> Element {
   });
 
   let flex_cont = flex_cont_factory(global_styles.h_gap);
-  let label_with_value = label_with_value_factory(*styles.name_color, *styles.value_color);
+  let label_with_value = label_with_value_factory(Some(*styles.name_color), *styles.value_color);
 
   if data.read().local_ips.is_empty() {
     color_label(*styles.name_color, "Disconnected").into()
