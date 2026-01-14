@@ -15,21 +15,21 @@ fn horizontal_cont(h_gap: f32) -> Rect {
 
 pub fn horizontal_cont_factory<V>(h_gap: f32) -> impl Fn(V) -> Rect
 where
-  V: Into<Vec<Element>>,
+  V: IntoIterator<Item = Element>,
 {
   move |children: V| horizontal_cont(h_gap).children(children)
 }
 
 pub fn center_cont_factory<V>(h_gap: f32) -> impl Fn(V) -> Rect
 where
-  V: Into<Vec<Element>>,
+  V: IntoIterator<Item = Element>,
 {
   move |children: V| horizontal_cont(h_gap).main_align(Alignment::Center).children(children)
 }
 
 pub fn flex_cont_factory<V>(h_gap: f32) -> impl Fn(V) -> Rect
 where
-  V: Into<Vec<Element>>,
+  V: IntoIterator<Item = Element>,
 {
   move |children: V| horizontal_cont(h_gap).content(Content::Flex).children(children)
 }
