@@ -235,7 +235,7 @@ fn process_table_row(
     .children([
       label()
         .width(Size::flex(1.))
-        .text_overflow(TextOverflow::Custom("…".to_string()))
+        .text_overflow(TextOverflow::Ellipsis)
         .text(cmd.to_string())
         .into(),
       value_label(widths[0], pid).into(),
