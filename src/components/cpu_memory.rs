@@ -26,7 +26,7 @@ use crate::freya_utils::{
 };
 use crate::serde_structs::SerdeCommand;
 use crate::styles_config::{CpuMemoryStyles, GlobalStyles};
-use crate::utils::{self, format_used, MEMORY_DECIMAL_PLACES};
+use crate::utils::{self, MEMORY_DECIMAL_PLACES, format_used};
 
 #[derive(Default, Clone, Debug)]
 struct CpuData {

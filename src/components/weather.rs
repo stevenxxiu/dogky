@@ -10,7 +10,7 @@ use heck::ToTitleCase;
 
 use phf::phf_map;
 
-use crate::api::{get_weather, WeatherData};
+use crate::api::{WeatherData, get_weather};
 use crate::config::WeatherConfig;
 use crate::freya_utils::{center_cont_factory, color_label, cursor_area, emoji_label, value_label_factory};
 use crate::path::get_xdg_dirs;
@@ -111,11 +111,13 @@ pub fn weather_component() -> CursorArea {
         open::that(format!("https://openweathermap.org/city/{0}#weather-widget", city_id)).unwrap();
       })
       .children(if has_err() || data.read().weather.is_empty() {
-        vec![center_cont(vec![
-          label().text("Weather:").into(),
-          label().text(error_str.read().to_string()).into(),
-        ])
-        .into()]
+        vec![
+          center_cont(vec![
+            label().text("Weather:").into(),
+            label().text(error_str.read().to_string()).into(),
+          ])
+          .into(),
+        ]
       } else {
         vec![
           center_cont(vec![

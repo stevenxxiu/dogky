@@ -8,7 +8,7 @@ use winit::platform::wayland::WindowAttributesExtWayland as _;
 use winit::window::WindowLevel;
 
 use components::{
-  cpu_memory_component, disk_component, machine_info_component, network_component, weather_component, GpuComponent,
+  GpuComponent, cpu_memory_component, disk_component, machine_info_component, network_component, weather_component,
 };
 use custom_components::create_separator;
 
