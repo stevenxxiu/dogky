@@ -368,7 +368,7 @@ pub fn cpu_memory_component() -> Rect {
 
   rect().children([
     flex_cont(vec![
-      label().text("CPU").into(),
+      "CPU".into(),
       cursor_area(CursorIcon::Copy)
         .child(value_label(cpu_model.clone()).on_mouse_down(move |_| Clipboard::set(cpu_model.clone()).unwrap()))
         .into(),
@@ -399,7 +399,7 @@ pub fn cpu_memory_component() -> Rect {
       .direction(Direction::Horizontal)
       .main_align(Alignment::SpaceBetween)
       .children([
-        label().text("Memory").into(),
+        "Memory".into(),
         value_label(format!("{: >8}", memory_frequency)).into(),
         value_label(format!(
           "{: >28}",
@@ -412,7 +412,7 @@ pub fn cpu_memory_component() -> Rect {
       .width(Size::percent(100.))
       .direction(Direction::Horizontal)
       .children([
-        label().text("Swap").into(),
+        "Swap".into(),
         right_value_label(*value_color, format_used(memory_data.read().swap_usage, swap_total)).into(),
       ])
       .into(),

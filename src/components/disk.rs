@@ -109,7 +109,7 @@ pub fn disk_component() -> Rect {
 
   rect().children([
     horizontal_cont(vec![
-      label().text("Disk").into(),
+      "Disk".into(),
       cursor_area(CursorIcon::Copy)
         .child(
           color_label(*styles.name_color, model.clone()).on_mouse_down(move |_| Clipboard::set(model.clone()).unwrap()),

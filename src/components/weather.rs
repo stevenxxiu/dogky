@@ -111,28 +111,22 @@ pub fn weather_component() -> CursorArea {
         open::that(format!("https://openweathermap.org/city/{0}#weather-widget", city_id)).unwrap();
       })
       .children(if has_err() || data.read().weather.is_empty() {
-        vec![
-          center_cont(vec![
-            label().text("Weather:").into(),
-            label().text(error_str.read().to_string()).into(),
-          ])
-          .into(),
-        ]
+        vec![center_cont(vec!["Weather:".into(), error_str.read().to_string().into()]).into()]
       } else {
         vec![
           center_cont(vec![
             emoji_label(cond_icon.read().to_string())
               .font_size(styles.cond_icon_size)
               .into(),
-            label().text(data.read().weather[0].description.to_title_case()).into(),
+            data.read().weather[0].description.to_title_case().into(),
             value_label(format!("{:.0}°C", data.read().main.temp)).into(),
           ])
           .cross_align(Alignment::Center)
           .into(),
           center_cont(vec![
-            label().text("Humidity").into(),
+            "Humidity".into(),
             value_label(format!("{}%", data.read().main.humidity)).into(),
-            label().text("Wind").into(),
+            "Wind".into(),
             value_label(format!("{:.1} m/s", data.read().wind.speed)).into(),
             rect()
               .margin(*styles.wind_arrow_margin)

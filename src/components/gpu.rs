@@ -87,7 +87,7 @@ impl Component for GpuComponent {
 
     rect().children([
       horizontal_cont(vec![
-        label().text("GPU").into(),
+        "GPU".into(),
         cursor_area(CursorIcon::Copy)
           .child(
             color_label(*styles.name_color, model.clone())
