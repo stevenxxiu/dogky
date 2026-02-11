@@ -24,11 +24,11 @@ mod serde_structs;
 mod styles_config;
 mod utils;
 
-struct App {
+struct DogkyApp {
   styles: StylesConfig,
 }
 
-impl Component for App {
+impl App for DogkyApp {
   fn render(&self) -> impl IntoElement {
     let global_styles = GlobalStyles {
       container_width: self.styles.width as f32 - self.styles.padding.left() - self.styles.padding.right(),
@@ -90,7 +90,7 @@ fn main() {
 
   launch(
     LaunchConfig::new().with_default_font(font).with_window(
-      WindowConfig::new(AppComponent::new(App { styles }))
+      WindowConfig::new_app(DogkyApp { styles })
         .with_window_handle(move |_window| move_window::move_window(width).unwrap())
         .with_background(Color::TRANSPARENT)
         .with_window_attributes(|attributes, _| {
