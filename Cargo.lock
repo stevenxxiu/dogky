@@ -168,7 +168,7 @@ dependencies = [
  "cc",
  "cesu8",
  "jni 0.21.1",
- "jni-sys",
+ "jni-sys 0.3.0",
  "libc",
  "log",
  "ndk",
@@ -1502,9 +1502,9 @@ dependencies = [
 
 [[package]]
 name = "freya"
-version = "0.4.0-rc.17"
+version = "0.4.0-rc.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36b3ec3784badf63fff4319f936a6440dd52caba0a427b14af72a508f8369031"
+checksum = "5a31316300f3df3ea123fb5e68712e8fde8123b0df56d89d3c30811ac1d94020"
 dependencies = [
  "cfg-if",
  "freya-android",
@@ -1521,23 +1521,23 @@ dependencies = [
 
 [[package]]
 name = "freya-android"
-version = "0.4.0-rc.17"
+version = "0.4.0-rc.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e2ed37c81f42c40b04a13dda16a95d110a1133f1ae90c8869bdbeea896ddeae5"
+checksum = "d5f05bc781aa945f3390dadef7091f3b20fcb2ebfe4f1354aead3b3f13769088"
 dependencies = [
  "freya-components",
  "freya-core",
  "freya-winit",
- "jni 0.19.0",
+ "jni 0.22.4",
  "tracing",
  "winit",
 ]
 
 [[package]]
 name = "freya-animation"
-version = "0.4.0-rc.17"
+version = "0.4.0-rc.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a129bb2f1986f7c2ee3d5ef4b5b096555a45604450d251f02bc655733fa5f308"
+checksum = "1a18ef8bc5a7c4d26ad01088cbcc55c622133b8acc613480982614881233a666"
 dependencies = [
  "async-io",
  "easer",
@@ -1546,9 +1546,9 @@ dependencies = [
 
 [[package]]
 name = "freya-clipboard"
-version = "0.4.0-rc.17"
+version = "0.4.0-rc.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc318a19323c65df433cc54a49dbd8093ce718ff15893c339d9ab763ff0db645"
+checksum = "29de9d6b14bb3b60f73147503930819d2d910e7b2fe659e603ff5e639087e500"
 dependencies = [
  "copypasta",
  "freya-core",
@@ -1556,9 +1556,9 @@ dependencies = [
 
 [[package]]
 name = "freya-components"
-version = "0.4.0-rc.17"
+version = "0.4.0-rc.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "997e73a3ef99782f9ae8f780e9322c90c1cbb3b4f5000d28fb7578385fd1e67c"
+checksum = "6c8f4f8fd7f10abd82b812c306ae6c02f8efd6049bfa01112b5c6328498b6743"
 dependencies = [
  "accesskit",
  "anyhow",
@@ -1579,9 +1579,9 @@ dependencies = [
 
 [[package]]
 name = "freya-core"
-version = "0.4.0-rc.17"
+version = "0.4.0-rc.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "279b108c282bb2cf10e03d3cddbdf48034b378c0f258956fa14ea60be73fd3cf"
+checksum = "a68af6fb30b8316386634d65cbd5719e17ac87f6e2b7f1b12b5ad38a1c6b0180"
 dependencies = [
  "accesskit",
  "async-broadcast",
@@ -1607,9 +1607,9 @@ dependencies = [
 
 [[package]]
 name = "freya-edit"
-version = "0.4.0-rc.17"
+version = "0.4.0-rc.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "301c09e26ab9431592153fea1a6903652af0135a8ba77c91194d5bdd870a7e3a"
+checksum = "b20b7bd960ea94603ece0cf5706dd4c8d4a845dbd4b85f98b98353eb15fb3225"
 dependencies = [
  "bitflags 2.11.0",
  "freya-clipboard",
@@ -1622,9 +1622,9 @@ dependencies = [
 
 [[package]]
 name = "freya-engine"
-version = "0.4.0-rc.17"
+version = "0.4.0-rc.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f83589246c3374ca3735d7d95f8f6e21d1081feeb57f1a9beb99a0db6fecc77f"
+checksum = "0152c7a05272738884df837b914659cb28685f5504097016ee7e498cd72c4217"
 dependencies = [
  "bitflags 2.11.0",
  "freya-skia-safe",
@@ -1632,9 +1632,9 @@ dependencies = [
 
 [[package]]
 name = "freya-performance-plugin"
-version = "0.4.0-rc.17"
+version = "0.4.0-rc.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "82c24c683606e88c1a78f123dcc5ffde5e6d6c6c85f93d9ba87335d69ce9bf9f"
+checksum = "e2f32c234365acde800a4d3b3d2b6dd21958d82dba23e1a11fb60163422560b6"
 dependencies = [
  "freya-core",
  "freya-engine",
@@ -1643,9 +1643,9 @@ dependencies = [
 
 [[package]]
 name = "freya-sdk"
-version = "0.4.0-rc.17"
+version = "0.4.0-rc.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "30d40455c04fe048d7a25b231e432c41457a1fed0234220147133d5e5cdb55dc"
+checksum = "490ab2c91f7764e41e8f59168a9431403f540596ab74e28526e850a8df0cf29c"
 dependencies = [
  "async-io",
  "freya-core",
@@ -1695,9 +1695,9 @@ dependencies = [
 
 [[package]]
 name = "freya-winit"
-version = "0.4.0-rc.17"
+version = "0.4.0-rc.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34e427ffaae975aadb19e168971bc68acb95379153381e6e2865273605e7231a"
+checksum = "2988483e893c74e7fe8d71a50bb1a0f40f9d61a9bea21d08bdba3e823ff45c00"
 dependencies = [
  "accesskit",
  "accesskit_winit",
@@ -2280,7 +2280,7 @@ dependencies = [
  "libc",
  "percent-encoding",
  "pin-project-lite",
- "socket2 0.5.10",
+ "socket2 0.6.3",
  "system-configuration",
  "tokio",
  "tower-service",
@@ -2581,20 +2581,6 @@ checksum = "92ecc6618181def0457392ccd0ee51198e065e016d1d527a7ac1b6dc7c1f09d2"
 
 [[package]]
 name = "jni"
-version = "0.19.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c6df18c2e3db7e453d3c6ac5b3e9d5182664d28788126d39b91f2d1e22b017ec"
-dependencies = [
- "cesu8",
- "combine",
- "jni-sys",
- "log",
- "thiserror 1.0.69",
- "walkdir",
-]
-
-[[package]]
-name = "jni"
 version = "0.21.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1a87aa2bb7d2af34197c04845522473242e1aa17c12f4935d5856491a7fb8c97"
@@ -2602,7 +2588,7 @@ dependencies = [
  "cesu8",
  "cfg-if",
  "combine",
- "jni-sys",
+ "jni-sys 0.3.0",
  "log",
  "thiserror 1.0.69",
  "walkdir",
@@ -2610,10 +2596,59 @@ dependencies = [
 ]
 
 [[package]]
+name = "jni"
+version = "0.22.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5efd9a482cf3a427f00d6b35f14332adc7902ce91efb778580e180ff90fa3498"
+dependencies = [
+ "cfg-if",
+ "combine",
+ "jni-macros",
+ "jni-sys 0.4.1",
+ "log",
+ "simd_cesu8",
+ "thiserror 2.0.18",
+ "walkdir",
+ "windows-link",
+]
+
+[[package]]
+name = "jni-macros"
+version = "0.22.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a00109accc170f0bdb141fed3e393c565b6f5e072365c3bd58f5b062591560a3"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "rustc_version",
+ "simd_cesu8",
+ "syn 2.0.117",
+]
+
+[[package]]
 name = "jni-sys"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8eaf4bc02d17cbdd7ff4c7438cafcdf7fb9a4613313ad11b4f8fefe7d3fa0130"
+
+[[package]]
+name = "jni-sys"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c6377a88cb3910bee9b0fa88d4f42e1d2da8e79915598f65fb0c7ee14c878af2"
+dependencies = [
+ "jni-sys-macros",
+]
+
+[[package]]
+name = "jni-sys-macros"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "38c0b942f458fe50cdac086d2f946512305e5631e720728f2a61aabcd47a6264"
+dependencies = [
+ "quote",
+ "syn 2.0.117",
+]
 
 [[package]]
 name = "jobserver"
@@ -2896,7 +2931,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c3f42e7bbe13d351b6bead8286a43aac9534b82bd3cc43e47037f012ebfd62d4"
 dependencies = [
  "bitflags 2.11.0",
- "jni-sys",
+ "jni-sys 0.3.0",
  "log",
  "ndk-sys",
  "num_enum",
@@ -2916,7 +2951,7 @@ version = "0.6.0+11769913"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ee6cda3051665f1fb8d9e08fc35c96d5a244fb1be711a03b71118828afc9a873"
 dependencies = [
- "jni-sys",
+ "jni-sys 0.3.0",
 ]
 
 [[package]]
@@ -3554,9 +3589,9 @@ checksum = "df94ce210e5bc13cb6651479fa48d14f601d9858cfe0467f43ae157023b938d3"
 
 [[package]]
 name = "pathgraph"
-version = "0.4.0-rc.17"
+version = "0.4.0-rc.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95011a0d8aaabf54c4d96074db5bd45761d39bab1d4b39f2c98e625c45d9dfbc"
+checksum = "ab234e66c8f450e130110094e89575022085f2d32b6b2543ad18010be4a27b15"
 
 [[package]]
 name = "percent-encoding"
@@ -3853,7 +3888,7 @@ dependencies = [
  "quinn-udp",
  "rustc-hash",
  "rustls",
- "socket2 0.5.10",
+ "socket2 0.6.3",
  "thiserror 2.0.18",
  "tokio",
  "tracing",
@@ -3891,7 +3926,7 @@ dependencies = [
  "cfg_aliases",
  "libc",
  "once_cell",
- "socket2 0.5.10",
+ "socket2 0.6.3",
  "tracing",
  "windows-sys 0.60.2",
 ]
@@ -3923,9 +3958,9 @@ dependencies = [
 
 [[package]]
 name = "ragnarok"
-version = "0.4.0-rc.17"
+version = "0.4.0-rc.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "539aa141c95a642c88ac0f9154f90992128bc07e4cc8441626c7e462ba9d4e66"
+checksum = "13d973d14639e9dc7fd86bce162175423a0258d130e5236ac78c0d21bfb3a798"
 dependencies = [
  "euclid",
  "hotpath",
@@ -4288,6 +4323,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "357703d41365b4b27c590e3ed91eabb1b663f07c4c084095e60cbed4362dff0d"
 
 [[package]]
+name = "rustc_version"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cfcb3a22ef46e85b45de6ee7e79d063319ebb6594faafcf1c225ea92ab6e9b92"
+dependencies = [
+ "semver",
+]
+
+[[package]]
 name = "rustix"
 version = "0.38.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4571,6 +4615,16 @@ name = "simd-adler32"
 version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e320a6c5ad31d271ad523dcf3ad13e2767ad8b1cb8f047f75a8aeaf8da139da2"
+
+[[package]]
+name = "simd_cesu8"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "94f90157bb87cddf702797c5dadfa0be7d266cdf49e22da2fcaa32eff75b2c33"
+dependencies = [
+ "rustc_version",
+ "simdutf8",
+]
 
 [[package]]
 name = "simd_helpers"
@@ -5020,9 +5074,9 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "tokio"
-version = "1.51.0"
+version = "1.51.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2bd1c4c0fc4a7ab90fc15ef6daaa3ec3b893f004f915f2392557ed23237820cd"
+checksum = "f66bf9585cda4b724d3e78ab34b73fb2bbaba9011b9bfdf69dc836382ea13b8c"
 dependencies = [
  "bytes",
  "libc",
@@ -5129,9 +5183,9 @@ checksum = "ab16f14aed21ee8bfd8ec22513f7287cd4a91aa92e44edfe2c17ddd004e92607"
 
 [[package]]
 name = "torin"
-version = "0.4.0-rc.17"
+version = "0.4.0-rc.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "82b512bf15fdbaa245108ecc5623f2321e03a285ea6699d22cf3862ac2a5e582"
+checksum = "8cb81ce7a31bc7dbac50ca60814439358d3c1106ca5a3d54d2494cf795a64844"
 dependencies = [
  "euclid",
  "itertools 0.14.0",
