@@ -4,7 +4,6 @@ use freya::prelude::*;
 use nvml_wrapper::Nvml;
 use styles_config::{GlobalStyles, StylesConfig};
 use velcro::vec;
-use winit::platform::wayland::WindowAttributesExtWayland as _;
 use winit::window::WindowLevel;
 
 use components::{
@@ -92,16 +91,13 @@ fn main() {
     LaunchConfig::new().with_default_font(font).with_window(
       WindowConfig::new_app(DogkyApp { styles })
         .with_window_handle(move |_window| move_window::move_window(width).unwrap())
+        .with_app_id("dogky")
         .with_title("Dogky")
         .with_resizable(false)
         .with_decorations(false)
         .with_transparency(true)
         .with_background(Color::TRANSPARENT)
-        .with_window_attributes(|attributes, _| {
-          attributes
-            .with_name("dogky", "")
-            .with_window_level(WindowLevel::AlwaysOnBottom)
-        }),
+        .with_window_attributes(|attributes, _| attributes.with_window_level(WindowLevel::AlwaysOnBottom)),
     ),
   );
 }
