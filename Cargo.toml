@@ -39,6 +39,7 @@ winit = "0.30.13"
 xdg = "3.0.0"
 
 [profile.release]
+opt-level = "z"
 strip = true
 lto = true
 codegen-units = 1
