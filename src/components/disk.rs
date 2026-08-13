@@ -116,8 +116,7 @@ pub fn disk_component() -> Rect {
         )
         .into(),
       right_value_label(*styles.value_color, format!("{:.0}°C", data.read().temperature)).into(),
-    ])
-    .into(),
+    ]),
     horizontal_cont(vec![
       color_label(*styles.name_color, file_system_name).into(),
       right_value_label(
@@ -129,22 +128,22 @@ pub fn disk_component() -> Rect {
         ),
       )
       .into(),
+    ]),
+    flex_cont(vec![
+      value_label(format_size(total_space, DISK_DECIMAL_PLACES)).into_element(),
     ])
-    .into(),
-    flex_cont(vec![value_label(format_size(total_space, DISK_DECIMAL_PLACES)).into()])
-      .cross_align(Alignment::Center)
-      .child(
-        rect()
-          .width(Size::flex(1.))
-          .height(Size::px(styles.bar_height))
-          .border(border_fill_width(*styles.bar_border_color, styles.bar_border_width))
-          .child(
-            rect()
-              .width(Size::percent(used_space() as f32 / total_space as f32 * 100.))
-              .height(Size::percent(100.))
-              .background(*styles.bar_fill_color),
-          ),
-      )
-      .into(),
+    .cross_align(Alignment::Center)
+    .child(
+      rect()
+        .width(Size::flex(1.))
+        .height(Size::px(styles.bar_height))
+        .border(border_fill_width(*styles.bar_border_color, styles.bar_border_width))
+        .child(
+          rect()
+            .width(Size::percent(used_space() as f32 / total_space as f32 * 100.))
+            .height(Size::percent(100.))
+            .background(*styles.bar_fill_color),
+        ),
+    ),
   ])
 }

@@ -20,6 +20,7 @@ impl Deref for SerdeGaps {
 /// - `top_and_bottom left_and_right`
 /// - `top left_and_right bottom`
 /// - `top right bottom left`
+///
 /// Parse a string with space separated values.
 /// - `all_sides`
 /// - `top_and_bottom left_and_right`
@@ -67,8 +68,8 @@ impl<'de> Deserialize<'de> for SerdeGaps {
   where
     D: Deserializer<'de>,
   {
-    let s: &str = Deserialize::deserialize(deserializer)?;
-    match parse_gaps(s) {
+    let s: String = Deserialize::deserialize(deserializer)?;
+    match parse_gaps(&s) {
       Ok(gaps) => Ok(SerdeGaps(gaps)),
       Err(err) => Err(serde::de::Error::custom(err.to_string())),
     }

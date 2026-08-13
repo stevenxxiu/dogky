@@ -223,7 +223,7 @@ fn process_table_row(
   pid: &str,
   cpu: &str,
   memory: &str,
-  color: impl Into<Color>,
+  color: impl Into<Fill>,
   align: TextAlign,
   widths: [f32; 3],
 ) -> Rect {
@@ -236,11 +236,10 @@ fn process_table_row(
       label()
         .width(Size::flex(1.))
         .text_overflow(TextOverflow::Ellipsis)
-        .text(cmd.to_string())
-        .into(),
-      value_label(widths[0], pid).into(),
-      value_label(widths[1], cpu).into(),
-      value_label(widths[2], memory).into(),
+        .text(cmd.to_string()),
+      value_label(widths[0], pid),
+      value_label(widths[1], cpu),
+      value_label(widths[2], memory),
     ])
 }
 
@@ -284,11 +283,11 @@ fn process_table_component(processes: ProcessesData, num_cpus: usize, top_comman
         Command::new(&binary[0]).args(args).status().unwrap();
       })
       .children(vec![
-        process_table_row("Command", "PID", "CPU%", "MEM", *header_color, TextAlign::Right, widths).into(),
-        process_table_row("", "", "🞃", "", *sort_cpu_color, TextAlign::Right, widths).into(),
-        ..processes.top_cpu.iter().map(|p| create_data_row(p, true).into()),
-        process_table_row("", "", "", "🞃", *sort_memory_color, TextAlign::Right, widths).into(),
-        ..processes.top_memory.iter().map(|p| create_data_row(p, false).into()),
+        process_table_row("Command", "PID", "CPU%", "MEM", *header_color, TextAlign::Right, widths),
+        process_table_row("", "", "🞃", "", *sort_cpu_color, TextAlign::Right, widths),
+        ..processes.top_cpu.iter().map(|p| create_data_row(p, true)),
+        process_table_row("", "", "", "🞃", *sort_memory_color, TextAlign::Right, widths),
+        ..processes.top_memory.iter().map(|p| create_data_row(p, false)),
       ]),
   )
 }
@@ -374,12 +373,12 @@ pub fn cpu_memory_component() -> Rect {
         .into(),
       right_value_label(*value_color, format!("{}°C", cpu_data.read().temperature)).into(),
     ])
-    .into(),
+    .into_element(),
     flex_cont(vec![
       label_with_value("Frequency", format!("{:.2} GHz", cpu_data.read().frequency)).into(),
       label_with_value("Usage", format!("{:.1}%", cpu_data.read().usage)).into(),
     ])
-    .into(),
+    .into_element(),
     flex_cont(vec![
       label_with_value("Uptime", utils::format_duration(uptime())).into(),
       label_with_value(
@@ -392,40 +391,40 @@ pub fn cpu_memory_component() -> Rect {
       )
       .into(),
     ])
-    .into(),
-    cpu_bars_component(cpu_performant_range, &cpu_data.read().core_usage).into(),
+    .into_element(),
+    cpu_bars_component(cpu_performant_range, &cpu_data.read().core_usage).into_element(),
     rect()
       .width(Size::percent(100.))
       .direction(Direction::Horizontal)
       .main_align(Alignment::SpaceBetween)
       .children([
-        "Memory".into(),
-        value_label(format!("{: >8}", memory_frequency)).into(),
+        "Memory".into_element(),
+        value_label(format!("{: >8}", memory_frequency)).into_element(),
         value_label(format!(
           "{: >28}",
           format_used(memory_data.read().memory_usage, memory_total)
         ))
-        .into(),
+        .into_element(),
       ])
-      .into(),
+      .into_element(),
     rect()
       .width(Size::percent(100.))
       .direction(Direction::Horizontal)
       .children([
-        "Swap".into(),
-        right_value_label(*value_color, format_used(memory_data.read().swap_usage, swap_total)).into(),
+        "Swap".into_element(),
+        right_value_label(*value_color, format_used(memory_data.read().swap_usage, swap_total)).into_element(),
       ])
-      .into(),
+      .into_element(),
     cpu_graphs_component(
       (*cpu_hist.read()).clone(),
       [(*memory_hist.read()).clone(), (*swap_hist.read()).clone()],
     )
-    .into(),
+    .into_element(),
     process_table_component(
       (*processes_data.read()).clone(),
       num_cpus,
       config.process_list.top_command,
     )
-    .into(),
+    .into_element(),
   ])
 }

@@ -99,20 +99,17 @@ impl Component for GpuComponent {
           format!("{:.0}°C/{:.0}°C", data.read().temperature, temperature_threshold),
         )
         .into(),
-      ])
-      .into(),
+      ]),
       flex_cont(vec![
         label_with_value("Usage", format!("{}%", data.read().utilization_rates)).into(),
         label_with_value("Frequency", format!("{} MHz", data.read().gpu_frequency)).into(),
-      ])
-      .into(),
+      ]),
       horizontal_cont(vec![
         color_label(*styles.usage_name_color, "Memory").into(),
         value_label(format!("{: >4} MHz", data.read().memory_frequency)).into(),
         value_label(format_used(data.read().memory_used, memory_total)).into(),
       ])
-      .main_align(Alignment::SpaceBetween)
-      .into(),
+      .main_align(Alignment::SpaceBetween),
     ])
   }
 }

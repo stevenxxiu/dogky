@@ -42,7 +42,7 @@ where
   move |text: S| label().color(color).text(text)
 }
 
-pub fn right_value_label<C: Into<Color>>(color: C, text: impl Into<Cow<'static, str>>) -> Label {
+pub fn right_value_label<C: Into<Fill>>(color: C, text: impl Into<Cow<'static, str>>) -> Label {
   label()
     .width(Size::flex(1.))
     .text_align(TextAlign::Right)
@@ -66,11 +66,11 @@ where
     rect()
       .width(Size::flex(1.))
       .direction(Direction::Horizontal)
-      .children([left_label.into(), right_value_label(value_color, value).into()])
+      .children([left_label, right_value_label(value_color, value)])
   }
 }
 
-pub fn color_label(color: impl Into<Color>, text: impl Into<Cow<'static, str>>) -> Label {
+pub fn color_label(color: impl Into<Fill>, text: impl Into<Cow<'static, str>>) -> Label {
   label().color(color).text(text)
 }
 

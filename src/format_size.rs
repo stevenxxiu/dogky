@@ -14,7 +14,7 @@ const POW_INC: u8 = 10u8;
 
 pub fn format_size(size: u64, decimal_places: usize) -> String {
   let power = (size as f32).log2() / POW_INC as f32;
-  let power_index = (power as usize).max(0).min(SIZE_UNITS.len() - 1);
+  let power_index = (power as usize).min(SIZE_UNITS.len() - 1);
   if power_index == 0 {
     return format!("{} B", size);
   }
@@ -30,7 +30,7 @@ pub fn format_size(size: u64, decimal_places: usize) -> String {
 
 pub fn format_speed(speed: f32, decimal_places: usize) -> String {
   let power = speed.log2() / POW_INC as f32;
-  let power_index = (power as usize).max(0).min(SIZE_UNITS.len() - 1);
+  let power_index = (power as usize).min(SIZE_UNITS.len() - 1);
   let (unit, base) = SIZE_UNITS[power_index];
   let significand = speed / 2f32.powi(base);
   format!(

@@ -111,7 +111,10 @@ pub fn weather_component() -> CursorArea {
         open::that(format!("https://openweathermap.org/city/{0}#weather-widget", city_id)).unwrap();
       })
       .children(if has_err() || data.read().weather.is_empty() {
-        vec![center_cont(vec!["Weather:".into(), error_str.read().to_string().into()]).into()]
+        vec![center_cont(vec![
+          "Weather:".into(),
+          error_str.read().to_string().into(),
+        ])]
       } else {
         vec![
           center_cont(vec![
@@ -121,8 +124,7 @@ pub fn weather_component() -> CursorArea {
             data.read().weather[0].description.to_title_case().into(),
             value_label(format!("{:.0}°C", data.read().main.temp)).into(),
           ])
-          .cross_align(Alignment::Center)
-          .into(),
+          .cross_align(Alignment::Center),
           center_cont(vec![
             "Humidity".into(),
             value_label(format!("{}%", data.read().main.humidity)).into(),
@@ -134,15 +136,13 @@ pub fn weather_component() -> CursorArea {
               // The wind degrees character used is `⮕`, which is at 90°.
               .rotate(data.read().wind.deg - 90.)
               .into(),
-          ])
-          .into(),
+          ]),
           center_cont(vec![
             emoji_label("☀️").into(),
             value_label(format_sun_timestamp(data.read().sys.sunrise, timezone)).into(),
             emoji_label("🌙").into(),
             value_label(format_sun_timestamp(data.read().sys.sunset, timezone)).into(),
-          ])
-          .into(),
+          ]),
         ]
       }),
   )

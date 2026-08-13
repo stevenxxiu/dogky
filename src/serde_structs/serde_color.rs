@@ -20,7 +20,7 @@ impl<'de> Deserialize<'de> for SerdeColor {
   where
     D: Deserializer<'de>,
   {
-    let s: &str = Deserialize::deserialize(deserializer)?;
+    let s: String = Deserialize::deserialize(deserializer)?;
     match s.parse::<CssColor>() {
       Ok(color) => Ok(SerdeColor(Color::from_argb(
         (color.a * 255.) as u8,
