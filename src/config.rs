@@ -73,6 +73,6 @@ pub struct DogkyConfig {
 pub fn load_config() -> Result<DogkyConfig, Box<dyn Error>> {
   let config_path = get_xdg_dirs().place_config_file("dogky.yaml")?;
   let config_file = File::open(config_path)?;
-  let config: DogkyConfig = serde_yml::from_reader(config_file)?;
+  let config: DogkyConfig = noyalib::from_reader(config_file)?;
   Ok(config)
 }

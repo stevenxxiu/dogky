@@ -116,7 +116,7 @@ pub struct StylesConfig {
 pub fn load_config() -> Result<StylesConfig, Box<dyn Error>> {
   let config_path = get_xdg_dirs().place_config_file("styles.yaml")?;
   let config_file = File::open(config_path)?;
-  let config_styles: StylesConfig = serde_yml::from_reader(config_file)?;
+  let config_styles: StylesConfig = noyalib::from_reader(config_file)?;
   Ok(config_styles)
 }
 
