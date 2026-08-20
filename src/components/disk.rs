@@ -15,8 +15,7 @@ use sysinfo::{Disk, DiskRefreshKind, Disks};
 use crate::config::DiskConfig;
 use crate::format_size::format_size;
 use crate::freya_utils::{
-  border_fill_width, color_label, cursor_area, flex_cont_factory, horizontal_cont_factory, right_value_label,
-  value_label_factory,
+  border_fill_width, color_label, cursor_area, flex_cont, horizontal_cont, right_value_label, value_label_factory,
 };
 use crate::styles_config::{DiskStyles, GlobalStyles};
 
@@ -103,13 +102,13 @@ pub fn disk_component() -> Rect {
     })
   });
 
-  let horizontal_cont = horizontal_cont_factory(global_styles.h_gap);
-  let flex_cont = flex_cont_factory(global_styles.h_gap);
+  let horizontal_cont = horizontal_cont(global_styles.h_gap);
+  let flex_cont = flex_cont(global_styles.h_gap);
   let value_label = value_label_factory(*styles.value_color);
 
   rect().children([
-    horizontal_cont(vec![
-      "Disk".into(),
+    horizontal_cont.children([
+      "Disk".into_element(),
       cursor_area(CursorIcon::Copy)
         .child(
           color_label(*styles.name_color, model.clone()).on_mouse_down(move |_| Clipboard::set(model.clone()).unwrap()),
@@ -117,8 +116,8 @@ pub fn disk_component() -> Rect {
         .into(),
       right_value_label(*styles.value_color, format!("{:.0}°C", data.read().temperature)).into(),
     ]),
-    horizontal_cont(vec![
-      color_label(*styles.name_color, file_system_name).into(),
+    horizontal_cont.children([
+      color_label(*styles.name_color, file_system_name).into_element(),
       right_value_label(
         *styles.value_color,
         format!(
@@ -129,21 +128,20 @@ pub fn disk_component() -> Rect {
       )
       .into(),
     ]),
-    flex_cont(vec![
-      value_label(format_size(total_space, DISK_DECIMAL_PLACES)).into_element(),
-    ])
-    .cross_align(Alignment::Center)
-    .child(
-      rect()
-        .width(Size::flex(1.))
-        .height(Size::px(styles.bar_height))
-        .border(border_fill_width(*styles.bar_border_color, styles.bar_border_width))
-        .child(
-          rect()
-            .width(Size::percent(used_space() as f32 / total_space as f32 * 100.))
-            .height(Size::percent(100.))
-            .background(*styles.bar_fill_color),
-        ),
-    ),
+    flex_cont
+      .children([value_label(format_size(total_space, DISK_DECIMAL_PLACES))])
+      .cross_align(Alignment::Center)
+      .child(
+        rect()
+          .width(Size::flex(1.))
+          .height(Size::px(styles.bar_height))
+          .border(border_fill_width(*styles.bar_border_color, styles.bar_border_width))
+          .child(
+            rect()
+              .width(Size::percent(used_space() as f32 / total_space as f32 * 100.))
+              .height(Size::percent(100.))
+              .background(*styles.bar_fill_color),
+          ),
+      ),
   ])
 }

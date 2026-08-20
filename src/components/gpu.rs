@@ -11,7 +11,7 @@ use nvml_wrapper::{Device, Nvml};
 
 use crate::config::GpuConfig;
 use crate::freya_utils::{
-  color_label, cursor_area, flex_cont_factory, horizontal_cont_factory, label_with_value_factory, right_value_label,
+  color_label, cursor_area, flex_cont, horizontal_cont, label_with_value_factory, right_value_label,
   value_label_factory,
 };
 use crate::styles_config::{GlobalStyles, GpuStyles};
@@ -80,36 +80,37 @@ impl Component for GpuComponent {
       })
     });
 
-    let flex_cont = flex_cont_factory(global_styles.h_gap);
-    let horizontal_cont = horizontal_cont_factory(global_styles.h_gap);
+    let flex_cont = flex_cont(global_styles.h_gap);
+    let horizontal_cont = horizontal_cont(global_styles.h_gap);
     let label_with_value = label_with_value_factory(Some(*styles.usage_name_color), *styles.value_color);
     let value_label = value_label_factory(*styles.value_color);
 
     rect().children([
-      horizontal_cont(vec![
-        "GPU".into(),
+      horizontal_cont.children([
+        "GPU".into_element(),
         cursor_area(CursorIcon::Copy)
           .child(
             color_label(*styles.name_color, model.clone())
               .on_mouse_down(move |_| Clipboard::set(model.clone()).unwrap()),
           )
-          .into(),
+          .into_element(),
         right_value_label(
           *styles.value_color,
           format!("{:.0}°C/{:.0}°C", data.read().temperature, temperature_threshold),
         )
-        .into(),
+        .into_element(),
       ]),
-      flex_cont(vec![
-        label_with_value("Usage", format!("{}%", data.read().utilization_rates)).into(),
-        label_with_value("Frequency", format!("{} MHz", data.read().gpu_frequency)).into(),
+      flex_cont.children([
+        label_with_value("Usage", format!("{}%", data.read().utilization_rates)),
+        label_with_value("Frequency", format!("{} MHz", data.read().gpu_frequency)),
       ]),
-      horizontal_cont(vec![
-        color_label(*styles.usage_name_color, "Memory").into(),
-        value_label(format!("{: >4} MHz", data.read().memory_frequency)).into(),
-        value_label(format_used(data.read().memory_used, memory_total)).into(),
-      ])
-      .main_align(Alignment::SpaceBetween),
+      horizontal_cont
+        .children([
+          color_label(*styles.usage_name_color, "Memory"),
+          value_label(format!("{: >4} MHz", data.read().memory_frequency)),
+          value_label(format_used(data.read().memory_used, memory_total)),
+        ])
+        .main_align(Alignment::SpaceBetween),
     ])
   }
 }

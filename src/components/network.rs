@@ -15,7 +15,7 @@ use crate::config::NetworkConfig;
 use crate::custom_components::create_graph;
 use crate::format_size::{format_size, format_speed};
 use crate::freya_utils::{
-  border_fill_width, color_label, cursor_area, flex_cont_factory, label_with_value_factory, right_value_label,
+  border_fill_width, color_label, cursor_area, flex_cont, label_with_value_factory, right_value_label,
 };
 use crate::styles_config::{GlobalStyles, NetworkStyles};
 
@@ -65,28 +65,27 @@ fn network_graphs_component(
   upload_hist: CircularQueue<f32>,
   styles: NetworkStyles,
 ) -> Element {
-  let flex_cont = flex_cont_factory(styles.graph_h_gap);
-  flex_cont(vec![
-    rect()
-      .width(Size::flex(1.))
-      .height(Size::px(styles.graph_height))
-      .border(border_fill_width(
-        *styles.graph_download_border_color,
-        styles.graph_download_border_width,
-      ))
-      .child(create_graph([download_hist], [*styles.graph_download_fill_color]))
-      .into(),
-    rect()
-      .width(Size::flex(1.))
-      .height(Size::px(styles.graph_height))
-      .border(border_fill_width(
-        *styles.graph_upload_border_color,
-        styles.graph_upload_border_width,
-      ))
-      .child(create_graph([upload_hist], [*styles.graph_upload_fill_color]))
-      .into(),
-  ])
-  .into()
+  let flex_cont = flex_cont(styles.graph_h_gap);
+  flex_cont
+    .children([
+      rect()
+        .width(Size::flex(1.))
+        .height(Size::px(styles.graph_height))
+        .border(border_fill_width(
+          *styles.graph_download_border_color,
+          styles.graph_download_border_width,
+        ))
+        .child(create_graph([download_hist], [*styles.graph_download_fill_color])),
+      rect()
+        .width(Size::flex(1.))
+        .height(Size::px(styles.graph_height))
+        .border(border_fill_width(
+          *styles.graph_upload_border_color,
+          styles.graph_upload_border_width,
+        ))
+        .child(create_graph([upload_hist], [*styles.graph_upload_fill_color])),
+    ])
+    .into_element()
 }
 
 const NETWORK_DECIMAL_PLACES: usize = 2usize;
@@ -148,7 +147,7 @@ pub fn network_component() -> Element {
     }
   });
 
-  let flex_cont = flex_cont_factory(global_styles.h_gap);
+  let flex_cont = flex_cont(global_styles.h_gap);
   let label_with_value = label_with_value_factory(Some(*styles.name_color), *styles.value_color);
 
   if data.read().local_ips.is_empty() {
@@ -159,38 +158,42 @@ pub fn network_component() -> Element {
     let [down_total, up_total] = [data_.total_received, data_.total_transmitted];
     rect()
       .children([
-        flex_cont(vec![
-          color_label(*styles.name_color, "WAN IP").into(),
-          cursor_area(CursorIcon::Copy)
-            .child(
-              right_value_label(*styles.value_color, public_ip_str.read().clone())
-                .on_mouse_down(move |_| Clipboard::set(public_ip_str.read().clone()).unwrap()),
-            )
-            .into(),
-        ])
-        .into(),
-        flex_cont(vec![
-          color_label(*styles.name_color, format!("{} IP", data.read().network_name)).into(),
-          cursor_area(CursorIcon::Copy)
-            .child(
-              right_value_label(*styles.value_color, local_ips_str.read().clone()).on_mouse_down(move |_| {
-                let local_ips = &data.read().local_ips;
-                Clipboard::set(local_ips.iter().map(|ip| ip.to_string()).join("\n").to_string()).unwrap();
-              }),
-            )
-            .into(),
-        ])
-        .into(),
-        flex_cont(vec![
-          label_with_value("Net Down", format_speed(down_speed, NETWORK_DECIMAL_PLACES)).into(),
-          label_with_value("Net Up", format_speed(up_speed, NETWORK_DECIMAL_PLACES)).into(),
-        ])
-        .into(),
-        flex_cont(vec![
-          label_with_value("Total Down", format_size(down_total, NETWORK_DECIMAL_PLACES)).into(),
-          label_with_value("Total Up", format_size(up_total, NETWORK_DECIMAL_PLACES)).into(),
-        ])
-        .into(),
+        flex_cont
+          .children([
+            color_label(*styles.name_color, "WAN IP").into_element(),
+            cursor_area(CursorIcon::Copy)
+              .child(
+                right_value_label(*styles.value_color, public_ip_str.read().clone())
+                  .on_mouse_down(move |_| Clipboard::set(public_ip_str.read().clone()).unwrap()),
+              )
+              .into_element(),
+          ])
+          .into(),
+        flex_cont
+          .children([
+            color_label(*styles.name_color, format!("{} IP", data.read().network_name)).into_element(),
+            cursor_area(CursorIcon::Copy)
+              .child(
+                right_value_label(*styles.value_color, local_ips_str.read().clone()).on_mouse_down(move |_| {
+                  let local_ips = &data.read().local_ips;
+                  Clipboard::set(local_ips.iter().map(|ip| ip.to_string()).join("\n").to_string()).unwrap();
+                }),
+              )
+              .into_element(),
+          ])
+          .into(),
+        flex_cont
+          .children([
+            label_with_value("Net Down", format_speed(down_speed, NETWORK_DECIMAL_PLACES)),
+            label_with_value("Net Up", format_speed(up_speed, NETWORK_DECIMAL_PLACES)),
+          ])
+          .into(),
+        flex_cont
+          .children([
+            label_with_value("Total Down", format_size(down_total, NETWORK_DECIMAL_PLACES)),
+            label_with_value("Total Up", format_size(up_total, NETWORK_DECIMAL_PLACES)),
+          ])
+          .into(),
         network_graphs_component((*download_hist.read()).clone(), (*upload_hist.read()).clone(), styles),
       ])
       .into()

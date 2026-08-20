@@ -22,7 +22,7 @@ use crate::config::CpuMemoryConfig;
 use crate::custom_components::create_graph;
 use crate::format_size::format_size;
 use crate::freya_utils::{
-  border_fill_width, cursor_area, flex_cont_factory, label_with_value_factory, right_value_label, value_label_factory,
+  border_fill_width, cursor_area, flex_cont, label_with_value_factory, right_value_label, value_label_factory,
 };
 use crate::serde_structs::SerdeCommand;
 use crate::styles_config::{CpuMemoryStyles, GlobalStyles};
@@ -153,47 +153,43 @@ const CPU_MODEL_REMOVE: &[&str] = &["(R)", "(TM)", "!"];
 fn cpu_bars_component(performant_range: Range<usize>, cpu_core_usage: &[f32]) -> Rect {
   let styles = use_consume::<CpuMemoryStyles>();
   let global_styles = use_consume::<GlobalStyles>();
-  let flex_cont = flex_cont_factory(styles.bar_h_gap);
+  let flex_cont = flex_cont(styles.bar_h_gap);
   let bar_width =
     (global_styles.container_width - (styles.bars_per_row - 1) as f32 * styles.bar_h_gap) / styles.bars_per_row as f32;
   rect().spacing(styles.bars_v_gap).children(
     (0..cpu_core_usage.len().div_ceil(styles.bars_per_row))
       .map(|i| {
-        flex_cont(
-          (0..(cpu_core_usage.len() - i * styles.bars_per_row).min(styles.bars_per_row))
-            .map(|j| {
-              rect()
-                .width(Size::px(bar_width))
-                .height(Size::px(styles.bar_height))
-                .border(Some(if performant_range.contains(&(i * styles.bars_per_row + j)) {
-                  border_fill_width(*styles.bar_border_color, styles.bar_border_width)
-                } else {
-                  border_fill_width(*styles.bar_efficient_border_color, styles.bar_efficient_border_width)
-                }))
-                .child::<Rect>(
-                  rect()
-                    .width(Size::percent(cpu_core_usage[i * styles.bars_per_row + j]))
-                    .height(Size::percent(100.))
-                    .background(if performant_range.contains(&(i * styles.bars_per_row + j)) {
-                      *styles.bar_fill_color
-                    } else {
-                      *styles.bar_efficient_fill_color
-                    }),
-                )
-                .into()
-            })
-            .collect::<Vec<Element>>(),
+        flex_cont.children(
+          (0..(cpu_core_usage.len() - i * styles.bars_per_row).min(styles.bars_per_row)).map(|j| {
+            rect()
+              .width(Size::px(bar_width))
+              .height(Size::px(styles.bar_height))
+              .border(Some(if performant_range.contains(&(i * styles.bars_per_row + j)) {
+                border_fill_width(*styles.bar_border_color, styles.bar_border_width)
+              } else {
+                border_fill_width(*styles.bar_efficient_border_color, styles.bar_efficient_border_width)
+              }))
+              .child::<Rect>(
+                rect()
+                  .width(Size::percent(cpu_core_usage[i * styles.bars_per_row + j]))
+                  .height(Size::percent(100.))
+                  .background(if performant_range.contains(&(i * styles.bars_per_row + j)) {
+                    *styles.bar_fill_color
+                  } else {
+                    *styles.bar_efficient_fill_color
+                  }),
+              )
+          }),
         )
-        .into()
       })
-      .collect::<Vec<Element>>(),
+      .collect::<Vec<Rect>>(),
   )
 }
 
 fn cpu_graphs_component(cpu_hist: CircularQueue<f32>, memory_swap_hist: [CircularQueue<f32>; 2]) -> Rect {
   let styles = use_consume::<CpuMemoryStyles>();
-  let flex_cont = flex_cont_factory(styles.graph_h_gap);
-  flex_cont(vec![
+  let flex_cont = flex_cont(styles.graph_h_gap);
+  flex_cont.children([
     rect()
       .width(Size::flex(1.))
       .height(Size::px(styles.graph_height))
@@ -201,8 +197,7 @@ fn cpu_graphs_component(cpu_hist: CircularQueue<f32>, memory_swap_hist: [Circula
         *styles.graph_cpu_border_color,
         styles.graph_cpu_border_width,
       ))
-      .child(create_graph([cpu_hist], [*styles.graph_cpu_fill_color]))
-      .into(),
+      .child(create_graph([cpu_hist], [*styles.graph_cpu_fill_color])),
     rect()
       .width(Size::flex(1.))
       .height(Size::px(styles.graph_height))
@@ -213,8 +208,7 @@ fn cpu_graphs_component(cpu_hist: CircularQueue<f32>, memory_swap_hist: [Circula
       .child(create_graph(
         memory_swap_hist,
         [*styles.graph_memory_fill_color, *styles.graph_swap_fill_color],
-      ))
-      .into(),
+      )),
   ])
 }
 
@@ -361,37 +355,40 @@ pub fn cpu_memory_component() -> Rect {
   });
 
   let value_color = styles.value_color;
-  let flex_cont = flex_cont_factory(global_styles.h_gap);
+  let flex_cont = flex_cont(global_styles.h_gap);
   let value_label = value_label_factory(*value_color);
   let label_with_value = label_with_value_factory(None::<Color>, *value_color);
 
   rect().children([
-    flex_cont(vec![
-      "CPU".into(),
-      cursor_area(CursorIcon::Copy)
-        .child(value_label(cpu_model.clone()).on_mouse_down(move |_| Clipboard::set(cpu_model.clone()).unwrap()))
-        .into(),
-      right_value_label(*value_color, format!("{}°C", cpu_data.read().temperature)).into(),
-    ])
-    .into_element(),
-    flex_cont(vec![
-      label_with_value("Frequency", format!("{:.2} GHz", cpu_data.read().frequency)).into(),
-      label_with_value("Usage", format!("{:.1}%", cpu_data.read().usage)).into(),
-    ])
-    .into_element(),
-    flex_cont(vec![
-      label_with_value("Uptime", utils::format_duration(uptime())).into(),
-      label_with_value(
-        "Processes",
-        format!(
-          "{} / {: >4}",
-          processes_data.read().num_running,
-          processes_data.read().num_total
-        ),
-      )
-      .into(),
-    ])
-    .into_element(),
+    flex_cont
+      .children([
+        "CPU".into_element(),
+        cursor_area(CursorIcon::Copy)
+          .child(value_label(cpu_model.clone()).on_mouse_down(move |_| Clipboard::set(cpu_model.clone()).unwrap()))
+          .into_element(),
+        right_value_label(*value_color, format!("{}°C", cpu_data.read().temperature)).into_element(),
+      ])
+      .into_element(),
+    flex_cont
+      .children([
+        label_with_value("Frequency", format!("{:.2} GHz", cpu_data.read().frequency)),
+        label_with_value("Usage", format!("{:.1}%", cpu_data.read().usage)),
+      ])
+      .into_element(),
+    flex_cont
+      .children([
+        label_with_value("Uptime", utils::format_duration(uptime())).into_element(),
+        label_with_value(
+          "Processes",
+          format!(
+            "{} / {: >4}",
+            processes_data.read().num_running,
+            processes_data.read().num_total
+          ),
+        )
+        .into_element(),
+      ])
+      .into_element(),
     cpu_bars_component(cpu_performant_range, &cpu_data.read().core_usage).into_element(),
     rect()
       .width(Size::percent(100.))

@@ -6,32 +6,52 @@ pub fn cursor_area(icon: CursorIcon) -> CursorArea {
   CursorArea::new().icon(icon)
 }
 
-fn horizontal_cont(h_gap: f32) -> Rect {
-  rect()
-    .width(Size::percent(100.))
-    .direction(Direction::Horizontal)
-    .spacing(h_gap)
+pub struct HorizontalCont {
+  h_gap: f32,
 }
 
-pub fn horizontal_cont_factory<V>(h_gap: f32) -> impl Fn(V) -> Rect
-where
-  V: IntoIterator<Item = Element>,
-{
-  move |children: V| horizontal_cont(h_gap).children(children)
+pub fn horizontal_cont(h_gap: f32) -> HorizontalCont {
+  HorizontalCont { h_gap }
 }
 
-pub fn center_cont_factory<V>(h_gap: f32) -> impl Fn(V) -> Rect
-where
-  V: IntoIterator<Item = Element>,
-{
-  move |children: V| horizontal_cont(h_gap).main_align(Alignment::Center).children(children)
+impl HorizontalCont {
+  pub fn children(&self, children: impl IntoIterator<Item = impl IntoElement>) -> Rect {
+    rect()
+      .width(Size::percent(100.))
+      .direction(Direction::Horizontal)
+      .spacing(self.h_gap)
+      .children(children)
+  }
 }
 
-pub fn flex_cont_factory<V>(h_gap: f32) -> impl Fn(V) -> Rect
-where
-  V: IntoIterator<Item = Element>,
-{
-  move |children: V| horizontal_cont(h_gap).content(Content::Flex).children(children)
+pub struct CenterCont {
+  h_gap: f32,
+}
+
+pub fn center_cont(h_gap: f32) -> CenterCont {
+  CenterCont { h_gap }
+}
+
+impl CenterCont {
+  pub fn children(&self, children: impl IntoIterator<Item = impl IntoElement>) -> Rect {
+    horizontal_cont(self.h_gap)
+      .children(children)
+      .main_align(Alignment::Center)
+  }
+}
+
+pub struct FlexCont {
+  h_gap: f32,
+}
+
+pub fn flex_cont(h_gap: f32) -> FlexCont {
+  FlexCont { h_gap }
+}
+
+impl FlexCont {
+  pub fn children(&self, children: impl IntoIterator<Item = impl IntoElement>) -> Rect {
+    horizontal_cont(self.h_gap).children(children).content(Content::Flex)
+  }
 }
 
 pub fn value_label_factory<C: Into<Color>, S>(color: C) -> impl Fn(S) -> Label
