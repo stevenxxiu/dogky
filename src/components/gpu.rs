@@ -11,8 +11,7 @@ use nvml_wrapper::{Device, Nvml};
 
 use crate::config::GpuConfig;
 use crate::freya_utils::{
-  color_label, cursor_area, flex_cont, horizontal_cont, label_with_value_factory, right_value_label,
-  value_label_factory,
+  color_label, flex_cont, horizontal_cont, label_with_value_factory, right_value_label, value_label_factory,
 };
 use crate::styles_config::{GlobalStyles, GpuStyles};
 use crate::utils::format_used;
@@ -88,7 +87,8 @@ impl Component for GpuComponent {
     rect().children([
       horizontal_cont.children([
         "GPU".into_element(),
-        cursor_area(CursorIcon::Copy)
+        rect()
+          .cursor(CursorIcon::Copy)
           .child(
             color_label(*styles.name_color, model.clone())
               .on_mouse_down(move |_| Clipboard::set(model.clone()).unwrap()),

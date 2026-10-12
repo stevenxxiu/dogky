@@ -2,10 +2,6 @@ use std::borrow::Cow;
 
 use freya::prelude::*;
 
-pub fn cursor_area(icon: CursorIcon) -> CursorArea {
-  CursorArea::new().icon(icon)
-}
-
 pub struct HorizontalCont {
   h_gap: f32,
 }

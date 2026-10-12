@@ -22,7 +22,7 @@ use crate::config::CpuMemoryConfig;
 use crate::custom_components::create_graph;
 use crate::format_size::format_size;
 use crate::freya_utils::{
-  border_fill_width, cursor_area, flex_cont, label_with_value_factory, right_value_label, value_label_factory,
+  border_fill_width, flex_cont, label_with_value_factory, right_value_label, value_label_factory,
 };
 use crate::serde_structs::SerdeCommand;
 use crate::styles_config::{CpuMemoryStyles, GlobalStyles};
@@ -237,7 +237,7 @@ fn process_table_row(
     ])
 }
 
-fn process_table_component(processes: ProcessesData, num_cpus: usize, top_command: SerdeCommand) -> CursorArea {
+fn process_table_component(processes: ProcessesData, num_cpus: usize, top_command: SerdeCommand) -> Rect {
   let styles = use_consume::<CpuMemoryStyles>();
 
   let format_cpu = |process: &ProcessProps| format!("{:.2}", process.cpu_usage / num_cpus as f32);
@@ -262,28 +262,27 @@ fn process_table_component(processes: ProcessesData, num_cpus: usize, top_comman
     )
   };
 
-  cursor_area(CursorIcon::Pointer).child(
-    rect()
-      .width(Size::percent(100.))
-      .on_pointer_press(move |_| {
-        if top_command.is_empty() {
-          return;
-        }
-        let top_command: Vec<String> = top_command
-          .iter()
-          .map(|part| utils::substitute_env_vars(part))
-          .collect();
-        let (binary, args) = top_command.split_at(1);
-        Command::new(&binary[0]).args(args).status().unwrap();
-      })
-      .children(vec![
-        process_table_row("Command", "PID", "CPU%", "MEM", *header_color, TextAlign::Right, widths),
-        process_table_row("", "", "🞃", "", *sort_cpu_color, TextAlign::Right, widths),
-        ..processes.top_cpu.iter().map(|p| create_data_row(p, true)),
-        process_table_row("", "", "", "🞃", *sort_memory_color, TextAlign::Right, widths),
-        ..processes.top_memory.iter().map(|p| create_data_row(p, false)),
-      ]),
-  )
+  rect()
+    .width(Size::percent(100.))
+    .cursor(CursorIcon::Pointer)
+    .on_pointer_press(move |_| {
+      if top_command.is_empty() {
+        return;
+      }
+      let top_command: Vec<String> = top_command
+        .iter()
+        .map(|part| utils::substitute_env_vars(part))
+        .collect();
+      let (binary, args) = top_command.split_at(1);
+      Command::new(&binary[0]).args(args).status().unwrap();
+    })
+    .children(vec![
+      process_table_row("Command", "PID", "CPU%", "MEM", *header_color, TextAlign::Right, widths),
+      process_table_row("", "", "🞃", "", *sort_cpu_color, TextAlign::Right, widths),
+      ..processes.top_cpu.iter().map(|p| create_data_row(p, true)),
+      process_table_row("", "", "", "🞃", *sort_memory_color, TextAlign::Right, widths),
+      ..processes.top_memory.iter().map(|p| create_data_row(p, false)),
+    ])
 }
 
 pub fn cpu_memory_component() -> Rect {
@@ -363,7 +362,8 @@ pub fn cpu_memory_component() -> Rect {
     flex_cont
       .children([
         "CPU".into_element(),
-        cursor_area(CursorIcon::Copy)
+        rect()
+          .cursor(CursorIcon::Copy)
           .child(value_label(cpu_model.clone()).on_mouse_down(move |_| Clipboard::set(cpu_model.clone()).unwrap()))
           .into_element(),
         right_value_label(*value_color, format!("{}°C", cpu_data.read().temperature)).into_element(),

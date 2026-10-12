@@ -14,9 +14,7 @@ use sysinfo::Networks;
 use crate::config::NetworkConfig;
 use crate::custom_components::create_graph;
 use crate::format_size::{format_size, format_speed};
-use crate::freya_utils::{
-  border_fill_width, color_label, cursor_area, flex_cont, label_with_value_factory, right_value_label,
-};
+use crate::freya_utils::{border_fill_width, color_label, flex_cont, label_with_value_factory, right_value_label};
 use crate::styles_config::{GlobalStyles, NetworkStyles};
 
 #[derive(Default, Clone, Debug)]
@@ -161,7 +159,8 @@ pub fn network_component() -> Element {
         flex_cont
           .children([
             color_label(*styles.name_color, "WAN IP").into_element(),
-            cursor_area(CursorIcon::Copy)
+            rect()
+              .cursor(CursorIcon::Copy)
               .child(
                 right_value_label(*styles.value_color, public_ip_str.read().clone())
                   .on_mouse_down(move |_| Clipboard::set(public_ip_str.read().clone()).unwrap()),
@@ -172,7 +171,8 @@ pub fn network_component() -> Element {
         flex_cont
           .children([
             color_label(*styles.name_color, format!("{} IP", data.read().network_name)).into_element(),
-            cursor_area(CursorIcon::Copy)
+            rect()
+              .cursor(CursorIcon::Copy)
               .child(
                 right_value_label(*styles.value_color, local_ips_str.read().clone()).on_mouse_down(move |_| {
                   let local_ips = &data.read().local_ips;

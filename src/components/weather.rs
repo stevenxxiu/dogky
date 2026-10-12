@@ -12,7 +12,7 @@ use phf::phf_map;
 
 use crate::api::{WeatherData, get_weather};
 use crate::config::WeatherConfig;
-use crate::freya_utils::{center_cont, color_label, cursor_area, emoji_label, value_label_factory};
+use crate::freya_utils::{center_cont, color_label, emoji_label, value_label_factory};
 use crate::path::get_xdg_dirs;
 use crate::styles_config::{GlobalStyles, WeatherStyles};
 
@@ -60,7 +60,7 @@ async fn update_data(config: &WeatherConfig, cache_path: &PathBuf) -> Result<Wea
   }
 }
 
-pub fn weather_component() -> CursorArea {
+pub fn weather_component() -> Rect {
   let config = use_consume::<WeatherConfig>();
   let styles = use_consume::<WeatherStyles>();
   let global_styles = use_consume::<GlobalStyles>();
@@ -102,46 +102,45 @@ pub fn weather_component() -> CursorArea {
   let center_cont = center_cont(global_styles.h_gap);
   let value_label = value_label_factory(*styles.value_color);
 
-  cursor_area(CursorIcon::Pointer).child(
-    rect()
-      .width(Size::percent(100.))
-      .padding(*styles.container_padding)
-      .on_pointer_press(move |_| {
-        // Open weather forecast link
-        open::that(format!("https://openweathermap.org/city/{0}#weather-widget", city_id)).unwrap();
-      })
-      .children(if has_err() || data.read().weather.is_empty() {
-        vec![center_cont.children(["Weather:".into_element(), error_str.read().to_string().into_element()])]
-      } else {
-        vec![
-          center_cont
-            .children([
-              emoji_label(cond_icon.read().to_string())
-                .font_size(styles.cond_icon_size)
-                .into_element(),
-              data.read().weather[0].description.to_title_case().into_element(),
-              value_label(format!("{:.0}°C", data.read().main.temp)).into_element(),
-            ])
-            .cross_align(Alignment::Center),
-          center_cont.children([
-            "Humidity".into_element(),
-            value_label(format!("{}%", data.read().main.humidity)).into_element(),
-            "Wind".into_element(),
-            value_label(format!("{:.1} m/s", data.read().wind.speed)).into_element(),
-            rect()
-              .margin(*styles.wind_arrow_margin)
-              .child(color_label(*styles.value_color, "⮕"))
-              // The wind degrees character used is `⮕`, which is at 90°.
-              .rotate(data.read().wind.deg - 90.)
+  rect()
+    .width(Size::percent(100.))
+    .padding(*styles.container_padding)
+    .cursor(CursorIcon::Pointer)
+    .on_pointer_press(move |_| {
+      // Open weather forecast link
+      open::that(format!("https://openweathermap.org/city/{0}#weather-widget", city_id)).unwrap();
+    })
+    .children(if has_err() || data.read().weather.is_empty() {
+      vec![center_cont.children(["Weather:".into_element(), error_str.read().to_string().into_element()])]
+    } else {
+      vec![
+        center_cont
+          .children([
+            emoji_label(cond_icon.read().to_string())
+              .font_size(styles.cond_icon_size)
               .into_element(),
-          ]),
-          center_cont.children([
-            emoji_label("☀️"),
-            value_label(format_sun_timestamp(data.read().sys.sunrise, timezone)),
-            emoji_label("🌙"),
-            value_label(format_sun_timestamp(data.read().sys.sunset, timezone)),
-          ]),
-        ]
-      }),
-  )
+            data.read().weather[0].description.to_title_case().into_element(),
+            value_label(format!("{:.0}°C", data.read().main.temp)).into_element(),
+          ])
+          .cross_align(Alignment::Center),
+        center_cont.children([
+          "Humidity".into_element(),
+          value_label(format!("{}%", data.read().main.humidity)).into_element(),
+          "Wind".into_element(),
+          value_label(format!("{:.1} m/s", data.read().wind.speed)).into_element(),
+          rect()
+            .margin(*styles.wind_arrow_margin)
+            .child(color_label(*styles.value_color, "⮕"))
+            // The wind degrees character used is `⮕`, which is at 90°.
+            .rotate(data.read().wind.deg - 90.)
+            .into_element(),
+        ]),
+        center_cont.children([
+          emoji_label("☀️"),
+          value_label(format_sun_timestamp(data.read().sys.sunrise, timezone)),
+          emoji_label("🌙"),
+          value_label(format_sun_timestamp(data.read().sys.sunset, timezone)),
+        ]),
+      ]
+    })
 }
