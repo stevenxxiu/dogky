@@ -60,7 +60,7 @@ struct ProcessProps {
 
 fn get_cpu_data(system: &mut System, components: &mut Components) -> CpuData {
   let mut res = CpuData::default();
-  system.refresh_cpu_specifics(CpuRefreshKind::nothing().with_frequency().with_cpu_usage());
+  system.refresh_cpu_specifics(CpuRefreshKind::nothing().with_frequency().with_usage());
 
   let cpus = system.cpus();
   res.frequency = cpus[0].frequency() as f32 / 1000.0;
@@ -74,7 +74,7 @@ fn get_cpu_data(system: &mut System, components: &mut Components) -> CpuData {
     .unwrap();
 
   res.usage = system.global_cpu_usage();
-  res.core_usage = cpus.iter().map(|cpu| cpu.cpu_usage()).collect();
+  res.core_usage = cpus.iter().map(|cpu| cpu.usage()).collect();
   res
 }
 
@@ -293,8 +293,8 @@ pub fn cpu_memory_component() -> Rect {
   let refresh_kind = RefreshKind::nothing()
     .with_cpu(CpuRefreshKind::nothing())
     .with_memory(MemoryRefreshKind::nothing().with_ram().with_swap());
-  let mut system = System::new_with_specifics(refresh_kind);
-  let mut components = Components::new();
+  let mut system = System::new_with_specifics(refresh_kind).unwrap();
+  let mut components = Components::new().unwrap();
 
   let cpus = system.cpus();
   let mut cpu_model = cpus[0].brand().to_string();
@@ -343,7 +343,7 @@ pub fn cpu_memory_component() -> Rect {
         let swap_ratio = memory_data.read().swap_usage as f32 / swap_total as f32;
         swap_hist.write().push(swap_ratio);
 
-        uptime.set(System::uptime());
+        uptime.set(System::uptime().unwrap());
         processes_data.set(get_process_data(&mut system, config.process_list.num_processes));
 
         Timer::interval(Duration::from_secs(config.update_interval))

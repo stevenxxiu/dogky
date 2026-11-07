@@ -83,7 +83,7 @@ impl<const N: usize> ElementExt for Graph<N> {
 }
 
 impl<const N: usize> LayoutExt for Graph<N> {
-  fn get_layout(&mut self) -> &mut LayoutData {
+  fn layout_mut(&mut self) -> &mut LayoutData {
     &mut self.layout_data
   }
 }

@@ -76,7 +76,7 @@ pub fn disk_component() -> Rect {
   let global_styles = use_consume::<GlobalStyles>();
 
   let refresh_kind = DiskRefreshKind::nothing().with_storage();
-  let mut disks = Disks::new_with_refreshed_list_specifics(refresh_kind);
+  let mut disks = Disks::new_with_refreshed_list_specifics(refresh_kind).unwrap();
 
   let disk = get_disk(&disks, &config.mount_point);
 

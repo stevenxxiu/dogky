@@ -42,7 +42,8 @@ fn get_network_data(networks: &mut Networks, interface_regex: Regex, update_inte
 
   let (network_name, network_data) = networks
     .into_iter()
-    .find(|(interface_name, _data)| interface_regex.is_match(interface_name))?;
+    .find(|(interface_name, _data)| interface_regex.is_match(interface_name.to_str().unwrap()))?;
+  let network_name = network_name.to_str().unwrap();
 
   res.local_ips = get_local_ips(network_name);
   if res.local_ips.is_empty() {
@@ -93,7 +94,7 @@ pub fn network_component() -> Element {
   let styles = use_consume::<NetworkStyles>();
   let global_styles = use_consume::<GlobalStyles>();
 
-  let mut networks = Networks::new();
+  let mut networks = Networks::new().unwrap();
 
   let mut data = use_state(NetworkData::default);
 
